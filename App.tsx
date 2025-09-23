@@ -11,6 +11,7 @@ import {
   SafeAreaProvider,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
+import TextShowcase from './src/components/Text/TextShowcase';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -28,14 +29,8 @@ function AppContent() {
 
   return (
     <View style={styles.container}>
-      {/* <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      /> */}
-      <Text style={styles.text}>Bold Text</Text>
-      <Text style={styles.mediumText}>Medium Text</Text>
-      <Text style={styles.regularText}>Regular Text</Text>
-      <Text style={styles.semiBoldText}>Semi Bold Text</Text>
+      <Text>Hello World - KDB Revamp Code</Text>
+      <TextShowcase />
     </View>
   );
 }
@@ -45,31 +40,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 100,
-  },
-  text: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: 'yellow',
-    fontFamily: 'Gilroy-Bold',
-  },
-  mediumText: {
-    fontSize: 20,
-    fontWeight: '500',
-    color: 'green',
-    fontFamily: 'Gilroy-Medium',
-  },
-  regularText: {
-    fontSize: 20,
-    fontWeight: '400',
-    color: 'blue',
-    fontFamily: 'Gilroy-Regular',
-  },
-  semiBoldText: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: 'red',
-    fontFamily: 'Gilroy-SemiBold',
   },
 });
 
