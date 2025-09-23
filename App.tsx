@@ -6,7 +6,7 @@
  */
 
 import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
+import { StatusBar, StyleSheet, Text, useColorScheme, View } from 'react-native';
 import {
   SafeAreaProvider,
   useSafeAreaInsets,
@@ -28,10 +28,14 @@ function AppContent() {
 
   return (
     <View style={styles.container}>
-      <NewAppScreen
+      {/* <NewAppScreen
         templateFileName="App.tsx"
         safeAreaInsets={safeAreaInsets}
-      />
+      /> */}
+      <Text style={styles.text}>Bold Text</Text>
+      <Text style={styles.mediumText}>Medium Text</Text>
+      <Text style={styles.regularText}>Regular Text</Text>
+      <Text style={styles.semiBoldText}>Semi Bold Text</Text>
     </View>
   );
 }
@@ -39,6 +43,33 @@ function AppContent() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 100,
+  },
+  text: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: 'yellow',
+    fontFamily: 'Gilroy-Bold',
+  },
+  mediumText: {
+    fontSize: 20,
+    fontWeight: '500',
+    color: 'green',
+    fontFamily: 'Gilroy-Medium',
+  },
+  regularText: {
+    fontSize: 20,
+    fontWeight: '400',
+    color: 'blue',
+    fontFamily: 'Gilroy-Regular',
+  },
+  semiBoldText: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: 'red',
+    fontFamily: 'Gilroy-SemiBold',
   },
 });
 

@@ -9,8 +9,13 @@
 /* Begin PBXBuildFile section */
 		0C80B921A6F3F58F76C31292 /* libPods-kdb_revamp_code.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-kdb_revamp_code.a */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		2932BF879D414F7DA1E2911E /* Gilroy-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FFB78A5EE4064057AF480810 /* Gilroy-SemiBold.ttf */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
+		812921757920495FB490231C /* Gilroy-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 312AD476CBE94AF58DAA7E6E /* Gilroy-Regular.ttf */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		C8177ADBDDEC4A2389BBF75F /* Gilroy-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 76C970664C5843838F677746 /* Gilroy-Bold.ttf */; };
+		CDD9178A4D8A4F2EA09CCBE9 /* Gilroy-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B54CFBEFC47840D285CB2335 /* Gilroy-Medium.ttf */; };
+		ED2253EDF17C47B391368E1B /* Anton-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 84E88445712041C39E62A9B0 /* Anton-Regular.ttf */; };
 		F1EE72BA80A44A05198699AE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
@@ -19,12 +24,17 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = kdb_revamp_code/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = kdb_revamp_code/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = kdb_revamp_code/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		312AD476CBE94AF58DAA7E6E /* Gilroy-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Gilroy-Regular.ttf"; path = "../assets/fonts/Gilroy-Regular.ttf"; sourceTree = "<group>"; };
 		3B4392A12AC88292D35C810B /* Pods-kdb_revamp_code.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-kdb_revamp_code.debug.xcconfig"; path = "Target Support Files/Pods-kdb_revamp_code/Pods-kdb_revamp_code.debug.xcconfig"; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-kdb_revamp_code.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-kdb_revamp_code.release.xcconfig"; path = "Target Support Files/Pods-kdb_revamp_code/Pods-kdb_revamp_code.release.xcconfig"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-kdb_revamp_code.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-kdb_revamp_code.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = kdb_revamp_code/AppDelegate.swift; sourceTree = "<group>"; };
+		76C970664C5843838F677746 /* Gilroy-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Gilroy-Bold.ttf"; path = "../assets/fonts/Gilroy-Bold.ttf"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = kdb_revamp_code/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		84E88445712041C39E62A9B0 /* Anton-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Anton-Regular.ttf"; path = "../assets/fonts/Anton-Regular.ttf"; sourceTree = "<group>"; };
+		B54CFBEFC47840D285CB2335 /* Gilroy-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Gilroy-Medium.ttf"; path = "../assets/fonts/Gilroy-Medium.ttf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		FFB78A5EE4064057AF480810 /* Gilroy-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Gilroy-SemiBold.ttf"; path = "../assets/fonts/Gilroy-SemiBold.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,6 +85,7 @@
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
+				EEFE903A65CF4C47A83BF76C /* Resources */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -96,6 +107,19 @@
 				5709B34CF0A7D63546082F79 /* Pods-kdb_revamp_code.release.xcconfig */,
 			);
 			path = Pods;
+			sourceTree = "<group>";
+		};
+		EEFE903A65CF4C47A83BF76C /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				84E88445712041C39E62A9B0 /* Anton-Regular.ttf */,
+				76C970664C5843838F677746 /* Gilroy-Bold.ttf */,
+				B54CFBEFC47840D285CB2335 /* Gilroy-Medium.ttf */,
+				312AD476CBE94AF58DAA7E6E /* Gilroy-Regular.ttf */,
+				FFB78A5EE4064057AF480810 /* Gilroy-SemiBold.ttf */,
+			);
+			name = Resources;
+			path = "";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -161,6 +185,11 @@
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				F1EE72BA80A44A05198699AE /* PrivacyInfo.xcprivacy in Resources */,
+				ED2253EDF17C47B391368E1B /* Anton-Regular.ttf in Resources */,
+				C8177ADBDDEC4A2389BBF75F /* Gilroy-Bold.ttf in Resources */,
+				CDD9178A4D8A4F2EA09CCBE9 /* Gilroy-Medium.ttf in Resources */,
+				812921757920495FB490231C /* Gilroy-Regular.ttf in Resources */,
+				2932BF879D414F7DA1E2911E /* Gilroy-SemiBold.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
