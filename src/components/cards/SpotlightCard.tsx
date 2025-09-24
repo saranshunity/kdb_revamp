@@ -1,7 +1,12 @@
-// components/SpotlightCard.tsx
 import React from "react";
-import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
-import {Icon} from "react-native-vector-icons";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
+import { FONTS, FONT_SIZES } from "../../constants/fonts";
 
 type SpotlightCardProps = {
   image: string;
@@ -31,13 +36,17 @@ const SpotlightCard: React.FC<SpotlightCardProps> = ({
       {/* Image with heart */}
       <View style={styles.imageWrapper}>
         <Image source={{ uri: image }} style={styles.image} />
-        <TouchableOpacity style={styles.favoriteBtn} onPress={onFavoritePress}>
-          <Icon
+        {/* <TouchableOpacity
+          style={styles.favoriteBtn}
+          onPress={onFavoritePress}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Ionicons
             name={isFavorite ? "heart" : "heart-outline"}
             size={22}
             color={isFavorite ? "red" : "#fff"}
           />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
       {/* Content */}
@@ -53,7 +62,7 @@ const SpotlightCard: React.FC<SpotlightCardProps> = ({
         <View style={styles.footer}>
           <View style={styles.rating}>
             <Text style={styles.ratingText}>{rating.toFixed(1)}</Text>
-            <Icon name="star" size={14} color="#2ecc71" />
+            {/* <Ionicons name="star" size={14} color="#2ecc71" /> */}
           </View>
           <Text style={styles.price}>
             {currency}{price} <Text style={styles.perPerson}>/person</Text>
@@ -71,18 +80,18 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: "#fff",
     shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 4,
-    marginVertical: 10,
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
+    marginBottom: 16,
     overflow: "hidden",
   },
   imageWrapper: {
     position: "relative",
   },
   image: {
-    width: "100%",
+    width: "90%",
     height: 180,
     resizeMode: "cover",
   },
@@ -90,7 +99,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 10,
     right: 10,
-    backgroundColor: "rgba(0,0,0,0.4)",
+    backgroundColor: "rgba(0,0,0,0.5)",
     borderRadius: 20,
     padding: 6,
   },
@@ -99,13 +108,15 @@ const styles = StyleSheet.create({
   },
   categories: {
     color: "#666",
-    fontSize: 13,
+    fontSize: FONT_SIZES.xs,
+    fontFamily: FONTS.gilroy.regular,
     marginBottom: 4,
   },
   title: {
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: FONT_SIZES.md,
+    fontFamily: FONTS.gilroy.semiBold,
     marginBottom: 8,
+    color: "#111",
   },
   footer: {
     flexDirection: "row",
@@ -121,19 +132,19 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   ratingText: {
-    fontWeight: "600",
+    fontFamily: FONTS.gilroy.semiBold,
     color: "#27ae60",
     marginRight: 4,
-    fontSize: 13,
+    fontSize: FONT_SIZES.xs,
   },
   price: {
-    fontWeight: "700",
+    fontFamily: FONTS.gilroy.bold,
     color: "#e67e22",
-    fontSize: 15,
+    fontSize: FONT_SIZES.sm,
   },
   perPerson: {
     color: "#777",
-    fontWeight: "400",
-    fontSize: 12,
+    fontFamily: FONTS.gilroy.regular,
+    fontSize: FONT_SIZES.xs,
   },
 });

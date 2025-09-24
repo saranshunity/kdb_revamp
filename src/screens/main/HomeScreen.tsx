@@ -9,6 +9,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { H1, H2, H3, BodyText, ButtonTextPrimary } from '../../components/Text';
 import { COLORS } from '../../constants/colors';
+import SpotlightCard from '../../components/cards/SpotlightCard';
+import HorizontalListViews from '../../components/lists/HorizontalListViews';
 
 interface HomeScreenProps {
   navigation: any;
@@ -80,6 +82,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         </View>
 
         {/* Balance Card */}
+      <HorizontalListViews />
         <View style={styles.balanceCard}>
           <BodyText color={COLORS.background.primary} size='md' weight='medium'>
             Total Balance
@@ -357,6 +360,10 @@ const styles = StyleSheet.create({
   },
   promotionalIcon: {
     marginLeft: 16,
+  },
+  spotlightTitle: {
+    marginBottom: 6,
+    paddingHorizontal: 24,
   },
 });
 
