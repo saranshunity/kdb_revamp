@@ -4,16 +4,37 @@ import { TextProps, TextStyle } from 'react-native';
 export type FontFamily = 'regular' | 'medium' | 'semiBold' | 'bold';
 
 // Font size types
-export type FontSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl';
+export type FontSize =
+  | 'xs'
+  | 'sm'
+  | 'md'
+  | 'lg'
+  | 'xl'
+  | '2xl'
+  | '3xl'
+  | '4xl'
+  | '5xl'
+  | '6xl';
 
 // Text variant types
-export type TextVariant = 'primary' | 'secondary' | 'tertiary' | 'success' | 'warning' | 'error' | 'info';
+export type TextVariant =
+  | 'primary'
+  | 'secondary'
+  | 'tertiary'
+  | 'success'
+  | 'warning'
+  | 'error'
+  | 'info';
 
 // Text alignment types
 export type TextAlign = 'left' | 'center' | 'right' | 'justify' | 'auto';
 
 // Text decoration types
-export type TextDecoration = 'none' | 'underline' | 'line-through' | 'underline line-through';
+export type TextDecoration =
+  | 'none'
+  | 'underline'
+  | 'line-through'
+  | 'underline line-through';
 
 // Text transform types
 export type TextTransform = 'none' | 'capitalize' | 'uppercase' | 'lowercase';
@@ -27,25 +48,25 @@ export type LineHeight = 'tight' | 'normal' | 'relaxed' | 'loose';
 // Base text component props
 export interface BaseTextProps extends Omit<TextProps, 'style'> {
   children: React.ReactNode;
-  
+
   // Font properties
   fontFamily?: FontFamily;
   fontSize?: number;
   weight?: FontFamily;
   size?: FontSize;
-  
+
   // Color properties
   color?: string;
   variant?: TextVariant;
   muted?: boolean;
-  
+
   // Layout properties
   textAlign?: TextAlign;
   center?: boolean;
   right?: boolean;
   lineHeight?: number | LineHeight;
   letterSpacing?: number;
-  
+
   // Text decoration
   textDecorationLine?: TextDecoration;
   textTransform?: TextTransform;
@@ -53,25 +74,26 @@ export interface BaseTextProps extends Omit<TextProps, 'style'> {
   strikethrough?: boolean;
   italic?: boolean;
   bold?: boolean;
-  
+
   // Truncation
   numberOfLines?: number;
   ellipsizeMode?: EllipsizeMode;
   truncate?: boolean;
-  
+
   // Accessibility
   allowFontScaling?: boolean;
   adjustsFontSizeToFit?: boolean;
   minimumFontScale?: number;
   maxFontSizeMultiplier?: number;
   selectable?: boolean;
-  
+
   // Style
   style?: TextStyle | TextStyle[];
 }
 
 // Typography component props
-export interface TypographyProps extends Omit<BaseTextProps, 'fontFamily' | 'fontSize'> {
+export interface TypographyProps
+  extends Omit<BaseTextProps, 'fontFamily' | 'fontSize'> {
   // Additional props for specific typography components
 }
 

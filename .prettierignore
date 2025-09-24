@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+ios/Pods/
+android/build/
+ios/build/
+vendor/
+
+# Generated files
+*.generated.*
+*.log
+*.lock
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# React Native
+android/app/build/
+ios/build/
+*.hprof
+
+# Metro
+.metro-health-check*
+
+# Gradle
+android/.gradle/
+android/app/build/
+
+# CocoaPods
+ios/Pods/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Coverage
+coverage/
+
+# Build outputs
+dist/
+build/
+
+# Android build files
+android/app/.cxx/

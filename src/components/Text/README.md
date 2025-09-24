@@ -19,10 +19,12 @@ A comprehensive set of robust text components built with Gilroy fonts for React 
 ## Components
 
 ### Headings
+
 - `H1`, `H2`, `H3`, `H4`, `H5`, `H6` - Semantic heading components
 - `Heading` - Flexible heading component with level prop
 
 ### Body Text
+
 - `BodyText` - Regular body text
 - `BodyMedium` - Medium weight body text
 - `BodyBold` - Bold body text
@@ -30,12 +32,14 @@ A comprehensive set of robust text components built with Gilroy fonts for React 
 - `LargeText` - Large text variant
 
 ### Captions
+
 - `CaptionText` - Regular caption text
 - `CaptionBold` - Bold caption text
 - `HelperText` - Helper text for forms
 - `ErrorText` - Error text for validation
 
 ### Button Text
+
 - `ButtonTextPrimary` - Primary button text
 - `ButtonTextSecondary` - Secondary button text
 - `ButtonTextOutline` - Outline button text
@@ -43,16 +47,19 @@ A comprehensive set of robust text components built with Gilroy fonts for React 
 - `ButtonTextLarge` - Large button text
 
 ### Labels
+
 - `FormLabel` - Form field labels with required indicator
 - `ErrorLabel` - Error state labels
 - `OptionalLabel` - Optional field labels
 
 ### Base Component
+
 - `BaseText` - Flexible base component with all features
 
 ## Usage Examples
 
 ### Basic Usage
+
 ```tsx
 import { H1, BodyText, ButtonTextPrimary } from './src/components/Text';
 
@@ -69,6 +76,7 @@ import { H1, BodyText, ButtonTextPrimary } from './src/components/Text';
 ```
 
 ### Advanced Usage
+
 ```tsx
 import { BaseText } from './src/components/Text';
 
@@ -97,6 +105,7 @@ import { BaseText } from './src/components/Text';
 ```
 
 ### Form Labels
+
 ```tsx
 import { FormLabel, ErrorLabel, HelperText } from './src/components/Text';
 
@@ -108,6 +117,7 @@ import { FormLabel, ErrorLabel, HelperText } from './src/components/Text';
 ## Props
 
 ### BaseTextProps
+
 - `children` - Text content
 - `fontFamily` - Font family ('regular' | 'medium' | 'semiBold' | 'bold')
 - `fontSize` - Custom font size
@@ -136,6 +146,7 @@ import { FormLabel, ErrorLabel, HelperText } from './src/components/Text';
 - `style` - Additional styles
 
 ## File Structure
+
 ```
 src/components/Text/
 ├── BaseText.tsx          # Base text component
@@ -150,6 +161,7 @@ src/components/Text/
 ```
 
 ## Dependencies
+
 - React Native Text component
 - Gilroy font family
 - TypeScript

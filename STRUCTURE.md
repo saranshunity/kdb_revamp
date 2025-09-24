@@ -35,6 +35,7 @@ kdb_revamp_code/
 ## 🎯 Features Implemented
 
 ### ✅ **Robust Text Components**
+
 - **BaseText** - Core component with all features
 - **Headings** - H1, H2, H3, H4, H5, H6
 - **Body Text** - Regular, Medium, Bold variants
@@ -43,6 +44,7 @@ kdb_revamp_code/
 - **Labels** - Form labels with required/error states
 
 ### ✅ **Advanced Features**
+
 - **Truncation** - `truncate` prop for single-line truncation
 - **Multiple Lines** - `numberOfLines` prop for line limiting
 - **Text Decoration** - Underline, strikethrough, italic, bold
@@ -53,12 +55,14 @@ kdb_revamp_code/
 - **Responsive** - Adjusts to different screen sizes
 
 ### ✅ **TypeScript Support**
+
 - Fully typed interfaces
 - Comprehensive prop types
 - Type safety for all components
 - IntelliSense support
 
 ### ✅ **Gilroy Font Integration**
+
 - All components use Gilroy fonts
 - Proper font weight mapping
 - Font family constants
@@ -67,6 +71,7 @@ kdb_revamp_code/
 ## 🚀 Usage Examples
 
 ### Basic Usage
+
 ```tsx
 import { H1, BodyText, ButtonTextPrimary } from './src/components/Text';
 
@@ -76,23 +81,25 @@ import { H1, BodyText, ButtonTextPrimary } from './src/components/Text';
 ```
 
 ### Advanced Usage
+
 ```tsx
 import { BaseText } from './src/components/Text';
 
 <BaseText
-  weight="bold"
-  size="lg"
-  color="#FF6B6B"
+  weight='bold'
+  size='lg'
+  color='#FF6B6B'
   truncate
   numberOfLines={2}
   underline
-  textTransform="uppercase"
+  textTransform='uppercase'
 >
   Custom Styled Text
-</BaseText>
+</BaseText>;
 ```
 
 ### Form Components
+
 ```tsx
 import { FormLabel, ErrorText, HelperText } from './src/components/Text';
 
@@ -104,6 +111,7 @@ import { FormLabel, ErrorText, HelperText } from './src/components/Text';
 ## 🎨 Design System
 
 ### Font Sizes
+
 - `xs` - 12px
 - `sm` - 14px
 - `md` - 16px
@@ -114,12 +122,14 @@ import { FormLabel, ErrorText, HelperText } from './src/components/Text';
 - `4xl` - 32px
 
 ### Font Weights
+
 - `regular` - Gilroy-Regular
 - `medium` - Gilroy-Medium
 - `semiBold` - Gilroy-SemiBold
 - `bold` - Gilroy-Bold
 
 ### Color Variants
+
 - `primary` - Black (#000000)
 - `secondary` - Gray (#666666)
 - `tertiary` - Light Gray (#999999)
@@ -131,6 +141,7 @@ import { FormLabel, ErrorText, HelperText } from './src/components/Text';
 ## 📱 Testing
 
 Run the app to see the comprehensive text showcase:
+
 ```bash
 npm run ios
 # or
@@ -142,17 +153,20 @@ The app displays all text components with different features, colors, and styles
 ## 🔧 Customization
 
 ### Adding New Font Weights
+
 1. Add font file to `assets/fonts/`
 2. Update `src/constants/fonts.ts`
 3. Update iOS `Info.plist`
 4. Rebuild the app
 
 ### Adding New Color Variants
+
 1. Update `src/constants/colors.ts`
 2. Update `src/types/text.ts`
 3. Use in components
 
 ### Creating Custom Components
+
 1. Create new component in `src/components/Text/`
 2. Export from `src/components/Text/index.ts`
 3. Add to showcase if needed

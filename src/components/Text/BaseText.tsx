@@ -41,7 +41,7 @@ const BaseText: React.FC<BaseTextProps> = ({
   const finalFontSize = getFontSize(size, fontSize);
   const finalTextAlign = center ? 'center' : right ? 'right' : textAlign;
   const finalLineHeight = getLineHeight(finalFontSize, lineHeight);
-  
+
   // Handle color
   let finalColor = color;
   if (typeof color === 'string' && color in COLORS) {
@@ -53,7 +53,7 @@ const BaseText: React.FC<BaseTextProps> = ({
   if (muted) {
     finalColor = COLORS.text.muted;
   }
-  
+
   // Handle text decoration
   let finalTextDecorationLine = textDecorationLine;
   if (underline && strikethrough) {

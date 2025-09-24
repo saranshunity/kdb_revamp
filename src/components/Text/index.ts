@@ -2,60 +2,52 @@
 export { default as BaseText } from './BaseText';
 
 // Heading components
-export { 
-  default as Heading,
-  H1, 
-  H2, 
-  H3, 
-  H4, 
-  H5, 
-  H6 
-} from './Heading';
+export { default as Heading, H1, H2, H3, H4, H5, H6 } from './Heading';
 
 // Body text components
-export { 
+export {
   default as Body,
   BodyText,
   BodyMedium,
   BodyBold,
   SmallText,
-  LargeText
+  LargeText,
 } from './Body';
 
 // Caption components
-export { 
+export {
   default as Caption,
   CaptionText,
   CaptionBold,
   HelperText,
-  ErrorText
+  ErrorText,
 } from './Caption';
 
 // Button text components
-export { 
+export {
   default as ButtonText,
   ButtonTextPrimary,
   ButtonTextSecondary,
   ButtonTextOutline,
   ButtonTextSmall,
-  ButtonTextLarge
+  ButtonTextLarge,
 } from './ButtonText';
 
 // Label components
-export { 
+export {
   default as Label,
   FormLabel,
   ErrorLabel,
-  OptionalLabel
+  OptionalLabel,
 } from './Label';
 
 // Re-export types
-export type { 
+export type {
   BaseTextProps,
   TypographyProps,
   HeadingProps,
   BodyProps,
   CaptionProps,
   ButtonTextProps,
-  LabelProps
+  LabelProps,
 } from '../../types/text';

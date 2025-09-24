@@ -2,12 +2,12 @@ import React from 'react';
 import BaseText from './BaseText';
 import { LabelProps } from '../../types/text';
 
-const Label: React.FC<LabelProps> = ({ 
+const Label: React.FC<LabelProps> = ({
   required = false,
   error = false,
   weight = 'medium',
   size = 'sm',
-  ...props 
+  ...props
 }) => {
   const getColor = () => {
     if (error) return 'error';
@@ -15,15 +15,10 @@ const Label: React.FC<LabelProps> = ({
   };
 
   return (
-    <BaseText
-      weight={weight}
-      size={size}
-      color={getColor()}
-      {...props}
-    >
+    <BaseText weight={weight} size={size} color={getColor()} {...props}>
       {props.children}
       {required && (
-        <BaseText color="error" size="sm">
+        <BaseText color='error' size='sm'>
           {' *'}
         </BaseText>
       )}
@@ -32,15 +27,15 @@ const Label: React.FC<LabelProps> = ({
 };
 
 // Predefined label components
-export const FormLabel: React.FC<Omit<LabelProps, 'required'>> = (props) => (
+export const FormLabel: React.FC<Omit<LabelProps, 'required'>> = props => (
   <Label required={true} {...props} />
 );
 
-export const ErrorLabel: React.FC<Omit<LabelProps, 'error'>> = (props) => (
+export const ErrorLabel: React.FC<Omit<LabelProps, 'error'>> = props => (
   <Label error={true} {...props} />
 );
 
-export const OptionalLabel: React.FC<Omit<LabelProps, 'required'>> = (props) => (
+export const OptionalLabel: React.FC<Omit<LabelProps, 'required'>> = props => (
   <Label required={false} {...props} />
 );
 

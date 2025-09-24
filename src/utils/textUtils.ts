@@ -16,7 +16,7 @@ export const getFontSize = (size?: FontSize, customSize?: number): number => {
 export const getLineHeight = (
   fontSize: number,
   lineHeight?: number | LineHeight,
-  multiplier: number = 1.2
+  multiplier: number = 1.2,
 ): number => {
   if (typeof lineHeight === 'number') return lineHeight;
   if (typeof lineHeight === 'string') {
@@ -37,15 +37,16 @@ export const truncateText = (text: string, maxLength: number): string => {
  * Capitalize first letter of each word
  */
 export const capitalizeWords = (text: string): string => {
-  return text.replace(/\b\w/g, (char) => char.toUpperCase());
+  return text.replace(/\b\w/g, char => char.toUpperCase());
 };
 
 /**
  * Convert text to title case
  */
 export const toTitleCase = (text: string): string => {
-  return text.replace(/\w\S*/g, (txt) => 
-    txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+  return text.replace(
+    /\w\S*/g,
+    txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(),
   );
 };
 
@@ -59,7 +60,10 @@ export const formatNumber = (num: number): string => {
 /**
  * Format currency
  */
-export const formatCurrency = (amount: number, currency: string = 'USD'): string => {
+export const formatCurrency = (
+  amount: number,
+  currency: string = 'USD',
+): string => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency,
@@ -69,7 +73,10 @@ export const formatCurrency = (amount: number, currency: string = 'USD'): string
 /**
  * Format percentage
  */
-export const formatPercentage = (value: number, decimals: number = 1): string => {
+export const formatPercentage = (
+  value: number,
+  decimals: number = 1,
+): string => {
   return `${(value * 100).toFixed(decimals)}%`;
 };
 
@@ -103,14 +110,18 @@ export const getTextLength = (text: string): number => {
  * Get word count
  */
 export const getWordCount = (text: string): number => {
-  return text.trim().split(/\s+/).filter(word => word.length > 0).length;
+  return text
+    .trim()
+    .split(/\s+/)
+    .filter(word => word.length > 0).length;
 };
 
 /**
  * Generate placeholder text
  */
 export const generatePlaceholder = (length: number = 10): string => {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const chars =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
   for (let i = 0; i < length; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
