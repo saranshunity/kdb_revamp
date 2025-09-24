@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { FONTS, FONT_SIZES } from "../../constants/fonts";
+import { COLORS } from "../../constants/colors";
 
 type SpotlightCardProps = {
   image: string;
@@ -77,23 +78,27 @@ export default SpotlightCard;
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 12,
+    width: 280,
+    borderRadius: 16,
     backgroundColor: "#fff",
     shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 3,
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
     marginBottom: 16,
     overflow: "hidden",
+    marginRight: 16,
   },
   imageWrapper: {
     position: "relative",
   },
   image: {
-    width: "90%",
+    width: "100%",
     height: 180,
     resizeMode: "cover",
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
   },
   favoriteBtn: {
     position: "absolute",
@@ -104,24 +109,33 @@ const styles = StyleSheet.create({
     padding: 6,
   },
   content: {
-    padding: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    flex: 1,
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
+    backgroundColor: COLORS.background.primary,
   },
   categories: {
     color: "#666",
     fontSize: FONT_SIZES.xs,
     fontFamily: FONTS.gilroy.regular,
     marginBottom: 4,
+    flexWrap: "wrap",
   },
   title: {
     fontSize: FONT_SIZES.md,
     fontFamily: FONTS.gilroy.semiBold,
     marginBottom: 8,
     color: "#111",
+    flexWrap: "wrap",
+    lineHeight: 20,
   },
   footer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    flex: 1,
   },
   rating: {
     flexDirection: "row",
@@ -141,6 +155,7 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.gilroy.bold,
     color: "#e67e22",
     fontSize: FONT_SIZES.sm,
+    flexShrink: 1,
   },
   perPerson: {
     color: "#777",

@@ -7,10 +7,13 @@ import {
   StatusBar,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { H1, H2, H3, BodyText, ButtonTextPrimary } from '../../components/Text';
+import { H1, H2, H3, BodyText, ButtonTextPrimary, H4 } from '../../components/Text';
 import { COLORS } from '../../constants/colors';
 import SpotlightCard from '../../components/cards/SpotlightCard';
 import HorizontalListViews from '../../components/lists/HorizontalListViews';
+import QuickLinkItem from '../../components/QuickLinks';
+import MahotsavHulchal from './components/MahotsavHulchal';
+import TirthsList from './components/TirthsList';
 
 interface HomeScreenProps {
   navigation: any;
@@ -57,9 +60,75 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     },
   ];
 
+  const mahotsavHulchal = [
+
+    {
+      id: 1,
+      title: 'Mahotsav Hulchal',
+      image: 'https://picsum.photos/600/400',
+      categories: ['Coffee', 'Cultural Tour'],
+      price: 28,
+      isFavorite: true,
+    },
+    {
+      id: 2,
+      title: 'Mahotsav Hulchal',
+      image: 'https://picsum.photos/600/400',
+      categories: ['Coffee', 'Cultural Tour'],
+      price: 28,
+      isFavorite: true,
+    },
+  ];
+
+  const tirthsList = [
+
+    {
+      id: 1,
+      title: 'Kurukshetra',
+      image: 'https://picsum.photos/600/400',
+      categories: ['Cultural Tour'],
+      price: 28,
+      isFavorite: true,
+    },
+  
+
+    {
+      id: 2,
+      title: 'Karnal',
+      image: 'https://picsum.photos/600/400',
+      categories: ['Cultural Tour'],
+      price: 28,
+      isFavorite: true,
+    },
+    {
+      id: 3,
+      title: 'Jind',
+      image: 'https://picsum.photos/600/400',
+      categories: ['Cultural Tour'],
+      price: 28,
+      isFavorite: true,
+    },
+    {
+      id: 4,
+      title: 'Kaithal',
+      image: 'https://picsum.photos/600/400',
+      categories: ['Cultural Tour'],
+      price: 28,
+      isFavorite: true,
+    },
+    {
+      id: 5,
+      title: 'Panipat',
+      image: 'https://picsum.photos/600/400',
+      categories: ['Cultural Tour'],
+      price: 28,
+      isFavorite: true,
+    },
+  ];
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <StatusBar barStyle='dark-content' backgroundColor={COLORS.background.primary} />
+      <StatusBar barStyle='dark-content' backgroundColor={COLORS.background.appColor} />
 
       <ScrollView
         style={styles.scrollView}
@@ -68,22 +137,50 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       >
         {/* Header */}
         <View style={styles.header}>
-          <View>
-            <BodyText color={COLORS.tertiary} size='md'>
-              Good morning,
-            </BodyText>
-            <H1 color={COLORS.primary} weight='bold' size='2xl'>
-              John Doe
-            </H1>
-          </View>
+          <TouchableOpacity style={styles.profileButton}>
+            <BodyText size='2xl' color={COLORS.primary}>👤</BodyText>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.notificationButton}>
-            <BodyText size='lg'>🔔</BodyText>
+            <BodyText size='lg' color={COLORS.primary}>🔔</BodyText>
           </TouchableOpacity>
         </View>
 
         {/* Balance Card */}
-      <HorizontalListViews />
-        <View style={styles.balanceCard}>
+      <View style={styles.contentContainer}>
+        <H4 style={styles.quickLinkTitle} color={COLORS.primary} weight='bold' size='lg'>Mahotsav related Links</H4>
+        <View style={styles.quickLinkContainer}>
+        <QuickLinkItem icon="restaurant-outline" label="Events" />
+      <QuickLinkItem icon="cart-outline" label="Stalls" />
+      <QuickLinkItem icon="bed-outline" label="Hotels" />
+      <QuickLinkItem icon="calendar-outline" label="Events" />
+        </View>
+        <MahotsavHulchal listData={mahotsavHulchal} />
+     
+      <View style={styles.promotionalCard}>
+          <View style={styles.promotionalContent}>
+            <H3 color={COLORS.primary} weight='bold' size='lg'>
+              Locate your family members
+            </H3>
+            <BodyText
+              color={COLORS.secondary}
+              size='sm'
+              style={styles.promotionalText}
+            >
+              Use your KDB card for all purchases and earn 2% cashback on every
+              transaction.
+            </BodyText>
+            <TouchableOpacity style={styles.promotionalButton}>
+              <ButtonTextPrimary size='md'>Locate Now</ButtonTextPrimary>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.promotionalIcon}>
+            <BodyText size='3xl'>💳</BodyText>
+          </View>
+        </View>
+        <TirthsList listData={tirthsList} />
+      </View>
+     
+        {/* <View style={styles.balanceCard}>
           <BodyText color={COLORS.background.primary} size='md' weight='medium'>
             Total Balance
           </BodyText>
@@ -103,10 +200,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               Savings: $4,000.00
             </BodyText>
           </View>
-        </View>
+        </View> */}
 
         {/* Quick Actions */}
-        <View style={styles.section}>
+        {/* <View style={styles.section}>
           <H2
             color={COLORS.primary}
             weight='bold'
@@ -137,10 +234,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               </TouchableOpacity>
             ))}
           </View>
-        </View>
+        </View> */}
 
         {/* Recent Transactions */}
-        <View style={styles.section}>
+        {/* <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <H2 color={COLORS.primary} weight='bold' size='xl'>
               Recent Transactions
@@ -197,30 +294,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               </TouchableOpacity>
             ))}
           </View>
-        </View>
+        </View> */}
 
-        {/* Promotional Card */}
-        <View style={styles.promotionalCard}>
-          <View style={styles.promotionalContent}>
-            <H3 color={COLORS.primary} weight='bold' size='lg'>
-              Get 2% Cashback
-            </H3>
-            <BodyText
-              color={COLORS.secondary}
-              size='md'
-              style={styles.promotionalText}
-            >
-              Use your KDB card for all purchases and earn 2% cashback on every
-              transaction.
-            </BodyText>
-            <TouchableOpacity style={styles.promotionalButton}>
-              <ButtonTextPrimary size='md'>Learn More</ButtonTextPrimary>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.promotionalIcon}>
-            <BodyText size='3xl'>💳</BodyText>
-          </View>
-        </View>
+
       </ScrollView>
     </View>
   );
@@ -229,20 +305,31 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background.primary
+    backgroundColor: COLORS.background.tertiary
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     paddingBottom: 32,
+    backgroundColor: COLORS.background.tertiary,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 0,
+    // backgroundColor: COLORS.background.primary,
+  },
+  profileButton: {
+    padding: 8,
+    backgroundColor: COLORS.background.secondary,
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   notificationButton: {
     padding: 8,
@@ -334,14 +421,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   promotionalCard: {
-    backgroundColor: COLORS.info + '10',
-    marginHorizontal: 24,
+    backgroundColor: COLORS.background.appColor + '10',
+    marginHorizontal: 20,
     padding: 20,
     borderRadius: 16,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: COLORS.info + '30',
+    borderColor: COLORS.background.appColor + '30',
+    marginBottom: 30,
   },
   promotionalContent: {
     flex: 1,
@@ -351,7 +439,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   promotionalButton: {
-    backgroundColor: COLORS.info,
+    backgroundColor: COLORS.background.appColor,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
@@ -364,6 +452,19 @@ const styles = StyleSheet.create({
   spotlightTitle: {
     marginBottom: 6,
     paddingHorizontal: 24,
+  },
+  contentContainer: {
+   marginTop: 20,
+  },
+  quickLinkContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 8,
+    marginBottom:30
+  },
+  quickLinkTitle: {
+    marginBottom: 10,
+    paddingHorizontal: 20,
   },
 });
 

@@ -3,36 +3,31 @@ import { BodyText, H3, H4 } from "../Text";
 import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { COLORS } from "../../constants/colors";
 
-const HorizontalListViews = () => {
+const HorizontalListViews = ({title,listData}: {title: string,listData: any[]}) => {
   return (
     <View style={styles.container}>
         <View style={styles.titleContainer}>   
-    <H4 style={styles.title}>Mahotsav Hulchal</H4>
+    <H4 style={styles.title}>{title}</H4>
     <TouchableOpacity style={styles.viewAll}>
-      <BodyText size="sm" color={COLORS.text.secondary} style={styles.viewAllText}>View All</BodyText>
-    </TouchableOpacity>
+    <BodyText color={COLORS.primary} size='md' weight='medium'>
+                View All
+              </BodyText>
+                 </TouchableOpacity>
     </View>
-    <ScrollView horizontal style={{ flex: 1, padding: 16 }} showsVerticalScrollIndicator={false}>
+    <ScrollView horizontal style={{ flex: 1, padding: 16 }} showsHorizontalScrollIndicator={false}>
+    {listData?.map((item) => (
     <SpotlightCard
-    image="https://picsum.photos/600/400"
-    categories={["Coffee", "Cultural Tour"]}
-    title="Unique Egg Coffee class with Local"
+    image={item.image}
+    categories={item.categories}
+    title={item.title}
     rating={4.5}
-    price={28}
+    price={item.price}
     onPress={() => console.log("Card Pressed")}
     onFavoritePress={() => console.log("Favorite Pressed")}
-    isFavorite={true}
+    isFavorite={item.isFavorite}
     />
-     <SpotlightCard
-    image="https://picsum.photos/600/400"
-    categories={["Coffee", "Cultural Tour"]}
-    title="Unique Egg Coffee class with Local"
-    rating={4.5}
-    price={28}
-    onPress={() => console.log("Card Pressed")}
-    onFavoritePress={() => console.log("Favorite Pressed")}
-    isFavorite={true}
-    />
+    ))}
+    
     </ScrollView>
     </View>
   );
