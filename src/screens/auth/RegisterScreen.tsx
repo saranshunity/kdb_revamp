@@ -103,7 +103,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
       style={[styles.container, { paddingTop: insets.top }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <StatusBar barStyle='dark-content' backgroundColor={colors.background} />
+      <StatusBar barStyle='dark-content' backgroundColor={COLORS.background.primary} />
 
       <ScrollView
         style={styles.scrollView}
@@ -125,11 +125,11 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
         <View style={styles.content}>
           {/* Logo/Title */}
           <View style={styles.logoContainer}>
-            <H1 color={colors.primary} weight='bold' size='3xl'>
+            <H1 color={COLORS.primary} weight='bold' size='3xl'>
               KDB
             </H1>
             <H2
-              color={colors.secondary}
+              color={COLORS.secondary}
               weight='medium'
               size='xl'
               style={styles.subtitle}
@@ -137,7 +137,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
               Create Account
             </H2>
             <BodyText
-              color={colors.tertiary}
+              color={COLORS.tertiary}
               size='md'
               style={styles.description}
             >
@@ -151,7 +151,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
             <View style={styles.row}>
               <View style={[styles.inputContainer, styles.halfWidth]}>
                 <BodyText
-                  color={colors.primary}
+                  color={COLORS.primary}
                   weight='medium'
                   size='sm'
                   style={styles.label}
@@ -161,7 +161,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
                 <TextInput
                   style={[styles.input, errors.firstName && styles.inputError]}
                   placeholder='John'
-                  placeholderTextColor={colors.tertiary}
+                  placeholderTextColor={COLORS.tertiary}
                   value={formData.firstName}
                   onChangeText={value => updateFormData('firstName', value)}
                   autoCapitalize='words'
@@ -173,7 +173,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
 
               <View style={[styles.inputContainer, styles.halfWidth]}>
                 <BodyText
-                  color={colors.primary}
+                  color={COLORS.primary}
                   weight='medium'
                   size='sm'
                   style={styles.label}
@@ -183,7 +183,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
                 <TextInput
                   style={[styles.input, errors.lastName && styles.inputError]}
                   placeholder='Doe'
-                  placeholderTextColor={colors.tertiary}
+                  placeholderTextColor={COLORS.tertiary}
                   value={formData.lastName}
                   onChangeText={value => updateFormData('lastName', value)}
                   autoCapitalize='words'
@@ -197,7 +197,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
             {/* Email Input */}
             <View style={styles.inputContainer}>
               <BodyText
-                color={colors.primary}
+                color={COLORS.primary}
                 weight='medium'
                 size='sm'
                 style={styles.label}
@@ -207,7 +207,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
               <TextInput
                 style={[styles.input, errors.email && styles.inputError]}
                 placeholder='john.doe@example.com'
-                placeholderTextColor={colors.tertiary}
+                placeholderTextColor={COLORS.tertiary}
                 value={formData.email}
                 onChangeText={value => updateFormData('email', value)}
                 keyboardType='email-address'
@@ -220,7 +220,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
             {/* Phone Input */}
             <View style={styles.inputContainer}>
               <BodyText
-                color={colors.primary}
+                color={COLORS.primary}
                 weight='medium'
                 size='sm'
                 style={styles.label}
@@ -230,7 +230,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
               <TextInput
                 style={[styles.input, errors.phone && styles.inputError]}
                 placeholder='1234567890'
-                placeholderTextColor={colors.tertiary}
+                placeholderTextColor={COLORS.tertiary}
                 value={formData.phone}
                 onChangeText={value => updateFormData('phone', value)}
                 keyboardType='phone-pad'
@@ -242,7 +242,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
             {/* Password Input */}
             <View style={styles.inputContainer}>
               <BodyText
-                color={colors.primary}
+                color={COLORS.primary}
                 weight='medium'
                 size='sm'
                 style={styles.label}
@@ -257,7 +257,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
                     errors.password && styles.inputError,
                   ]}
                   placeholder='Create a strong password'
-                  placeholderTextColor={colors.tertiary}
+                  placeholderTextColor={COLORS.tertiary}
                   value={formData.password}
                   onChangeText={value => updateFormData('password', value)}
                   secureTextEntry={!showPassword}
@@ -267,7 +267,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
                   style={styles.eyeButton}
                   onPress={() => setShowPassword(!showPassword)}
                 >
-                  <BodyText color={colors.tertiary} size='md'>
+                  <BodyText color={COLORS.tertiary} size='md'>
                     {showPassword ? '👁️' : '👁️‍🗨️'}
                   </BodyText>
                 </TouchableOpacity>
@@ -280,7 +280,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
             {/* Confirm Password Input */}
             <View style={styles.inputContainer}>
               <BodyText
-                color={colors.primary}
+                color={COLORS.primary}
                 weight='medium'
                 size='sm'
                 style={styles.label}
@@ -295,7 +295,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
                     errors.confirmPassword && styles.inputError,
                   ]}
                   placeholder='Confirm your password'
-                  placeholderTextColor={colors.tertiary}
+                  placeholderTextColor={COLORS.tertiary}
                   value={formData.confirmPassword}
                   onChangeText={value =>
                     updateFormData('confirmPassword', value)
@@ -307,7 +307,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
                   style={styles.eyeButton}
                   onPress={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
-                  <BodyText color={colors.tertiary} size='md'>
+                  <BodyText color={COLORS.tertiary} size='md'>
                     {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
                   </BodyText>
                 </TouchableOpacity>
@@ -329,7 +329,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
             <View style={styles.divider}>
               <View style={styles.dividerLine} />
               <BodyText
-                color={colors.tertiary}
+                color={COLORS.tertiary}
                 size='sm'
                 style={styles.dividerText}
               >
@@ -354,7 +354,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: COLORS.background.primary
   },
   scrollView: {
     flex: 1,
@@ -405,16 +405,16 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: COLORS.border.light,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 16,
     fontSize: 16,
-    color: colors.primary,
-    backgroundColor: colors.background,
+    color: COLORS.primary,
+    backgroundColor: COLORS.background.primary
   },
   inputError: {
-    borderColor: colors.error,
+    borderColor: COLORS.error,
   },
   passwordContainer: {
     position: 'relative',
@@ -429,13 +429,13 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   registerButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: COLORS.primary,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 8,
     marginBottom: 24,
-    shadowColor: colors.primary,
+    shadowColor: COLORS.primary,
     shadowOffset: {
       width: 0,
       height: 4,
@@ -452,14 +452,14 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: colors.border,
+    backgroundColor: COLORS.border.light
   },
   dividerText: {
     marginHorizontal: 16,
   },
   loginButton: {
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: COLORS.primary,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',

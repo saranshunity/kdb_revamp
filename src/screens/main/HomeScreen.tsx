@@ -18,10 +18,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
 
   const quickActions = [
-    { id: 1, title: 'Transfer Money', icon: '💸', color: colors.primary },
-    { id: 2, title: 'Pay Bills', icon: '📄', color: colors.info },
-    { id: 3, title: 'Deposit Check', icon: '📷', color: colors.success },
-    { id: 4, title: 'View Statements', icon: '📊', color: colors.warning },
+    { id: 1, title: 'Transfer Money', icon: '💸', color: COLORS.primary },
+    { id: 2, title: 'Pay Bills', icon: '📄', color: COLORS.info },
+    { id: 3, title: 'Deposit Check', icon: '📷', color: COLORS.success },
+    { id: 4, title: 'View Statements', icon: '📊', color: COLORS.warning },
   ];
 
   const recentTransactions = [
@@ -57,7 +57,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <StatusBar barStyle='dark-content' backgroundColor={colors.background} />
+      <StatusBar barStyle='dark-content' backgroundColor={COLORS.background.primary} />
 
       <ScrollView
         style={styles.scrollView}
@@ -67,10 +67,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <BodyText color={colors.tertiary} size='md'>
+            <BodyText color={COLORS.tertiary} size='md'>
               Good morning,
             </BodyText>
-            <H1 color={colors.primary} weight='bold' size='2xl'>
+            <H1 color={COLORS.primary} weight='bold' size='2xl'>
               John Doe
             </H1>
           </View>
@@ -81,11 +81,11 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
         {/* Balance Card */}
         <View style={styles.balanceCard}>
-          <BodyText color={colors.background} size='md' weight='medium'>
+          <BodyText color={COLORS.background.primary} size='md' weight='medium'>
             Total Balance
           </BodyText>
           <H1
-            color={colors.background}
+            color={COLORS.background.primary}
             weight='bold'
             size='4xl'
             style={styles.balanceAmount}
@@ -93,10 +93,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
             $12,456.78
           </H1>
           <View style={styles.balanceDetails}>
-            <BodyText color={colors.background} size='sm'>
+            <BodyText color={COLORS.background.primary} size='sm'>
               Checking: $8,456.78
             </BodyText>
-            <BodyText color={colors.background} size='sm'>
+            <BodyText color={COLORS.background.primary} size='sm'>
               Savings: $4,000.00
             </BodyText>
           </View>
@@ -105,7 +105,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         {/* Quick Actions */}
         <View style={styles.section}>
           <H2
-            color={colors.primary}
+            color={COLORS.primary}
             weight='bold'
             size='xl'
             style={styles.sectionTitle}
@@ -124,7 +124,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                   <BodyText size='2xl'>{action.icon}</BodyText>
                 </View>
                 <BodyText
-                  color={colors.primary}
+                  color={COLORS.primary}
                   size='sm'
                   weight='medium'
                   style={styles.quickActionText}
@@ -139,11 +139,11 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         {/* Recent Transactions */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <H2 color={colors.primary} weight='bold' size='xl'>
+            <H2 color={COLORS.primary} weight='bold' size='xl'>
               Recent Transactions
             </H2>
             <TouchableOpacity>
-              <BodyText color={colors.primary} size='md' weight='medium'>
+              <BodyText color={COLORS.primary} size='md' weight='medium'>
                 View All
               </BodyText>
             </TouchableOpacity>
@@ -162,8 +162,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                       {
                         backgroundColor:
                           transaction.type === 'credit'
-                            ? colors.success + '20'
-                            : colors.error + '20',
+                            ? COLORS.success + '20'
+                            : COLORS.error + '20',
                       },
                     ]}
                   >
@@ -172,10 +172,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                     </BodyText>
                   </View>
                   <View style={styles.transactionDetails}>
-                    <BodyText color={colors.primary} size='md' weight='medium'>
+                    <BodyText color={COLORS.primary} size='md' weight='medium'>
                       {transaction.description}
                     </BodyText>
-                    <BodyText color={colors.tertiary} size='sm'>
+                    <BodyText color={COLORS.tertiary} size='sm'>
                       {transaction.date}
                     </BodyText>
                   </View>
@@ -183,8 +183,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                 <BodyText
                   color={
                     transaction.type === 'credit'
-                      ? colors.success
-                      : colors.error
+                      ? COLORS.success
+                      : COLORS.error
                   }
                   size='md'
                   weight='bold'
@@ -199,11 +199,11 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         {/* Promotional Card */}
         <View style={styles.promotionalCard}>
           <View style={styles.promotionalContent}>
-            <H3 color={colors.primary} weight='bold' size='lg'>
+            <H3 color={COLORS.primary} weight='bold' size='lg'>
               Get 2% Cashback
             </H3>
             <BodyText
-              color={colors.secondary}
+              color={COLORS.secondary}
               size='md'
               style={styles.promotionalText}
             >
@@ -226,7 +226,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: COLORS.background.primary
   },
   scrollView: {
     flex: 1,
@@ -245,12 +245,12 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   balanceCard: {
-    backgroundColor: colors.primary,
+    backgroundColor: COLORS.primary,
     marginHorizontal: 24,
     marginBottom: 32,
     padding: 24,
     borderRadius: 16,
-    shadowColor: colors.primary,
+    shadowColor: COLORS.primary,
     shadowOffset: {
       width: 0,
       height: 8,
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: COLORS.border.light
   },
   transactionLeft: {
     flexDirection: 'row',
@@ -331,14 +331,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   promotionalCard: {
-    backgroundColor: colors.info + '10',
+    backgroundColor: COLORS.info + '10',
     marginHorizontal: 24,
     padding: 20,
     borderRadius: 16,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: colors.info + '30',
+    borderColor: COLORS.info + '30',
   },
   promotionalContent: {
     flex: 1,
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   promotionalButton: {
-    backgroundColor: colors.info,
+    backgroundColor: COLORS.info,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,

@@ -74,7 +74,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       style={[styles.container, { paddingTop: insets.top }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <StatusBar barStyle='dark-content' backgroundColor={colors.background} />
+      <StatusBar barStyle='dark-content' backgroundColor={COLORS.background.primary} />
 
       <ScrollView
         style={styles.scrollView}
@@ -96,11 +96,11 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         <View style={styles.content}>
           {/* Logo/Title */}
           <View style={styles.logoContainer}>
-            <H1 color={colors.primary} weight='bold' size='3xl'>
+            <H1 color={COLORS.primary} weight='bold' size='3xl'>
               KDB
             </H1>
             <H2
-              color={colors.secondary}
+              color={COLORS.secondary}
               weight='medium'
               size='xl'
               style={styles.subtitle}
@@ -108,7 +108,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               Welcome Back
             </H2>
             <BodyText
-              color={colors.tertiary}
+              color={COLORS.tertiary}
               size='md'
               style={styles.description}
             >
@@ -121,7 +121,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             {/* Email Input */}
             <View style={styles.inputContainer}>
               <BodyText
-                color={colors.primary}
+                color={COLORS.primary}
                 weight='medium'
                 size='sm'
                 style={styles.label}
@@ -131,7 +131,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               <TextInput
                 style={[styles.input, errors.email && styles.inputError]}
                 placeholder='Enter your email'
-                placeholderTextColor={colors.tertiary}
+                placeholderTextColor={COLORS.tertiary}
                 value={email}
                 onChangeText={setEmail}
                 keyboardType='email-address'
@@ -144,7 +144,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             {/* Password Input */}
             <View style={styles.inputContainer}>
               <BodyText
-                color={colors.primary}
+                color={COLORS.primary}
                 weight='medium'
                 size='sm'
                 style={styles.label}
@@ -159,7 +159,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                     errors.password && styles.inputError,
                   ]}
                   placeholder='Enter your password'
-                  placeholderTextColor={colors.tertiary}
+                  placeholderTextColor={COLORS.tertiary}
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry={!showPassword}
@@ -169,7 +169,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                   style={styles.eyeButton}
                   onPress={() => setShowPassword(!showPassword)}
                 >
-                  <BodyText color={colors.tertiary} size='md'>
+                  <BodyText color={COLORS.tertiary} size='md'>
                     {showPassword ? '👁️' : '👁️‍🗨️'}
                   </BodyText>
                 </TouchableOpacity>
@@ -184,7 +184,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               style={styles.forgotPasswordButton}
               onPress={handleForgotPassword}
             >
-              <BodyText color={colors.primary} size='sm' weight='medium'>
+              <BodyText color={COLORS.primary} size='sm' weight='medium'>
                 Forgot Password?
               </BodyText>
             </TouchableOpacity>
@@ -198,7 +198,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             <View style={styles.divider}>
               <View style={styles.dividerLine} />
               <BodyText
-                color={colors.tertiary}
+                color={COLORS.tertiary}
                 size='sm'
                 style={styles.dividerText}
               >
@@ -226,7 +226,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: COLORS.background.primary
   },
   scrollView: {
     flex: 1,
@@ -270,16 +270,16 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: COLORS.border.light,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 16,
     fontSize: 16,
-    color: colors.primary,
-    backgroundColor: colors.background,
+    color: COLORS.primary,
+    backgroundColor: COLORS.background.primary
   },
   inputError: {
-    borderColor: colors.error,
+    borderColor: COLORS.error,
   },
   passwordContainer: {
     position: 'relative',
@@ -298,12 +298,12 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   loginButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: COLORS.primary,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
     marginBottom: 24,
-    shadowColor: colors.primary,
+    shadowColor: COLORS.primary,
     shadowOffset: {
       width: 0,
       height: 4,
@@ -320,14 +320,14 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: colors.border,
+    backgroundColor: COLORS.border.light
   },
   dividerText: {
     marginHorizontal: 16,
   },
   registerButton: {
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: COLORS.primary,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',

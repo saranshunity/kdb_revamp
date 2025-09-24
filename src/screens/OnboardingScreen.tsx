@@ -73,12 +73,12 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <StatusBar barStyle='dark-content' backgroundColor={colors.background} />
+      <StatusBar barStyle='dark-content' backgroundColor={COLORS.background.primary}/>
 
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
-          <BodyText color={colors.tertiary} size='md'>
+          <BodyText color={COLORS.tertiary} size='md'>
             Skip
           </BodyText>
         </TouchableOpacity>
@@ -100,7 +100,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
         {/* Text Content */}
         <View style={styles.textContainer}>
           <H1
-            color={colors.primary}
+            color={COLORS.primary}
             weight='bold'
             size='3xl'
             style={styles.title}
@@ -108,7 +108,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
             {currentSlide.title}
           </H1>
           <H2
-            color={colors.secondary}
+            color={COLORS.secondary}
             weight='medium'
             size='xl'
             style={styles.subtitle}
@@ -116,7 +116,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
             {currentSlide.subtitle}
           </H2>
           <BodyText
-            color={colors.secondary}
+            color={COLORS.secondary}
             size='lg'
             style={styles.description}
           >
@@ -133,7 +133,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
                 styles.progressDot,
                 {
                   backgroundColor:
-                    index === currentIndex ? colors.primary : colors.border,
+                    index === currentIndex ? COLORS.primary : COLORS.border.light
                 },
               ]}
             />
@@ -160,7 +160,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: COLORS.background.primary
   },
   header: {
     flexDirection: 'row',
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: colors.primary + '10',
+    backgroundColor: COLORS.primary + '10',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -224,11 +224,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   nextButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: COLORS.primary,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
-    shadowColor: colors.primary,
+    shadowColor: COLORS.primary,
     shadowOffset: {
       width: 0,
       height: 4,

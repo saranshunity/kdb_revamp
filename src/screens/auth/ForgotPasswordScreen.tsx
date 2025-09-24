@@ -67,7 +67,7 @@ const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({
       <View style={[styles.container, { paddingTop: insets.top }]}>
         <StatusBar
           barStyle='dark-content'
-          backgroundColor={colors.background}
+          backgroundColor={COLORS.background.primary}
         />
 
         <ScrollView
@@ -95,7 +95,7 @@ const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({
 
             <View style={styles.textContainer}>
               <H1
-                color={colors.primary}
+                color={COLORS.primary}
                 weight='bold'
                 size='2xl'
                 style={styles.title}
@@ -103,14 +103,14 @@ const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({
                 Check Your Email
               </H1>
               <BodyText
-                color={colors.secondary}
+                color={COLORS.secondary}
                 size='lg'
                 style={styles.description}
               >
                 We've sent a password reset link to
               </BodyText>
               <BodyText
-                color={colors.primary}
+                color={COLORS.primary}
                 weight='medium'
                 size='lg'
                 style={styles.email}
@@ -118,7 +118,7 @@ const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({
                 {email}
               </BodyText>
               <BodyText
-                color={colors.secondary}
+                color={COLORS.secondary}
                 size='md'
                 style={styles.instruction}
               >
@@ -155,7 +155,7 @@ const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({
       style={[styles.container, { paddingTop: insets.top }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <StatusBar barStyle='dark-content' backgroundColor={colors.background} />
+      <StatusBar barStyle='dark-content' backgroundColor={COLORS.background.primary} />
 
       <ScrollView
         style={styles.scrollView}
@@ -177,11 +177,11 @@ const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({
         <View style={styles.content}>
           {/* Logo/Title */}
           <View style={styles.logoContainer}>
-            <H1 color={colors.primary} weight='bold' size='3xl'>
+            <H1 color={COLORS.primary} weight='bold' size='3xl'>
               KDB
             </H1>
             <H2
-              color={colors.secondary}
+              color={COLORS.secondary}
               weight='medium'
               size='xl'
               style={styles.subtitle}
@@ -189,7 +189,7 @@ const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({
               Forgot Password?
             </H2>
             <BodyText
-              color={colors.tertiary}
+              color={COLORS.tertiary}
               size='md'
               style={styles.description}
             >
@@ -203,7 +203,7 @@ const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({
             {/* Email Input */}
             <View style={styles.inputContainer}>
               <BodyText
-                color={colors.primary}
+                color={COLORS.primary}
                 weight='medium'
                 size='sm'
                 style={styles.label}
@@ -213,7 +213,7 @@ const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({
               <TextInput
                 style={[styles.input, errors.email && styles.inputError]}
                 placeholder='Enter your email address'
-                placeholderTextColor={colors.tertiary}
+                placeholderTextColor={COLORS.tertiary}
                 value={email}
                 onChangeText={setEmail}
                 keyboardType='email-address'
@@ -236,7 +236,7 @@ const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({
             <View style={styles.divider}>
               <View style={styles.dividerLine} />
               <BodyText
-                color={colors.tertiary}
+                color={COLORS.tertiary}
                 size='sm'
                 style={styles.dividerText}
               >
@@ -264,7 +264,7 @@ const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: COLORS.background.primary
   },
   scrollView: {
     flex: 1,
@@ -309,24 +309,24 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: COLORS.border.light,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 16,
     fontSize: 16,
-    color: colors.primary,
-    backgroundColor: colors.background,
+    color: COLORS.primary,
+    backgroundColor: COLORS.background.primary
   },
   inputError: {
-    borderColor: colors.error,
+    borderColor: COLORS.error,
   },
   sendButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: COLORS.primary,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
     marginBottom: 24,
-    shadowColor: colors.primary,
+    shadowColor: COLORS.primary,
     shadowOffset: {
       width: 0,
       height: 4,
@@ -343,14 +343,14 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: colors.border,
+    backgroundColor: COLORS.border.light
   },
   dividerText: {
     marginHorizontal: 16,
   },
   backToLoginButton: {
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: COLORS.primary,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: colors.success + '20',
+    backgroundColor: COLORS.success + '20',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
   },
   resendButton: {
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: COLORS.primary,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',

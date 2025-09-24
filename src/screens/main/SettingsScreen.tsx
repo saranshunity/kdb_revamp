@@ -122,10 +122,10 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
           <BodyText size='lg'>{item.icon || '⚙️'}</BodyText>
         </View>
         <View style={styles.settingText}>
-          <BodyText color={colors.primary} size='md' weight='medium'>
+          <BodyText color={COLORS.primary} size='md' weight='medium'>
             {item.title}
           </BodyText>
-          <BodyText color={colors.tertiary} size='sm'>
+          <BodyText color={COLORS.tertiary} size='sm'>
             {item.subtitle}
           </BodyText>
         </View>
@@ -135,11 +135,11 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
         <Switch
           value={item.enabled}
           onValueChange={() => handleSettingToggle(item.id)}
-          trackColor={{ false: colors.border, true: colors.primary + '50' }}
-          thumbColor={item.enabled ? colors.primary : colors.tertiary}
+          trackColor={{ false: COLORS.border.light ,true: COLORS.primary + '50' }}
+          thumbColor={item.enabled ? COLORS.primary : COLORS.tertiary}
         />
       ) : (
-        <BodyText color={colors.tertiary} size='lg'>
+        <BodyText color={COLORS.tertiary} size='lg'>
           ›
         </BodyText>
       )}
@@ -148,7 +148,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <StatusBar barStyle='dark-content' backgroundColor={colors.background} />
+      <StatusBar barStyle='dark-content' backgroundColor={COLORS.background.primary} />
 
       <ScrollView
         style={styles.scrollView}
@@ -163,7 +163,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
           >
             <BodyText size='lg'>←</BodyText>
           </TouchableOpacity>
-          <H1 color={colors.primary} weight='bold' size='2xl'>
+          <H1 color={COLORS.primary} weight='bold' size='2xl'>
             Settings
           </H1>
           <View style={styles.placeholder} />
@@ -172,7 +172,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
         {/* Notifications Section */}
         <View style={styles.section}>
           <H2
-            color={colors.primary}
+            color={COLORS.primary}
             weight='bold'
             size='lg'
             style={styles.sectionTitle}
@@ -194,7 +194,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
         {/* Security Section */}
         <View style={styles.section}>
           <H2
-            color={colors.primary}
+            color={COLORS.primary}
             weight='bold'
             size='lg'
             style={styles.sectionTitle}
@@ -216,7 +216,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
         {/* App Settings Section */}
         <View style={styles.section}>
           <H2
-            color={colors.primary}
+            color={COLORS.primary}
             weight='bold'
             size='lg'
             style={styles.sectionTitle}
@@ -238,7 +238,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
         {/* Other Options Section */}
         <View style={styles.section}>
           <H2
-            color={colors.primary}
+            color={COLORS.primary}
             weight='bold'
             size='lg'
             style={styles.sectionTitle}
@@ -261,10 +261,10 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
 
         {/* App Info */}
         <View style={styles.appInfo}>
-          <BodyText color={colors.tertiary} size='sm' style={styles.appVersion}>
+          <BodyText color={COLORS.tertiary} size='sm' style={styles.appVersion}>
             KDB Mobile App v1.0.0
           </BodyText>
-          <BodyText color={colors.tertiary} size='sm'>
+          <BodyText color={COLORS.tertiary} size='sm'>
             Build 2024.01.15
           </BodyText>
         </View>
@@ -283,7 +283,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: COLORS.background.primary
   },
   scrollView: {
     flex: 1,
@@ -312,11 +312,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   sectionContent: {
-    backgroundColor: colors.background,
+    backgroundColor: COLORS.background.primary,
     marginHorizontal: 24,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: COLORS.border.light
   },
   settingItem: {
     flexDirection: 'row',
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.primary + '10',
+    backgroundColor: COLORS.primary + '10',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 1,
-    backgroundColor: colors.border,
+    backgroundColor: COLORS.border.light,
     marginLeft: 52,
   },
   appInfo: {
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
   },
   resetButton: {
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: COLORS.primary,
     marginHorizontal: 24,
     paddingVertical: 16,
     borderRadius: 12,

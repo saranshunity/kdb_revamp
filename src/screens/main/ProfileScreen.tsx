@@ -126,7 +126,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <StatusBar barStyle='dark-content' backgroundColor={colors.background} />
+      <StatusBar barStyle='dark-content' backgroundColor={COLORS.background.primary} />
 
       <ScrollView
         style={styles.scrollView}
@@ -135,7 +135,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
       >
         {/* Header */}
         <View style={styles.header}>
-          <H1 color={colors.primary} weight='bold' size='2xl'>
+          <H1 color={COLORS.primary} weight='bold' size='2xl'>
             Profile
           </H1>
           <TouchableOpacity style={styles.settingsButton}>
@@ -155,13 +155,13 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
           </View>
 
           <View style={styles.profileInfo}>
-            <H2 color={colors.primary} weight='bold' size='xl'>
+            <H2 color={COLORS.primary} weight='bold' size='xl'>
               John Doe
             </H2>
-            <BodyText color={colors.secondary} size='md'>
+            <BodyText color={COLORS.secondary} size='md'>
               john.doe@example.com
             </BodyText>
-            <BodyText color={colors.tertiary} size='sm'>
+            <BodyText color={COLORS.tertiary} size='sm'>
               Member since 2020
             </BodyText>
           </View>
@@ -175,7 +175,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
         {profileSections.map((section, sectionIndex) => (
           <View key={sectionIndex} style={styles.section}>
             <H3
-              color={colors.primary}
+              color={COLORS.primary}
               weight='bold'
               size='lg'
               style={styles.sectionTitle}
@@ -200,18 +200,18 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                     </View>
                     <View style={styles.sectionItemText}>
                       <BodyText
-                        color={colors.primary}
+                        color={COLORS.primary}
                         size='md'
                         weight='medium'
                       >
                         {item.title}
                       </BodyText>
-                      <BodyText color={colors.tertiary} size='sm'>
+                      <BodyText color={COLORS.tertiary} size='sm'>
                         {item.subtitle}
                       </BodyText>
                     </View>
                   </View>
-                  <BodyText color={colors.tertiary} size='lg'>
+                  <BodyText color={COLORS.tertiary} size='lg'>
                     ›
                   </BodyText>
                 </TouchableOpacity>
@@ -222,17 +222,17 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 
         {/* App Info */}
         <View style={styles.appInfo}>
-          <BodyText color={colors.tertiary} size='sm' style={styles.appVersion}>
+          <BodyText color={COLORS.tertiary} size='sm' style={styles.appVersion}>
             KDB Mobile App v1.0.0
           </BodyText>
-          <BodyText color={colors.tertiary} size='sm'>
+          <BodyText color={COLORS.tertiary} size='sm'>
             © 2024 KDB Bank. All rights reserved.
           </BodyText>
         </View>
 
         {/* Logout Button */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <BodyText color={colors.error} size='md' weight='medium'>
+          <BodyText color={COLORS.error} size='md' weight='medium'>
             Sign Out
           </BodyText>
         </TouchableOpacity>
@@ -244,7 +244,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: COLORS.background.primary
   },
   scrollView: {
     flex: 1,
@@ -263,14 +263,14 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   profileCard: {
-    backgroundColor: colors.background,
+    backgroundColor: COLORS.background.primary,
     marginHorizontal: 24,
     marginBottom: 32,
     padding: 24,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: colors.border,
-    shadowColor: colors.primary,
+    borderColor: COLORS.border.light,
+    shadowColor: COLORS.primary,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: colors.primary + '20',
+    backgroundColor: COLORS.primary + '20',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: colors.primary,
+    backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
   },
   editProfileButton: {
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: COLORS.primary,
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
@@ -324,11 +324,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   sectionContent: {
-    backgroundColor: colors.background,
+    backgroundColor: COLORS.background.primary,
     marginHorizontal: 24,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: COLORS.border.light
   },
   sectionItem: {
     flexDirection: 'row',
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: COLORS.border.light
   },
   lastSectionItem: {
     borderBottomWidth: 0,
@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.primary + '10',
+    backgroundColor: COLORS.primary + '10',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -369,13 +369,13 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   logoutButton: {
-    backgroundColor: colors.error + '10',
+    backgroundColor: COLORS.error + '10',
     marginHorizontal: 24,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: colors.error + '30',
+    borderColor: COLORS.error + '30',
   },
 });
 
