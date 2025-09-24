@@ -26,33 +26,33 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ navigation }) => {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar
         barStyle='dark-content'
-        backgroundColor={COLORS.background.primary}
+        backgroundColor={COLORS.background.appColor}
       />
 
       <View style={styles.content}>
         {/* Logo placeholder - replace with actual KDB logo */}
         <View style={styles.logoContainer}>
           <View style={styles.logoPlaceholder}>
-            <H1 color={COLORS.primary} weight='bold'>
+            <H1 color={COLORS.white} weight='bold'>
               KDB
             </H1>
           </View>
         </View>
 
         <View style={styles.textContainer}>
-          <H1 color={COLORS.primary} weight='bold' size='3xl'>
-            Welcome to KDB
+          <H1 color={COLORS.white} weight='bold' size='3xl'>
+           48 Kos Kurukshetra
           </H1>
-          <BodyText
+          {/* <BodyText
             color={COLORS.text.secondary}
             size='lg'
             style={styles.subtitle}
           >
             Your trusted financial partner
-          </BodyText>
+          </BodyText> */}
         </View>
 
-        <View style={styles.loadingContainer}>
+        {/* <View style={styles.loadingContainer}>
           <View style={styles.loadingBar}>
             <View style={styles.loadingProgress} />
           </View>
@@ -63,7 +63,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ navigation }) => {
           >
             Loading...
           </BodyText>
-        </View>
+        </View> */}
       </View>
     </View>
   );
@@ -72,7 +72,8 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background.primary,
+    backgroundColor: COLORS.background.appColor
+    ,
   },
   content: {
     flex: 1,
@@ -87,10 +88,10 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.white,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: COLORS.primary,
+    shadowColor: COLORS.white,
     shadowOffset: {
       width: 0,
       height: 8,

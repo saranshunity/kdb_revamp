@@ -46,6 +46,7 @@ export const COLORS = {
     secondary: '#f9fafb',
     tertiary: '#f3f4f6',
     inverse: '#000000',
+    appColor:'#febd2f'
   },
 
   // Border colors

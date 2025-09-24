@@ -10,6 +10,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { H1, H2, BodyText, ButtonTextPrimary } from '../components/Text';
 import { COLORS } from '../constants/colors';
+import OnboardingCard from '../components/OnboardingCard';
 
 interface OnboardingScreenProps {
   navigation: any;
@@ -60,13 +61,13 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
     if (currentIndex < onboardingData.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
-      // Navigate to auth screen
-      navigation.replace('Auth');
+      // Navigate to main tab navigator
+      navigation.replace('Main');
     }
   };
 
   const handleSkip = () => {
-    navigation.replace('Auth');
+    navigation.replace('Main');
   };
 
   const currentSlide = onboardingData[currentIndex];
@@ -74,7 +75,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar barStyle='dark-content' backgroundColor={COLORS.background.primary}/>
-
+  
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
