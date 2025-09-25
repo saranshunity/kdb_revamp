@@ -228,7 +228,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               Use your KDB card for all purchases and earn 2% cashback on every
               transaction.
             </BodyText>
-            <TouchableOpacity style={styles.promotionalButton}>
+            <TouchableOpacity 
+              style={styles.promotionalButton}
+              onPress={() => stackNavigation.navigate('FamilyMembers')}
+            >
               <ButtonTextPrimary size='md'>Locate Now</ButtonTextPrimary>
             </TouchableOpacity>
           </View>

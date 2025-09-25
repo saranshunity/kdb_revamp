@@ -16,6 +16,9 @@ import SettingsScreen from '../screens/main/SettingsScreen';
 import EventsScreen from '../screens/events/EventScreen';
 import EventDetailScreen from '../screens/events/EventDetailScreen';
 import StallsScreen from '../screens/stalls/StallsScreen';
+import FamilyMembersScreen from '../screens/family/FamilyMembersScreen';
+import AddFamilyMemberScreen from '../screens/family/AddFamilyMemberScreen';
+import LocationMapScreen from '../screens/family/LocationMapScreen';
 import { COLORS } from '../constants/colors';
 import { FONTS, FONT_SIZES } from '../constants/fonts';
 
@@ -28,6 +31,9 @@ export type RootStackParamList = {
   Events: undefined;
   EventDetail: undefined;
   Stalls: undefined;
+  FamilyMembers: undefined;
+  AddFamilyMember: undefined;
+  LocationMap: undefined;
 };
 
 export type AuthStackParamList = {
@@ -162,6 +168,9 @@ function AppNavigator() {
         <Stack.Screen name='Events' component={EventsScreen} />
         <Stack.Screen name='EventDetail' component={EventDetailScreen} />
         <Stack.Screen name='Stalls' component={StallsScreen} />
+        <Stack.Screen name='FamilyMembers' component={FamilyMembersScreen} />
+        <Stack.Screen name='AddFamilyMember' component={AddFamilyMemberScreen} />
+        <Stack.Screen name='LocationMap' component={LocationMapScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
