@@ -46,6 +46,10 @@ export default function EventsScreen() {
     setSelectedDate(date);
   }, []);
 
+  const handleEventPress = useCallback(() => {
+    navigation.navigate('EventDetail');
+  }, [navigation]);
+
 
 
   return (
@@ -78,12 +82,14 @@ export default function EventsScreen() {
           time="Today at 8:30 PM"
           location="Vicas Art Studio"
           isFavorite
+          onPress={handleEventPress}
         />
         <EventCard
           image="https://picsum.photos/401/300"
           title="M.A in Arts & Management"
           time="Tomorrow at 9:00 PM"
           location="Vicas Art Studio"
+          onPress={handleEventPress}
         />
       </ScrollView>
     {/* <TodaysEvents listData={todaysEventsDataArray} /> */}
