@@ -15,6 +15,7 @@ import ProfileScreen from '../screens/main/ProfileScreen';
 import SettingsScreen from '../screens/main/SettingsScreen';
 import EventsScreen from '../screens/events/EventScreen';
 import EventDetailScreen from '../screens/events/EventDetailScreen';
+import StallsScreen from '../screens/stalls/StallsScreen';
 import { COLORS } from '../constants/colors';
 import { FONTS, FONT_SIZES } from '../constants/fonts';
 
@@ -26,6 +27,7 @@ export type RootStackParamList = {
   Main: undefined;
   Events: undefined;
   EventDetail: undefined;
+  Stalls: undefined;
 };
 
 export type AuthStackParamList = {
@@ -159,6 +161,7 @@ function AppNavigator() {
         <Stack.Screen name='Main' component={MainTabNavigator} />
         <Stack.Screen name='Events' component={EventsScreen} />
         <Stack.Screen name='EventDetail' component={EventDetailScreen} />
+        <Stack.Screen name='Stalls' component={StallsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

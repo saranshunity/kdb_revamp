@@ -197,7 +197,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         key="stalls" 
         icon="cart-outline" 
         label="Stalls" 
-        onPress={() => console.log('Stalls pressed')}
+        onPress={() => stackNavigation.navigate('Stalls')}
       />
       <QuickLinkItem 
         key="hotels" 
