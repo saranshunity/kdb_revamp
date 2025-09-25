@@ -17,6 +17,7 @@ import HorizontalListViews from '../../components/lists/HorizontalListViews';
 import QuickLinkItem from '../../components/QuickLinks';
 import MahotsavHulchal from './components/MahotsavHulchal';
 import TirthsList from './components/TirthsList';
+import TodaysEvents from '../events/components/TodaysEvents';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
 
@@ -90,55 +91,71 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
     {
       id: 1,
-      title: 'Kurukshetra',
+      title: 'Kuala Lumpur, Indonesia',
       image: 'https://picsum.photos/600/400',
       categories: ['Cultural Tour'],
       price: 28,
       isFavorite: true,
       rating:false,
-      time:false,
+      time:'2025',
     },
   
 
     {
       id: 2,
-      title: 'Karnal',
+      title: 'Toronto, Canada',
       image: 'https://picsum.photos/600/400',
       categories: ['Cultural Tour'],
       price: 28,
       isFavorite: true,
       rating:false,
-      time:false,
+      time:'2024',
     },
     {
       id: 3,
-      title: 'Jind',
+      title: 'Sydney, Australia',
       image: 'https://picsum.photos/600/400',
       categories: ['Cultural Tour'],
       price: 28,
       isFavorite: true,
       rating:false,
-      time:false,
+      time:'2023',
     },
     {
       id: 4,
-      title: 'Kaithal',
+      title: 'London, UK',
       image: 'https://picsum.photos/600/400',
       categories: ['Cultural Tour'],
       price: 28,
       isFavorite: true,
       rating:false,
-      time:false,
+      time:'2023',
     },
     {
       id: 5,
-      title: 'Panipat',
+      title: 'Mauritius',
       image: 'https://picsum.photos/600/400',
       categories: ['Cultural Tour'],
       price: 28,
       isFavorite: true,
       rating:false,
-      time:false,
+      time:'2022',
+    },
+  ];
+
+  const todaysEventsDataArray = [
+
+    {
+      id: 1,
+      title: 'The Romanian – Solo Exhibition',
+      image: 'https://picsum.photos/600/400',
+      categories: ['Art', 'Exhibition'],
+    },
+    {
+      id: 2,
+      title: 'M.A in Arts & Management',
+      image: 'https://picsum.photos/600/400',
+      categories: ['Art', 'Exhibition'],
     },
   ];
 
@@ -185,18 +202,19 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       <QuickLinkItem 
         key="hotels" 
         icon="bed-outline" 
-        label="Hotels" 
+        label="Live Shows" 
         onPress={() => console.log('Hotels pressed')}
       />
       <QuickLinkItem 
         key="events-2" 
         icon="calendar-outline" 
-        label="Events" 
+        label="Quiz" 
         onPress={() => stackNavigation.navigate('Events')}
       />
         </ScrollView>
+        <View style={{marginTop: 26}}/>
         <MahotsavHulchal listData={mahotsavHulchal} />
-     
+        <TodaysEvents listData={todaysEventsDataArray} />
       <View style={styles.promotionalCard}>
           <View style={styles.promotionalContent}>
             <H3 color={COLORS.primary} weight='bold' size='lg'>
@@ -346,7 +364,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background.tertiary
+    backgroundColor: COLORS.screenBackground
   },
   scrollView: {
     flex: 1,
@@ -498,7 +516,7 @@ const styles = StyleSheet.create({
    marginTop: 20,
   },
   quickLinkContainer: {
-    marginBottom: 30,
+    marginBottom: 16,
   },
   quickLinkContent: {
     paddingHorizontal: 8,

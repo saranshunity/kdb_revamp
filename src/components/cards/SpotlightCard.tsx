@@ -15,11 +15,8 @@ type SpotlightCardProps = {
   title: string;
   rating: number;
   time: boolean;
-  price: number;
-  currency?: string;
   onPress?: () => void;
-  onFavoritePress?: () => void;
-  isFavorite?: boolean;
+
 };
 
 const SpotlightCard: React.FC<SpotlightCardProps> = ({
@@ -28,11 +25,7 @@ const SpotlightCard: React.FC<SpotlightCardProps> = ({
   title,
   rating,
   time,
-  price,
-  currency = "$",
   onPress,
-  onFavoritePress,
-  isFavorite = false,
 }) => {
   return (
     <TouchableOpacity style={styles.card} activeOpacity={0.9} onPress={onPress}>
@@ -55,7 +48,7 @@ const SpotlightCard: React.FC<SpotlightCardProps> = ({
       {/* Content */}
       <View style={styles.content}>
         <Text style={styles.categories}>
-          {categories.join(" • ")}
+          {categories?.join(" • ")}
         </Text>
         <Text style={styles.title} numberOfLines={2}>
           {title}
@@ -65,7 +58,7 @@ const SpotlightCard: React.FC<SpotlightCardProps> = ({
         <View style={styles.footer}>
           {rating && (
             <View style={styles.rating}>
-            <Text style={styles.ratingText}>{rating.toFixed(1)}</Text>
+            <Text style={styles.ratingText}>{rating?.toFixed(1)}</Text>
             {/* <Ionicons name="star" size={14} color="#2ecc71" /> */}
           </View>
           )}

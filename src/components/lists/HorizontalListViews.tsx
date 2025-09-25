@@ -17,16 +17,16 @@ const HorizontalListViews = ({title,listData}: {title: string,listData: any[]}) 
     <ScrollView horizontal style={{ flex: 1, padding: 16 }} showsHorizontalScrollIndicator={false}>
     {listData?.map((item) => (
     <SpotlightCard
-    key={item.id}
-    image={item.image}
-    categories={item.categories}
-    title={item.title}
-    rating={item.rating}
-    time={item.time}
-    price={item.price}
+    key={item?.id}
+    image={item?.image}
+    categories={item?.categories}
+    title={item?.title}
+    rating={item?.rating}
+    time={item?.time}
+    
     onPress={() => console.log("Card Pressed")}
-    onFavoritePress={() => console.log("Favorite Pressed")}
-    isFavorite={item.isFavorite}
+    // onFavoritePress={() => console.log("Favorite Pressed")}
+    // isFavorite={item?.isFavorite}
     />
     ))}
     
@@ -37,7 +37,8 @@ const HorizontalListViews = ({title,listData}: {title: string,listData: any[]}) 
 
 const styles = StyleSheet.create({
   container: {
-  flex:1
+  flex:1,
+//   marginVertical: 16
   },
   titleContainer: {
     paddingHorizontal: 20,

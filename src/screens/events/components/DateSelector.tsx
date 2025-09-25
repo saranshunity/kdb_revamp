@@ -96,10 +96,10 @@ const DateSelector: React.FC<DateSelectorProps> = ({ dates, onSelect }) => {
                   style={[styles.dateBox, isActive && styles.activeDateBox]}
                 >
                   <Text style={[styles.day, isActive && styles.activeDay]}>
-                    {item.day}
+                    {item?.day}
                   </Text>
                   <Text style={[styles.date, isActive && styles.activeText]}>
-                    {item.date}
+                    {item?.date}
                   </Text>
                 </TouchableOpacity>
               );
@@ -123,6 +123,9 @@ const styles = StyleSheet.create({
   container: {
     marginVertical: 12,
     // marginHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border.light,
+    paddingBottom: 12,
   },
   arrowContainer: {
     flexDirection: 'row',
@@ -166,7 +169,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 12,
     marginRight: 8,
-    backgroundColor: COLORS.background.secondary,
+    backgroundColor: COLORS.background.tertiary,
   },
   activeDateBox: {
     backgroundColor: COLORS.background.appColor,

@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import { FONT_SIZES, FONTS } from "../../../constants/fonts";
 
 type EventCardProps = {
   image: string;
@@ -15,6 +16,7 @@ type EventCardProps = {
   time: string;
   location: string;
   isFavorite?: boolean;
+  isSelected?: boolean;
   onPress?: () => void;
   onToggleFavorite?: () => void;
 };
@@ -70,15 +72,16 @@ const EventCard: React.FC<EventCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    width: 240,
+    width: '100%',
     marginRight: 16,
     borderRadius: 12,
     backgroundColor: "#fff",
     overflow: "hidden",
+    marginBottom: 16,
   },
   image: {
     width: "100%",
-    height: 140,
+    height: 180,
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
   },
@@ -94,14 +97,14 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   time: {
-    fontSize: 13,
+    fontSize: FONT_SIZES.sm,
     color: "#E63946",
-    fontWeight: "600",
+    fontFamily: FONTS.gilroy.semiBold,
     marginBottom: 4,
   },
   title: {
-    fontSize: 15,
-    fontWeight: "700",
+    fontSize: FONT_SIZES.md,
+    fontFamily: FONTS.gilroy.semiBold,
     color: "#111",
     marginBottom: 6,
   },

@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { View, ScrollView, StyleSheet, Text, TouchableOpacity, StatusBar } from "react-native";
+import { View, StyleSheet, Text, TouchableOpacity, StatusBar, ScrollView } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -7,9 +7,25 @@ import { RootStackParamList } from '../../navigation/AppNavigator';
 import { COLORS } from '../../constants/colors';
 import { FONTS, FONT_SIZES } from '../../constants/fonts';
 import DateSelector from "./components/DateSelector";
+import TodaysEvents from "./components/TodaysEvents";
 import EventCard from "./components/EventCard";
 
 type EventsScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Events'>;
+
+const todaysEventsDataArray = [
+  {
+    id: 1,
+    title: "The Romanian – Solo Exhibition",
+    image: "https://picsum.photos/400/300",
+    categories: ["Art", "Exhibition"],
+  },
+  {
+    id: 2,
+    title: "M.A in Arts & Management",
+    image: "https://picsum.photos/401/300",
+    categories: ["Art", "Exhibition"],
+  },
+];
 
 export default function EventsScreen() {
     const dates = [
@@ -22,6 +38,7 @@ export default function EventsScreen() {
         { day: "Sun", date: 22 },
       ];
   const [selectedDate, setSelectedDate] = useState<any>(dates[0]);
+  const [todaysEventsData, setTodaysEventsData] = useState<any[]>(todaysEventsDataArray);
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<EventsScreenNavigationProp>();
 
@@ -54,7 +71,7 @@ export default function EventsScreen() {
 
       {/* Events in Spotlight */}
       <Text style={styles.sectionTitle}>Events in spotlight</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      <ScrollView  showsHorizontalScrollIndicator={false} style={{paddingHorizontal: 16}}>
         <EventCard
           image="https://picsum.photos/400/300"
           title="The Romanian – Solo Exhibition"
@@ -69,6 +86,7 @@ export default function EventsScreen() {
           location="Vicas Art Studio"
         />
       </ScrollView>
+    {/* <TodaysEvents listData={todaysEventsDataArray} /> */}
     </View>
   );
 }
@@ -76,7 +94,7 @@ export default function EventsScreen() {
 const styles = StyleSheet.create({
   container: { 
     flex: 1, 
-    backgroundColor: COLORS.background.primary 
+    backgroundColor: COLORS.background.secondary 
   },
   headerContainer: {
     flexDirection: 'row',
@@ -114,10 +132,10 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: FONT_SIZES.lg,
-    fontFamily: FONTS.gilroy.bold,
+    fontFamily: FONTS.gilroy.semiBold,
     marginLeft: 16,
     marginTop: 20,
-    marginBottom: 12,
+    marginBottom: 20,
     color: COLORS.text.primary,
   },
 });

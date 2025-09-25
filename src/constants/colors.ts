@@ -16,6 +16,7 @@ export const COLORS = {
   black: '#000000',
   transparent: 'transparent',
   appColor: '#febd2f',
+  screenBackground: 'f3f4f6',
 
   // Gray scale
   gray: {
