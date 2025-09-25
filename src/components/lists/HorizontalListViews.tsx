@@ -17,10 +17,12 @@ const HorizontalListViews = ({title,listData}: {title: string,listData: any[]}) 
     <ScrollView horizontal style={{ flex: 1, padding: 16 }} showsHorizontalScrollIndicator={false}>
     {listData?.map((item) => (
     <SpotlightCard
+    key={item.id}
     image={item.image}
     categories={item.categories}
     title={item.title}
-    rating={4.5}
+    rating={item.rating}
+    time={item.time}
     price={item.price}
     onPress={() => console.log("Card Pressed")}
     onFavoritePress={() => console.log("Favorite Pressed")}

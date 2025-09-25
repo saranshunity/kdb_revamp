@@ -89,6 +89,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       categories: ['Cultural Tour'],
       price: 28,
       isFavorite: true,
+      rating:false,
+      time:false,
     },
   
 
@@ -99,6 +101,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       categories: ['Cultural Tour'],
       price: 28,
       isFavorite: true,
+      rating:false,
+      time:false,
     },
     {
       id: 3,
@@ -107,6 +111,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       categories: ['Cultural Tour'],
       price: 28,
       isFavorite: true,
+      rating:false,
+      time:false,
     },
     {
       id: 4,
@@ -115,6 +121,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       categories: ['Cultural Tour'],
       price: 28,
       isFavorite: true,
+      rating:false,
+      time:false,
     },
     {
       id: 5,
@@ -123,6 +131,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       categories: ['Cultural Tour'],
       price: 28,
       isFavorite: true,
+      rating:false,
+      time:false,
     },
   ];
 
@@ -149,10 +159,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       <View style={styles.contentContainer}>
         <H4 style={styles.quickLinkTitle} color={COLORS.primary} weight='bold' size='lg'>Mahotsav related Links</H4>
         <View style={styles.quickLinkContainer}>
-        <QuickLinkItem icon="restaurant-outline" label="Events" />
-      <QuickLinkItem icon="cart-outline" label="Stalls" />
-      <QuickLinkItem icon="bed-outline" label="Hotels" />
-      <QuickLinkItem icon="calendar-outline" label="Events" />
+        <QuickLinkItem key="events-1" icon="restaurant-outline" label="Events" />
+      <QuickLinkItem key="stalls" icon="cart-outline" label="Stalls" />
+      <QuickLinkItem key="hotels" icon="bed-outline" label="Hotels" />
+      <QuickLinkItem key="events-2" icon="calendar-outline" label="Events" />
         </View>
         <MahotsavHulchal listData={mahotsavHulchal} />
      

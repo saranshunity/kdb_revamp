@@ -14,6 +14,7 @@ type SpotlightCardProps = {
   categories: string[];
   title: string;
   rating: number;
+  time: boolean;
   price: number;
   currency?: string;
   onPress?: () => void;
@@ -26,6 +27,7 @@ const SpotlightCard: React.FC<SpotlightCardProps> = ({
   categories,
   title,
   rating,
+  time,
   price,
   currency = "$",
   onPress,
@@ -61,13 +63,17 @@ const SpotlightCard: React.FC<SpotlightCardProps> = ({
 
         {/* Footer */}
         <View style={styles.footer}>
-          <View style={styles.rating}>
+          {rating && (
+            <View style={styles.rating}>
             <Text style={styles.ratingText}>{rating.toFixed(1)}</Text>
             {/* <Ionicons name="star" size={14} color="#2ecc71" /> */}
           </View>
+          )}
+          {time && (
           <Text style={styles.price}>
-            {currency}{price} <Text style={styles.perPerson}>/person</Text>
+            {time}
           </Text>
+          )}
         </View>
       </View>
     </TouchableOpacity>
