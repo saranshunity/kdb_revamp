@@ -1,5 +1,5 @@
 import SpotlightCard from "../cards/SpotlightCard";
-import { BodyText, H3, H4 } from "../Text";
+import { BodyText, H3, H4, H5 } from "../Text";
 import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { COLORS } from "../../constants/colors";
 
@@ -7,10 +7,10 @@ const HorizontalListViews = ({title,listData}: {title: string,listData: any[]}) 
   return (
     <View style={styles.container}>
         <View style={styles.titleContainer}>   
-    <H4 style={styles.title}>{title}</H4>
+    <H5 style={styles.title} weight="semiBold">{title}</H5>
     <TouchableOpacity style={styles.viewAll}>
-    <BodyText color={COLORS.primary} size='md' weight='medium'>
-                View All
+    <BodyText color={COLORS.appColor} size='md' weight='semiBold'>
+                Show All
               </BodyText>
                  </TouchableOpacity>
     </View>

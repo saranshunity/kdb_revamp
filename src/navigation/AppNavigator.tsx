@@ -12,6 +12,7 @@ import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
 import HomeScreen from '../screens/main/HomeScreen';
 import ProfileScreen from '../screens/main/ProfileScreen';
 import SettingsScreen from '../screens/main/SettingsScreen';
+import EventsScreen from '../screens/events/EventScreen';
 import { COLORS } from '../constants/colors';
 
 // Navigation types
@@ -20,6 +21,7 @@ export type RootStackParamList = {
   Onboarding: undefined;
   Auth: undefined;
   Main: undefined;
+  Events: undefined;
 };
 
 export type AuthStackParamList = {
@@ -119,6 +121,7 @@ function AppNavigator() {
         <Stack.Screen name='Onboarding' component={OnboardingScreen} />
         <Stack.Screen name='Auth' component={AuthNavigator} />
         <Stack.Screen name='Main' component={MainTabNavigator} />
+        <Stack.Screen name='Events' component={EventsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

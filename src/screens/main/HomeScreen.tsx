@@ -7,7 +7,10 @@ import {
   StatusBar,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { H1, H2, H3, BodyText, ButtonTextPrimary, H4 } from '../../components/Text';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../navigation/AppNavigator';
+import { H1, H2, H3, BodyText, ButtonTextPrimary, H4, H5 } from '../../components/Text';
 import { COLORS } from '../../constants/colors';
 import SpotlightCard from '../../components/cards/SpotlightCard';
 import HorizontalListViews from '../../components/lists/HorizontalListViews';
@@ -15,12 +18,15 @@ import QuickLinkItem from '../../components/QuickLinks';
 import MahotsavHulchal from './components/MahotsavHulchal';
 import TirthsList from './components/TirthsList';
 
+type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
+
 interface HomeScreenProps {
-  navigation: any;
+  navigation: HomeScreenNavigationProp;
 }
 
 const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
+  const stackNavigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const quickActions = [
     { id: 1, title: 'Transfer Money', icon: '💸', color: COLORS.primary },
@@ -157,13 +163,38 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
         {/* Balance Card */}
       <View style={styles.contentContainer}>
-        <H4 style={styles.quickLinkTitle} color={COLORS.primary} weight='bold' size='lg'>Mahotsav related Links</H4>
-        <View style={styles.quickLinkContainer}>
-        <QuickLinkItem key="events-1" icon="restaurant-outline" label="Events" />
-      <QuickLinkItem key="stalls" icon="cart-outline" label="Stalls" />
-      <QuickLinkItem key="hotels" icon="bed-outline" label="Hotels" />
-      <QuickLinkItem key="events-2" icon="calendar-outline" label="Events" />
-        </View>
+        <H5 style={styles.quickLinkTitle} color={COLORS.primary} weight='semiBold' size='lg'>Mahotsav related Links</H5>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          style={styles.quickLinkContainer}
+          contentContainerStyle={styles.quickLinkContent}
+        >
+        <QuickLinkItem 
+          key="events-1" 
+          icon="restaurant-outline" 
+          label="Events" 
+          onPress={() => stackNavigation.navigate('Events')}
+        />
+      <QuickLinkItem 
+        key="stalls" 
+        icon="cart-outline" 
+        label="Stalls" 
+        onPress={() => console.log('Stalls pressed')}
+      />
+      <QuickLinkItem 
+        key="hotels" 
+        icon="bed-outline" 
+        label="Hotels" 
+        onPress={() => console.log('Hotels pressed')}
+      />
+      <QuickLinkItem 
+        key="events-2" 
+        icon="calendar-outline" 
+        label="Events" 
+        onPress={() => stackNavigation.navigate('Events')}
+      />
+        </ScrollView>
         <MahotsavHulchal listData={mahotsavHulchal} />
      
       <View style={styles.promotionalCard}>
@@ -467,10 +498,11 @@ const styles = StyleSheet.create({
    marginTop: 20,
   },
   quickLinkContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    marginBottom: 30,
+  },
+  quickLinkContent: {
     paddingHorizontal: 8,
-    marginBottom:30
+    flexDirection: 'row',
   },
   quickLinkTitle: {
     marginBottom: 10,

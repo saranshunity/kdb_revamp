@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
   label: {
     marginTop: 10,
     fontSize: FONT_SIZES.sm,
-    fontFamily: FONTS.gilroy.medium,
+    fontFamily: FONTS.gilroy.semiBold,
     color: COLORS.text.primary,
   },
 });

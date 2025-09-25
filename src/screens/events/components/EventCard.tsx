@@ -1,0 +1,120 @@
+// EventCard.tsx
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+} from "react-native";
+import Ionicons from "react-native-vector-icons/Ionicons";
+
+type EventCardProps = {
+  image: string;
+  title: string;
+  time: string;
+  location: string;
+  isFavorite?: boolean;
+  onPress?: () => void;
+  onToggleFavorite?: () => void;
+};
+
+const EventCard: React.FC<EventCardProps> = ({
+  image,
+  title,
+  time,
+  location,
+  isFavorite = false,
+  onPress,
+  onToggleFavorite,
+}) => {
+  return (
+    <TouchableOpacity
+      activeOpacity={0.8}
+      style={styles.card}
+      onPress={onPress}
+    >
+      {/* Event Image + Favorite */}
+      <View>
+        <Image source={{ uri: image }} style={styles.image} />
+        <TouchableOpacity
+          onPress={onToggleFavorite}
+          style={styles.favoriteBtn}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Ionicons
+            name={isFavorite ? "heart" : "heart-outline"}
+            size={22}
+            color={isFavorite ? "#FF4C4C" : "#fff"}
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* Event Info */}
+      <View style={styles.infoContainer}>
+        <Text style={styles.time}>{time}</Text>
+        <Text style={styles.title} numberOfLines={2}>
+          {title}
+        </Text>
+
+        <View style={styles.locationRow}>
+          <Ionicons name="location-outline" size={16} color="#777" />
+          <Text style={styles.location} numberOfLines={1}>
+            {location}
+          </Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+};
+
+const styles = StyleSheet.create({
+  card: {
+    width: 240,
+    marginRight: 16,
+    borderRadius: 12,
+    backgroundColor: "#fff",
+    overflow: "hidden",
+  },
+  image: {
+    width: "100%",
+    height: 140,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+  },
+  favoriteBtn: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    padding: 6,
+    borderRadius: 20,
+  },
+  infoContainer: {
+    padding: 12,
+  },
+  time: {
+    fontSize: 13,
+    color: "#E63946",
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+  title: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#111",
+    marginBottom: 6,
+  },
+  locationRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  location: {
+    marginLeft: 4,
+    fontSize: 13,
+    color: "#555",
+    flexShrink: 1,
+  },
+});
+
+export default EventCard;
