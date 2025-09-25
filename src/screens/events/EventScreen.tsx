@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { View, ScrollView, StyleSheet, Text, TouchableOpacity, StatusBar } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -12,19 +12,24 @@ import EventCard from "./components/EventCard";
 type EventsScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Events'>;
 
 export default function EventsScreen() {
-  const [selectedDate, setSelectedDate] = useState<any>(null);
+    const dates = [
+        { day: "Mon", date: 16 },
+        { day: "Tue", date: 17 },
+        { day: "Wed", date: 18 },
+        { day: "Thu", date: 19 },
+        { day: "Fri", date: 20 },
+        { day: "Sat", date: 21 },
+        { day: "Sun", date: 22 },
+      ];
+  const [selectedDate, setSelectedDate] = useState<any>(dates[0]);
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<EventsScreenNavigationProp>();
 
-  const dates = [
-    { day: "Mon", date: 16 },
-    { day: "Tue", date: 17 },
-    { day: "Wed", date: 18 },
-    { day: "Thu", date: 19 },
-    { day: "Fri", date: 20 },
-    { day: "Sat", date: 21 },
-    { day: "Sun", date: 22 },
-  ];
+  const handleDateSelect = useCallback((date: any) => {
+    setSelectedDate(date);
+  }, []);
+
+
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -38,14 +43,14 @@ export default function EventsScreen() {
         >
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.header}>Events</Text>
+        <Text style={styles.header}>November 2025</Text>
         <View style={styles.placeholder} />
       </View>
 
-      <Text style={styles.monthHeader}>March 2020</Text>
+      {/* <Text style={styles.monthHeader}>March 2020</Text> */}
 
       {/* Date Strip */}
-      <DateSelector dates={dates} onSelect={(d) => setSelectedDate(d)} />
+      <DateSelector dates={dates} onSelect={handleDateSelect} />
 
       {/* Events in Spotlight */}
       <Text style={styles.sectionTitle}>Events in spotlight</Text>
