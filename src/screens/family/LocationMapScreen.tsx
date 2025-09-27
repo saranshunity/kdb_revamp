@@ -15,6 +15,7 @@ import { RootStackParamList } from '../../navigation/AppNavigator';
 import { COLORS } from '../../constants/colors';
 import { FONTS, FONT_SIZES } from '../../constants/fonts';
 import Ionicons from "react-native-vector-icons/Ionicons";
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
 type LocationMapScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'LocationMap'>;
 
@@ -126,15 +127,35 @@ const LocationMapScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Map Placeholder */}
+      {/* Interactive Map */}
       <View style={styles.mapContainer}>
-        <View style={styles.mapPlaceholder}>
-          <Ionicons name="map" size={64} color={COLORS.text.tertiary} />
-          <Text style={styles.mapPlaceholderText}>Interactive Map</Text>
-          <Text style={styles.mapPlaceholderSubtext}>
-            Real-time location tracking will be displayed here
-          </Text>
-        </View>
+        <MapView
+          provider={PROVIDER_GOOGLE}
+          style={styles.map}
+          mapType={mapType}
+          initialRegion={{
+            latitude: 21.0285,
+            longitude: 105.8542,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          }}
+          showsUserLocation={true}
+          showsMyLocationButton={true}
+          showsCompass={true}
+          showsScale={true}
+        >
+          {familyMembers
+            .filter(member => member.isLocationShared && member.currentLocation)
+            .map((member) => (
+              <Marker
+                key={member.id}
+                coordinate={member.currentLocation!}
+                title={member.name}
+                description={`${member.relation} • ${getStatusText(member)}`}
+                pinColor={selectedMember?.id === member.id ? COLORS.primary : COLORS.background.appColor}
+              />
+            ))}
+        </MapView>
         
         {/* Map Controls */}
         <View style={styles.mapControls}>
@@ -259,23 +280,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background.tertiary,
     position: 'relative',
   },
-  mapPlaceholder: {
+  map: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  mapPlaceholderText: {
-    fontSize: FONT_SIZES.lg,
-    fontFamily: FONTS.gilroy.semiBold,
-    color: COLORS.text.primary,
-    marginTop: 12,
-  },
-  mapPlaceholderSubtext: {
-    fontSize: FONT_SIZES.sm,
-    fontFamily: FONTS.gilroy.regular,
-    color: COLORS.text.secondary,
-    marginTop: 4,
-    textAlign: 'center',
   },
   mapControls: {
     position: 'absolute',

@@ -16,6 +16,7 @@ import { COLORS } from '../../constants/colors';
 import { FONTS, FONT_SIZES } from '../../constants/fonts';
 import Ionicons from "react-native-vector-icons/Ionicons";
 import EventCard from "./components/EventCard"; // reuse previous EventCard
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
 type EventDetailScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'EventDetail'>;
 
@@ -117,12 +118,32 @@ const EventDetailScreen = () => {
             </Text>
           </TouchableOpacity>
 
-          {/* Map Placeholder */}
+          {/* Event Location Map */}
           <Text style={styles.sectionTitle}>Location</Text>
-          <Image
-            source={{ uri: "https://picsum.photos/400/200" }}
+          <MapView
+            provider={PROVIDER_GOOGLE}
             style={styles.map}
-          />
+            initialRegion={{
+              latitude: 21.0285,
+              longitude: 105.8542,
+              latitudeDelta: 0.01,
+              longitudeDelta: 0.01,
+            }}
+            showsUserLocation={true}
+            showsMyLocationButton={true}
+            showsCompass={true}
+            showsScale={true}
+          >
+            <Marker
+              coordinate={{
+                latitude: 21.0285,
+                longitude: 105.8542,
+              }}
+              title="Event Location"
+              description="Main Stage Area"
+              pinColor={COLORS.background.appColor}
+            />
+          </MapView>
 
           {/* Events You May Like */}
           <View style={styles.sectionHeader}>
@@ -262,8 +283,9 @@ const styles = StyleSheet.create({
   },
   map: {
     width: "100%",
-    height: 160,
+    height: 200,
     borderRadius: 12,
+    overflow: 'hidden',
     marginBottom: 16,
   },
   sectionHeader: {
