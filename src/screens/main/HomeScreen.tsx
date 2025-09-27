@@ -12,12 +12,14 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { H1, H2, H3, BodyText, ButtonTextPrimary, H4, H5 } from '../../components/Text';
 import { COLORS } from '../../constants/colors';
+import { FONTS, FONT_SIZES } from '../../constants/fonts';
 import SpotlightCard from '../../components/cards/SpotlightCard';
 import HorizontalListViews from '../../components/lists/HorizontalListViews';
 import QuickLinkItem from '../../components/QuickLinks';
 import MahotsavHulchal from './components/MahotsavHulchal';
 import TirthsList from './components/TirthsList';
 import TodaysEvents from '../events/components/TodaysEvents';
+import Ionicons from "react-native-vector-icons/Ionicons";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
 
@@ -161,21 +163,28 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <StatusBar barStyle='dark-content' backgroundColor={COLORS.background.appColor} />
+      <StatusBar barStyle='dark-content' backgroundColor={COLORS.background.primary} />
 
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.profileButton}>
-            <BodyText size='2xl' color={COLORS.primary}>👤</BodyText>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.notificationButton}>
-            <BodyText size='lg' color={COLORS.primary}>🔔</BodyText>
-          </TouchableOpacity>
+        {/* Header with App Color Background */}
+        <View style={styles.headerContainer}>
+          <View style={styles.header}>
+            <View style={styles.headerLeft}>
+              <H2 style={styles.greetingText} color={COLORS.text.primary} weight='bold' size='lg'>
+                Hello, John Doe
+              </H2>
+              <BodyText style={styles.addressText} color={COLORS.text.primary} size='sm'>
+                123 Main Street, City, State 12345
+              </BodyText>
+            </View>
+            <TouchableOpacity style={styles.settingsButton}>
+              <Ionicons name="settings-outline" size={24} color={COLORS.text.primary} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Balance Card */}
@@ -367,7 +376,40 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.screenBackground
+    backgroundColor: COLORS.background.primary
+  },
+  headerContainer: {
+    backgroundColor: COLORS.background.primary,
+    paddingTop: 20,
+    paddingBottom: 20,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  headerLeft: {
+    flex: 1,
+  },
+  greetingText: {
+    fontFamily: FONTS.gilroy.semiBold,
+    fontSize: FONT_SIZES.lg,
+    marginBottom: 2,
+  },
+  addressText: {
+    fontFamily: FONTS.gilroy.regular,
+    fontSize: FONT_SIZES.sm,
+    opacity: 0.9,
+  },
+  settingsButton: {
+    padding: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   scrollView: {
     flex: 1,
@@ -375,26 +417,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 32,
     backgroundColor: COLORS.background.tertiary,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 0,
-    // backgroundColor: COLORS.background.primary,
-  },
-  profileButton: {
-    padding: 8,
-    backgroundColor: COLORS.background.secondary,
-    borderRadius: 20,
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  notificationButton: {
-    padding: 8,
   },
   balanceCard: {
     backgroundColor: COLORS.primary,
