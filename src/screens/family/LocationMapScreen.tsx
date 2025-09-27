@@ -7,6 +7,7 @@ import {
   StatusBar,
   Alert,
   Dimensions,
+  ScrollView,
 } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -111,77 +112,82 @@ const LocationMapScreen = () => {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <StatusBar barStyle='dark-content' backgroundColor={COLORS.background.primary} />
+      <StatusBar barStyle='light-content' backgroundColor="transparent" translucent />
       
-      {/* Header */}
-      <View style={styles.headerContainer}>
+      {/* Full Screen Map */}
+      <MapView
+        provider={PROVIDER_GOOGLE}
+        style={styles.map}
+        mapType={mapType}
+        initialRegion={{
+          latitude: 21.0285,
+          longitude: 105.8542,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        }}
+        showsUserLocation={true}
+        showsMyLocationButton={true}
+        showsCompass={true}
+        showsScale={true}
+      >
+        {familyMembers
+          .filter(member => member.isLocationShared && member.currentLocation)
+          .map((member) => (
+            <Marker
+              key={member.id}
+              coordinate={member.currentLocation!}
+              title={member.name}
+              description={`${member.relation} • ${getStatusText(member)}`}
+              pinColor={selectedMember?.id === member.id ? COLORS.primary : COLORS.background.appColor}
+            />
+          ))}
+      </MapView>
+
+      {/* Header Overlay */}
+      <View style={styles.headerOverlay}>
         <TouchableOpacity 
           style={styles.backButton} 
           onPress={() => navigation.goBack()}
         >
-          <Text style={styles.backButtonText}>←</Text>
+          <View style={styles.backButtonContainer}>
+            <Ionicons name="arrow-back" size={20} color={COLORS.text.primary} />
+          </View>
         </TouchableOpacity>
         <Text style={styles.header}>Family Map</Text>
         <TouchableOpacity onPress={handleRefresh}>
-          <Ionicons name="refresh" size={24} color={COLORS.primary} />
+          <View style={styles.refreshButtonContainer}>
+            <Ionicons name="refresh" size={20} color={COLORS.text.primary} />
+          </View>
         </TouchableOpacity>
       </View>
 
-      {/* Interactive Map */}
-      <View style={styles.mapContainer}>
-        <MapView
-          provider={PROVIDER_GOOGLE}
-          style={styles.map}
-          mapType={mapType}
-          initialRegion={{
-            latitude: 21.0285,
-            longitude: 105.8542,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-          }}
-          showsUserLocation={true}
-          showsMyLocationButton={true}
-          showsCompass={true}
-          showsScale={true}
+      {/* Map Controls Overlay */}
+      <View style={styles.mapControlsOverlay}>
+        <TouchableOpacity
+          style={[styles.controlButton, mapType === 'standard' && styles.activeControl]}
+          onPress={() => setMapType('standard')}
         >
-          {familyMembers
-            .filter(member => member.isLocationShared && member.currentLocation)
-            .map((member) => (
-              <Marker
-                key={member.id}
-                coordinate={member.currentLocation!}
-                title={member.name}
-                description={`${member.relation} • ${getStatusText(member)}`}
-                pinColor={selectedMember?.id === member.id ? COLORS.primary : COLORS.background.appColor}
-              />
-            ))}
-        </MapView>
-        
-        {/* Map Controls */}
-        <View style={styles.mapControls}>
-          <TouchableOpacity
-            style={[styles.controlButton, mapType === 'standard' && styles.activeControl]}
-            onPress={() => setMapType('standard')}
-          >
-            <Text style={[styles.controlText, mapType === 'standard' && styles.activeControlText]}>
-              Standard
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.controlButton, mapType === 'satellite' && styles.activeControl]}
-            onPress={() => setMapType('satellite')}
-          >
-            <Text style={[styles.controlText, mapType === 'satellite' && styles.activeControlText]}>
-              Satellite
-            </Text>
-          </TouchableOpacity>
-        </View>
+          <Text style={[styles.controlText, mapType === 'standard' && styles.activeControlText]}>
+            Standard
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.controlButton, mapType === 'satellite' && styles.activeControl]}
+          onPress={() => setMapType('satellite')}
+        >
+          <Text style={[styles.controlText, mapType === 'satellite' && styles.activeControlText]}>
+            Satellite
+          </Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Family Members List */}
-      <View style={styles.membersContainer}>
-        <Text style={styles.sectionTitle}>Family Members</Text>
-        <View style={styles.membersList}>
+      {/* Family Members Horizontal Cards Overlay */}
+      <View style={styles.membersOverlay}>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.membersScrollContent}
+        >
           {familyMembers.map((member) => (
             <TouchableOpacity
               key={member.id}
@@ -191,7 +197,7 @@ const LocationMapScreen = () => {
               ]}
               onPress={() => handleMemberSelect(member)}
             >
-              <View style={styles.memberInfo}>
+              <View style={styles.memberCardContent}>
                 <View style={styles.photoContainer}>
                   <View style={styles.photoPlaceholder}>
                     <Text style={styles.photoText}>
@@ -210,37 +216,41 @@ const LocationMapScreen = () => {
                     {getStatusText(member)}
                   </Text>
                 </View>
-              </View>
-              <View style={styles.memberActions}>
                 {member.isLocationShared && member.currentLocation && (
-                  <TouchableOpacity style={styles.locationButton}>
+                  <View style={styles.locationIndicator}>
                     <Ionicons name="location" size={16} color={COLORS.primary} />
-                  </TouchableOpacity>
+                  </View>
                 )}
-                <Ionicons name="chevron-forward" size={16} color={COLORS.text.tertiary} />
               </View>
             </TouchableOpacity>
           ))}
-        </View>
+        </ScrollView>
       </View>
 
-      {/* Selected Member Info */}
+      {/* Selected Member Info Overlay */}
       {selectedMember && selectedMember.isLocationShared && (
-        <View style={styles.selectedMemberInfo}>
-          <View style={styles.selectedMemberHeader}>
-            <Text style={styles.selectedMemberTitle}>{selectedMember.name}</Text>
-            <TouchableOpacity onPress={() => setSelectedMember(null)}>
-              <Ionicons name="close" size={20} color={COLORS.text.primary} />
-            </TouchableOpacity>
+        <View style={styles.selectedMemberOverlay}>
+          <View style={styles.selectedMemberCard}>
+            <View style={styles.selectedMemberHeader}>
+              <View style={styles.selectedMemberInfo}>
+                <Text style={styles.selectedMemberTitle}>{selectedMember.name}</Text>
+                <Text style={styles.selectedMemberDetails}>
+                  {selectedMember.relation} • {getStatusText(selectedMember)}
+                </Text>
+                {selectedMember.currentLocation && (
+                  <Text style={styles.coordinatesText}>
+                    {selectedMember.currentLocation.latitude.toFixed(6)}, {selectedMember.currentLocation.longitude.toFixed(6)}
+                  </Text>
+                )}
+              </View>
+              <TouchableOpacity 
+                style={styles.closeButton}
+                onPress={() => setSelectedMember(null)}
+              >
+                <Ionicons name="close" size={20} color={COLORS.text.primary} />
+              </TouchableOpacity>
+            </View>
           </View>
-          <Text style={styles.selectedMemberDetails}>
-            {selectedMember.relation} • {getStatusText(selectedMember)}
-          </Text>
-          {selectedMember.currentLocation && (
-            <Text style={styles.coordinatesText}>
-              {selectedMember.currentLocation.latitude.toFixed(6)}, {selectedMember.currentLocation.longitude.toFixed(6)}
-            </Text>
-          )}
         </View>
       )}
     </View>
@@ -250,51 +260,77 @@ const LocationMapScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background.secondary,
   },
-  headerContainer: {
+  map: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  headerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: COLORS.background.primary,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border.light,
+    paddingTop: 60,
+    paddingBottom: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backdropFilter: 'blur(10px)',
+    zIndex: 1000,
   },
   backButton: {
     padding: 8,
   },
-  backButtonText: {
-    fontSize: 24,
-    color: COLORS.primary,
-    fontFamily: FONTS.gilroy.bold,
+  backButtonContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: COLORS.background.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   header: {
     fontSize: FONT_SIZES.lg,
     fontFamily: FONTS.gilroy.bold,
     color: COLORS.text.primary,
   },
-  mapContainer: {
-    height: height * 0.4,
-    backgroundColor: COLORS.background.tertiary,
-    position: 'relative',
+  refreshButtonContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: COLORS.background.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  map: {
-    flex: 1,
-  },
-  mapControls: {
+  mapControlsOverlay: {
     position: 'absolute',
-    top: 16,
+    top: 120,
     right: 16,
     flexDirection: 'row',
     backgroundColor: COLORS.background.primary,
-    borderRadius: 8,
+    borderRadius: 12,
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    zIndex: 1000,
   },
   controlButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
   },
   activeControl: {
     backgroundColor: COLORS.background.appColor,
@@ -307,53 +343,57 @@ const styles = StyleSheet.create({
   activeControlText: {
     color: COLORS.white,
   },
-  membersContainer: {
-    flex: 1,
-    paddingHorizontal: 20,
+  membersOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backdropFilter: 'blur(10px)',
     paddingTop: 16,
+    paddingBottom: 20,
+    zIndex: 1000,
   },
-  sectionTitle: {
-    fontSize: FONT_SIZES.md,
-    fontFamily: FONTS.gilroy.semiBold,
-    color: COLORS.text.primary,
-    marginBottom: 12,
-  },
-  membersList: {
-    gap: 8,
+  membersScrollContent: {
+    paddingHorizontal: 20,
+    gap: 12,
   },
   memberCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    width: 200,
     backgroundColor: COLORS.background.primary,
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
     borderWidth: 1,
     borderColor: COLORS.border.light,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   selectedMemberCard: {
     borderColor: COLORS.primary,
     backgroundColor: COLORS.primary + '05',
+    shadowColor: COLORS.primary,
+    shadowOpacity: 0.2,
   },
-  memberInfo: {
-    flexDirection: 'row',
+  memberCardContent: {
     alignItems: 'center',
-    flex: 1,
   },
   photoContainer: {
     position: 'relative',
-    marginRight: 12,
+    marginBottom: 12,
   },
   photoPlaceholder: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     backgroundColor: COLORS.background.appColor + '20',
     justifyContent: 'center',
     alignItems: 'center',
   },
   photoText: {
-    fontSize: FONT_SIZES.sm,
+    fontSize: FONT_SIZES.md,
     fontFamily: FONTS.gilroy.bold,
     color: COLORS.background.appColor,
   },
@@ -361,57 +401,79 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 2,
     right: 2,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
     borderWidth: 2,
     borderColor: COLORS.background.primary,
   },
   memberDetails: {
-    flex: 1,
+    alignItems: 'center',
+    marginBottom: 8,
   },
   memberName: {
     fontSize: FONT_SIZES.sm,
     fontFamily: FONTS.gilroy.semiBold,
     color: COLORS.text.primary,
     marginBottom: 2,
+    textAlign: 'center',
   },
   memberRelation: {
     fontSize: FONT_SIZES.xs,
     fontFamily: FONTS.gilroy.regular,
     color: COLORS.text.secondary,
     marginBottom: 2,
+    textAlign: 'center',
   },
   memberStatus: {
     fontSize: FONT_SIZES.xs,
     fontFamily: FONTS.gilroy.medium,
+    textAlign: 'center',
   },
-  memberActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  locationButton: {
-    padding: 4,
-  },
-  selectedMemberInfo: {
-    backgroundColor: COLORS.background.primary,
-    margin: 20,
+  locationIndicator: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 24,
+    height: 24,
     borderRadius: 12,
+    backgroundColor: COLORS.primary + '20',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  selectedMemberOverlay: {
+    position: 'absolute',
+    top: 180,
+    left: 20,
+    right: 20,
+    zIndex: 1001,
+  },
+  selectedMemberCard: {
+    backgroundColor: COLORS.background.primary,
+    borderRadius: 16,
     padding: 16,
     borderWidth: 1,
     borderColor: COLORS.primary,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
   },
   selectedMemberHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
-    marginBottom: 8,
+  },
+  selectedMemberInfo: {
+    flex: 1,
+    marginRight: 12,
   },
   selectedMemberTitle: {
     fontSize: FONT_SIZES.md,
     fontFamily: FONTS.gilroy.semiBold,
     color: COLORS.text.primary,
+    marginBottom: 4,
   },
   selectedMemberDetails: {
     fontSize: FONT_SIZES.sm,
@@ -423,6 +485,14 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZES.xs,
     fontFamily: FONTS.gilroy.regular,
     color: COLORS.text.tertiary,
+  },
+  closeButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.background.tertiary,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
