@@ -19,6 +19,7 @@ import StallsScreen from '../screens/stalls/StallsScreen';
 import FamilyMembersScreen from '../screens/family/FamilyMembersScreen';
 import AddFamilyMemberScreen from '../screens/family/AddFamilyMemberScreen';
 import LocationMapScreen from '../screens/family/LocationMapScreen';
+import TirthsScreen from '../screens/tirths/TirthsScreen';
 import { COLORS } from '../constants/colors';
 import { FONTS, FONT_SIZES } from '../constants/fonts';
 
@@ -34,6 +35,7 @@ export type RootStackParamList = {
   FamilyMembers: undefined;
   AddFamilyMember: undefined;
   LocationMap: undefined;
+  Tirths: undefined;
 };
 
 export type AuthStackParamList = {
@@ -44,8 +46,8 @@ export type AuthStackParamList = {
 
 export type MainTabParamList = {
   Home: undefined;
+  Tirths: undefined;
   Profile: undefined;
-  Settings: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -133,15 +135,15 @@ function MainTabNavigator() {
         }}
       />
       <Tab.Screen
-        name='Profile'
-        component={ProfileScreen}
+        name='Tirths'
+        component={TirthsScreen}
         options={{
           tabBarLabel: '48Kos',
         }}
       />
       <Tab.Screen
-        name='Settings'
-        component={SettingsScreen}
+        name='Profile'
+        component={ProfileScreen}
         options={{
           tabBarLabel: 'Tirth Mitra',
         }}
@@ -171,6 +173,7 @@ function AppNavigator() {
         <Stack.Screen name='FamilyMembers' component={FamilyMembersScreen} />
         <Stack.Screen name='AddFamilyMember' component={AddFamilyMemberScreen} />
         <Stack.Screen name='LocationMap' component={LocationMapScreen} />
+        <Stack.Screen name='Tirths' component={TirthsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

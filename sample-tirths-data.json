@@ -1,0 +1,194 @@
+[
+  {
+    "id": "tirth_001",
+    "name": "Golden Temple",
+    "description": "The holiest shrine of Sikhism, located in Amritsar, Punjab. A magnificent golden structure surrounded by a sacred pool.",
+    "location": {
+      "address": "Golden Temple Road, Amritsar",
+      "city": "Amritsar",
+      "state": "Punjab",
+      "country": "India",
+      "coordinates": {
+        "latitude": 31.6200,
+        "longitude": 74.8765
+      }
+    },
+    "images": {
+      "main": "https://example.com/golden-temple-main.jpg",
+      "gallery": [
+        "https://example.com/golden-temple-1.jpg",
+        "https://example.com/golden-temple-2.jpg",
+        "https://example.com/golden-temple-3.jpg"
+      ]
+    },
+    "details": {
+      "significance": "Spiritual center of Sikhism",
+      "history": "Built in 1588 by Guru Arjan Dev, the fifth Sikh Guru. The temple was rebuilt in 1764 after being destroyed by Afghan invaders.",
+      "timings": "Open 24/7",
+      "entryFee": 0,
+      "facilities": ["Parking", "Food", "Accommodation", "Wheelchair Access"],
+      "bestTimeToVisit": "October to March"
+    },
+    "contact": {
+      "phone": "+91-183-2553957",
+      "email": "info@goldentemple.com",
+      "website": "https://goldentemple.com"
+    },
+    "category": "gurudwara",
+    "tags": ["Sikh", "Golden", "Amritsar", "Punjab", "Sacred"],
+    "isActive": true
+  },
+  {
+    "id": "tirth_002",
+    "name": "Kashi Vishwanath Temple",
+    "description": "One of the most famous Hindu temples dedicated to Lord Shiva, located in Varanasi, Uttar Pradesh.",
+    "location": {
+      "address": "Vishwanath Gali, Varanasi",
+      "city": "Varanasi",
+      "state": "Uttar Pradesh",
+      "country": "India",
+      "coordinates": {
+        "latitude": 25.3111,
+        "longitude": 83.0100
+      }
+    },
+    "images": {
+      "main": "https://example.com/kashi-vishwanath-main.jpg",
+      "gallery": [
+        "https://example.com/kashi-vishwanath-1.jpg",
+        "https://example.com/kashi-vishwanath-2.jpg"
+      ]
+    },
+    "details": {
+      "significance": "One of the 12 Jyotirlingas of Lord Shiva",
+      "history": "The original temple was destroyed and rebuilt several times. The current structure was built in 1780 by Ahilya Bai Holkar.",
+      "timings": "3:00 AM - 11:00 PM",
+      "entryFee": 0,
+      "facilities": ["Parking", "Food", "Accommodation"],
+      "bestTimeToVisit": "October to March"
+    },
+    "contact": {
+      "phone": "+91-542-2392629",
+      "email": "info@kashivishwanath.org",
+      "website": "https://kashivishwanath.org"
+    },
+    "category": "temple",
+    "tags": ["Hindu", "Shiva", "Varanasi", "Uttar Pradesh", "Jyotirlinga"],
+    "isActive": true
+  },
+  {
+    "id": "tirth_003",
+    "name": "Taj Mahal",
+    "description": "A magnificent white marble mausoleum built by Mughal Emperor Shah Jahan in memory of his wife Mumtaz Mahal.",
+    "location": {
+      "address": "Dharmapuri, Forest Colony, Tajganj, Agra",
+      "city": "Agra",
+      "state": "Uttar Pradesh",
+      "country": "India",
+      "coordinates": {
+        "latitude": 27.1751,
+        "longitude": 78.0421
+      }
+    },
+    "images": {
+      "main": "https://example.com/taj-mahal-main.jpg",
+      "gallery": [
+        "https://example.com/taj-mahal-1.jpg",
+        "https://example.com/taj-mahal-2.jpg",
+        "https://example.com/taj-mahal-3.jpg"
+      ]
+    },
+    "details": {
+      "significance": "UNESCO World Heritage Site and symbol of eternal love",
+      "history": "Built between 1632 and 1653, it took 22 years to complete with 20,000 workers.",
+      "timings": "6:00 AM - 7:00 PM (Closed on Fridays)",
+      "entryFee": 1100,
+      "facilities": ["Parking", "Food", "Guides", "Wheelchair Access"],
+      "bestTimeToVisit": "October to March"
+    },
+    "contact": {
+      "phone": "+91-562-2227261",
+      "email": "info@tajmahal.gov.in",
+      "website": "https://tajmahal.gov.in"
+    },
+    "category": "historical",
+    "tags": ["Mughal", "Marble", "Agra", "Uttar Pradesh", "UNESCO"],
+    "isActive": true
+  },
+  {
+    "id": "tirth_004",
+    "name": "Meenakshi Amman Temple",
+    "description": "A historic Hindu temple located in Madurai, Tamil Nadu, dedicated to Goddess Meenakshi and Lord Sundareswarar.",
+    "location": {
+      "address": "Madurai Main, Madurai",
+      "city": "Madurai",
+      "state": "Tamil Nadu",
+      "country": "India",
+      "coordinates": {
+        "latitude": 9.9197,
+        "longitude": 78.1194
+      }
+    },
+    "images": {
+      "main": "https://example.com/meenakshi-temple-main.jpg",
+      "gallery": [
+        "https://example.com/meenakshi-temple-1.jpg",
+        "https://example.com/meenakshi-temple-2.jpg"
+      ]
+    },
+    "details": {
+      "significance": "One of the most important temples in South India",
+      "history": "The temple was built in the 6th century CE and expanded over the centuries. The current structure dates back to the 16th century.",
+      "timings": "5:00 AM - 12:30 PM, 4:00 PM - 9:30 PM",
+      "entryFee": 0,
+      "facilities": ["Parking", "Food", "Accommodation"],
+      "bestTimeToVisit": "October to March"
+    },
+    "contact": {
+      "phone": "+91-452-2344360",
+      "email": "info@meenakshitemple.org",
+      "website": "https://meenakshitemple.org"
+    },
+    "category": "temple",
+    "tags": ["Hindu", "Goddess", "Madurai", "Tamil Nadu", "Dravidian"],
+    "isActive": true
+  },
+  {
+    "id": "tirth_005",
+    "name": "Jama Masjid",
+    "description": "One of the largest mosques in India, built by Mughal Emperor Shah Jahan in Delhi.",
+    "location": {
+      "address": "Jama Masjid, Old Delhi",
+      "city": "Delhi",
+      "state": "Delhi",
+      "country": "India",
+      "coordinates": {
+        "latitude": 28.6507,
+        "longitude": 77.2333
+      }
+    },
+    "images": {
+      "main": "https://example.com/jama-masjid-main.jpg",
+      "gallery": [
+        "https://example.com/jama-masjid-1.jpg",
+        "https://example.com/jama-masjid-2.jpg"
+      ]
+    },
+    "details": {
+      "significance": "One of the largest mosques in India",
+      "history": "Built between 1644 and 1656, it took 12 years to complete with 5,000 workers.",
+      "timings": "7:00 AM - 12:00 PM, 1:30 PM - 6:30 PM",
+      "entryFee": 0,
+      "facilities": ["Parking", "Food", "Guides"],
+      "bestTimeToVisit": "October to March"
+    },
+    "contact": {
+      "phone": "+91-11-2327-6830",
+      "email": "info@jamamasjid.org",
+      "website": "https://jamamasjid.org"
+    },
+    "category": "mosque",
+    "tags": ["Muslim", "Mughal", "Delhi", "Islamic", "Historic"],
+    "isActive": true
+  }
+]
