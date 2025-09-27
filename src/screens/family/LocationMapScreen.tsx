@@ -153,12 +153,7 @@ const LocationMapScreen = () => {
             <Ionicons name="arrow-back" size={20} color={COLORS.text.primary} />
           </View>
         </TouchableOpacity>
-        <Text style={styles.header}>Family Map</Text>
-        <TouchableOpacity onPress={handleRefresh}>
-          <View style={styles.refreshButtonContainer}>
-            <Ionicons name="refresh" size={20} color={COLORS.text.primary} />
-          </View>
-        </TouchableOpacity>
+        <View style={styles.headerSpacer} />
       </View>
 
       {/* Map Controls Overlay */}
@@ -183,6 +178,14 @@ const LocationMapScreen = () => {
 
       {/* Family Members Horizontal Cards Overlay */}
       <View style={styles.membersOverlay}>
+        <View style={styles.membersHeader}>
+          <View style={styles.membersSpacer} />
+          <TouchableOpacity onPress={handleRefresh}>
+            <View style={styles.refreshButtonContainer}>
+              <Ionicons name="refresh" size={20} color={COLORS.text.primary} />
+            </View>
+          </TouchableOpacity>
+        </View>
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false}
@@ -275,8 +278,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 60,
     paddingBottom: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    backdropFilter: 'blur(10px)',
+    backgroundColor: 'transparent',
     zIndex: 1000,
   },
   backButton: {
@@ -295,10 +297,8 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  header: {
-    fontSize: FONT_SIZES.lg,
-    fontFamily: FONTS.gilroy.bold,
-    color: COLORS.text.primary,
+  headerSpacer: {
+    flex: 1,
   },
   refreshButtonContainer: {
     width: 36,
@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
   },
   mapControlsOverlay: {
     position: 'absolute',
-    top: 120,
+    top: 60,
     right: 16,
     flexDirection: 'row',
     backgroundColor: COLORS.background.primary,
@@ -348,11 +348,20 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    backdropFilter: 'blur(10px)',
-    paddingTop: 16,
+    backgroundColor: 'transparent',
     paddingBottom: 20,
     zIndex: 1000,
+  },
+  membersHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  membersSpacer: {
+    flex: 1,
   },
   membersScrollContent: {
     paddingHorizontal: 20,
