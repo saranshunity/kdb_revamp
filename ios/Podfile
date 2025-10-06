@@ -23,7 +23,10 @@ target 'kdb_revamp_code' do
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.
-    :app_path => "#{Pod::Config.instance.installation_root}/.."
+    :app_path => "#{Pod::Config.instance.installation_root}/..",
+    # Enable new architecture to match Info.plist setting
+    :fabric_enabled => true,
+    :hermes_enabled => true
   )
 
   post_install do |installer|
@@ -34,5 +37,16 @@ target 'kdb_revamp_code' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+    
+    # Set deployment target and enable new architecture
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.0'
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
+        config.build_settings['RCT_NEW_ARCH_ENABLED'] = '1'
+        config.build_settings['RCT_FABRIC_ENABLED'] = '1'
+        config.build_settings['RCT_TURBO_MODULE_ENABLED'] = '1'
+      end
+    end
   end
 end

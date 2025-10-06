@@ -181,9 +181,11 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                 123 Main Street, City, State 12345
               </BodyText>
             </View>
-            <TouchableOpacity style={styles.settingsButton}>
-              <Ionicons name="settings-outline" size={24} color={COLORS.text.primary} />
-            </TouchableOpacity>
+            <View style={styles.headerRight}>
+              <TouchableOpacity style={styles.settingsButton}>
+                <Ionicons name="settings-outline" size={24} color={COLORS.text.primary} />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
 
@@ -391,6 +393,11 @@ const styles = StyleSheet.create({
   },
   headerLeft: {
     flex: 1,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   greetingText: {
     fontFamily: FONTS.gilroy.semiBold,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,6 @@ import {
   TextInput,
   FlatList,
   RefreshControl,
-  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -19,11 +18,24 @@ import { COLORS } from '../../constants/colors';
 import { FONTS, FONT_SIZES } from '../../constants/fonts';
 import { H1, H2, H3, BodyText } from '../../components/Text';
 import Ionicons from "react-native-vector-icons/Ionicons";
-import FastImage from '@d11/react-native-fast-image';
-import TirthService from '../../services/tirthService';
-import { Tirth, TirthSearchParams } from '../../types/tirth';
 
 type TirthsScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Tirths'>;
+
+// Simple Tirth interface
+interface Tirth {
+  id: string;
+  name: string;
+  description: string;
+  location: {
+    city: string;
+    state: string;
+  };
+  images: {
+    main: string;
+  };
+  category: string;
+  tags: string[];
+}
 
 const TirthsScreen = () => {
   const [tirths, setTirths] = useState<Tirth[]>([]);
@@ -33,11 +45,58 @@ const TirthsScreen = () => {
   const [categories, setCategories] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [syncStatus, setSyncStatus] = useState<'synced' | 'syncing' | 'offline' | 'first-download'>('synced');
 
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<TirthsScreenNavigationProp>();
-  const tirthService = TirthService.getInstance();
+
+  // Sample data for demonstration
+  const sampleTirths: Tirth[] = [
+    {
+      id: '1',
+      name: 'Shri Krishna Janmabhoomi',
+      description: 'The birthplace of Lord Krishna, one of the most sacred places in Hinduism.',
+      location: { city: 'Mathura', state: 'Uttar Pradesh' },
+      images: { main: 'https://picsum.photos/400/300?random=1' },
+      category: 'Temple',
+      tags: ['Sacred', 'Birthplace', 'Krishna']
+    },
+    {
+      id: '2',
+      name: 'Banke Bihari Temple',
+      description: 'A famous temple dedicated to Lord Krishna in his child form.',
+      location: { city: 'Vrindavan', state: 'Uttar Pradesh' },
+      images: { main: 'https://picsum.photos/400/300?random=2' },
+      category: 'Temple',
+      tags: ['Krishna', 'Child Form', 'Devotion']
+    },
+    {
+      id: '3',
+      name: 'Radha Kund',
+      description: 'A sacred pond where Radha and Krishna used to bathe.',
+      location: { city: 'Vrindavan', state: 'Uttar Pradesh' },
+      images: { main: 'https://picsum.photos/400/300?random=3' },
+      category: 'Kund',
+      tags: ['Radha', 'Krishna', 'Sacred Water']
+    },
+    {
+      id: '4',
+      name: 'Govardhan Hill',
+      description: 'The hill that Lord Krishna lifted to protect the people from Indra\'s wrath.',
+      location: { city: 'Govardhan', state: 'Uttar Pradesh' },
+      images: { main: 'https://picsum.photos/400/300?random=4' },
+      category: 'Hill',
+      tags: ['Krishna', 'Miracle', 'Protection']
+    },
+    {
+      id: '5',
+      name: 'Barsana',
+      description: 'The birthplace of Radha, the beloved of Krishna.',
+      location: { city: 'Barsana', state: 'Uttar Pradesh' },
+      images: { main: 'https://picsum.photos/400/300?random=5' },
+      category: 'Temple',
+      tags: ['Radha', 'Birthplace', 'Love']
+    }
+  ];
 
   useEffect(() => {
     loadTirths();
@@ -51,25 +110,13 @@ const TirthsScreen = () => {
     try {
       setIsLoading(true);
       
-      // Check if this is first launch
-      const isFirstLaunch = await tirthService.isFirstLaunch();
-      if (isFirstLaunch) {
-        setSyncStatus('first-download');
-      }
+      // Simulate loading delay
+      await new Promise<void>(resolve => setTimeout(resolve, 1000));
       
-      const [tirthsData, categoriesData] = await Promise.all([
-        tirthService.getTirths(),
-        tirthService.getCategories(),
-      ]);
-      
-      setTirths(tirthsData);
-      setCategories(categoriesData);
-      setSyncStatus('synced');
+      setTirths(sampleTirths);
+      setCategories(['All', 'Temple', 'Kund', 'Hill']);
     } catch (error) {
       console.error('Error loading tirths:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load tirths data';
-      Alert.alert('Error', errorMessage);
-      setSyncStatus('offline');
     } finally {
       setIsLoading(false);
     }
@@ -78,13 +125,9 @@ const TirthsScreen = () => {
   const handleRefresh = async () => {
     try {
       setIsRefreshing(true);
-      setSyncStatus('syncing');
-      await tirthService.forceSync();
       await loadTirths();
     } catch (error) {
       console.error('Error refreshing:', error);
-      Alert.alert('Error', 'Failed to sync data');
-      setSyncStatus('offline');
     } finally {
       setIsRefreshing(false);
     }
@@ -124,11 +167,11 @@ const TirthsScreen = () => {
       style={styles.tirthCard}
       onPress={() => handleTirthPress(item)}
     >
-      <FastImage
+      {/* <FastImage
         source={{ uri: item.images.main }}
         style={styles.tirthImage}
         resizeMode={FastImage.resizeMode.cover}
-      />
+      /> */}
       <View style={styles.tirthContent}>
         <H3 style={styles.tirthName} color={COLORS.text.primary} weight='semiBold' size='md'>
           {item.name}
@@ -169,7 +212,7 @@ const TirthsScreen = () => {
         <BodyText
           style={[
             styles.categoryText,
-            !selectedCategory && styles.activeCategoryText
+            !selectedCategory ? styles.activeCategoryText : {}
           ]}
           color={!selectedCategory ? COLORS.white : COLORS.text.secondary}
           size='sm'
@@ -186,14 +229,14 @@ const TirthsScreen = () => {
           ]}
           onPress={() => setSelectedCategory(category)}
         >
-          <BodyText
-            style={[
-              styles.categoryText,
-              selectedCategory === category && styles.activeCategoryText
-            ]}
-            color={selectedCategory === category ? COLORS.white : COLORS.text.secondary}
-            size='sm'
-          >
+        <BodyText
+          style={[
+            styles.categoryText,
+            selectedCategory === category ? styles.activeCategoryText : {}
+          ]}
+          color={selectedCategory === category ? COLORS.white : COLORS.text.secondary}
+          size='sm'
+        >
             {category.charAt(0).toUpperCase() + category.slice(1)}
           </BodyText>
         </TouchableOpacity>
@@ -201,37 +244,6 @@ const TirthsScreen = () => {
     </ScrollView>
   );
 
-  const renderSyncStatus = () => {
-    if (syncStatus === 'first-download') {
-      return (
-        <View style={styles.syncStatus}>
-          <Ionicons name="download" size={16} color={COLORS.primary} />
-          <BodyText style={styles.syncText} color={COLORS.primary} size='xs'>
-            Downloading 182 tirths...
-          </BodyText>
-        </View>
-      );
-    } else if (syncStatus === 'syncing') {
-      return (
-        <View style={styles.syncStatus}>
-          <Ionicons name="sync" size={16} color={COLORS.primary} />
-          <BodyText style={styles.syncText} color={COLORS.primary} size='xs'>
-            Syncing...
-          </BodyText>
-        </View>
-      );
-    } else if (syncStatus === 'offline') {
-      return (
-        <View style={styles.syncStatus}>
-          <Ionicons name="cloud-offline" size={16} color={COLORS.warning} />
-          <BodyText style={styles.syncText} color={COLORS.warning} size='xs'>
-            Offline
-          </BodyText>
-        </View>
-      );
-    }
-    return null;
-  };
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -249,7 +261,6 @@ const TirthsScreen = () => {
           <H2 style={styles.headerTitle} color={COLORS.text.primary} weight='bold' size='lg'>
             48 Kos Tirths
           </H2>
-          {renderSyncStatus()}
         </View>
         <TouchableOpacity
           style={styles.syncButton}
@@ -348,15 +359,6 @@ const styles = StyleSheet.create({
   },
   syncButton: {
     padding: 8,
-  },
-  syncStatus: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  syncText: {
-    marginLeft: 4,
-    fontFamily: FONTS.gilroy.medium,
   },
   searchContainer: {
     paddingHorizontal: 20,
