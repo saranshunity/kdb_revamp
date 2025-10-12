@@ -25,6 +25,18 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 
   const profileSections = [
     {
+      title: 'Tirth Mitra',
+      items: [
+        {
+          id: 0,
+          title: 'Generate Tirth Mitra Card',
+          icon: '🎫',
+          subtitle: 'Get your official pilgrimage card',
+          action: () => navigation.navigate('TirthMitraIntro'),
+        },
+      ],
+    },
+    {
       title: 'Account',
       items: [
         {
@@ -120,8 +132,13 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   };
 
   const handleSectionItemPress = (item: any) => {
-    // TODO: Navigate to specific screens based on item
-    console.log('Pressed:', item.title);
+    // Check if item has a custom action
+    if (item.action) {
+      item.action();
+    } else {
+      // TODO: Navigate to specific screens based on item
+      console.log('Pressed:', item.title);
+    }
   };
 
   return (

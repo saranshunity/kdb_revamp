@@ -21,6 +21,9 @@ import AddFamilyMemberScreen from '../screens/family/AddFamilyMemberScreen';
 import LocationMapScreen from '../screens/family/LocationMapScreen';
 import TirthsScreen from '../screens/tirths/TirthsScreen';
 import TirthDetailScreen from '../screens/tirths/TirthDetailScreen';
+import TirthMitraIntroScreen from '../screens/tirthMitra/TirthMitraIntroScreen';
+import TirthMitraGeneratorScreen from '../screens/tirthMitra/TirthMitraGeneratorScreen';
+import TirthMitraCardScreen from '../screens/tirthMitra/TirthMitraCardScreen';
 import { COLORS } from '../constants/colors';
 import { FONTS, FONT_SIZES } from '../constants/fonts';
 
@@ -52,6 +55,21 @@ interface Tirth {
   historicalReferences: string[];
 }
 
+// Tirth Mitra Card Data type
+interface TirthMitraFormData {
+  fullName: string;
+  fatherName: string;
+  dateOfBirth: string;
+  gender: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  pincode: string;
+  photoUri: string;
+}
+
 // Navigation types
 export type RootStackParamList = {
   Splash: undefined;
@@ -66,6 +84,9 @@ export type RootStackParamList = {
   LocationMap: undefined;
   Tirths: undefined;
   TirthDetail: { tirth: Tirth };
+  TirthMitraIntro: undefined;
+  TirthMitraGenerator: undefined;
+  TirthMitraCard: { cardData: TirthMitraFormData };
 };
 
 export type AuthStackParamList = {
@@ -205,6 +226,9 @@ function AppNavigator() {
         <Stack.Screen name='LocationMap' component={LocationMapScreen} />
         <Stack.Screen name='Tirths' component={TirthsScreen} />
         <Stack.Screen name='TirthDetail' component={TirthDetailScreen} />
+        <Stack.Screen name='TirthMitraIntro' component={TirthMitraIntroScreen} />
+        <Stack.Screen name='TirthMitraGenerator' component={TirthMitraGeneratorScreen} />
+        <Stack.Screen name='TirthMitraCard' component={TirthMitraCardScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

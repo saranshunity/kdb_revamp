@@ -39,6 +39,12 @@
 	<string>This app needs location access to track family members and provide location-based services.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>This app needs location access to track family members and provide location-based services.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs access to your photo library to upload your photo for Tirth Mitra Card.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>This app needs permission to save your Tirth Mitra Card to your photo library.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs camera access to take your photo for Tirth Mitra Card.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UIAppFonts</key>
