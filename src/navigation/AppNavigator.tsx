@@ -68,6 +68,9 @@ interface TirthMitraFormData {
   state: string;
   pincode: string;
   photoUri: string;
+  selectedDistrict: string;
+  selectedTirth: string;
+  selectedTirthName: string;
 }
 
 // Navigation types

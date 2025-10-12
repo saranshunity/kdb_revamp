@@ -9,6 +9,8 @@ import {
   TextInput,
   Image,
   Alert,
+  Modal,
+  FlatList,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -19,11 +21,21 @@ import { FONTS, FONT_SIZES } from '../../constants/fonts';
 import { H2, H3, BodyText } from '../../components/Text';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
+import tirthData from '../../../tirth.json';
 
 type TirthMitraGeneratorScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   'TirthMitraGenerator'
 >;
+
+interface Tirth {
+  id: string;
+  name: string;
+  district: string;
+  location: {
+    address: string;
+  };
+}
 
 interface FormData {
   fullName: string;
@@ -37,6 +49,9 @@ interface FormData {
   state: string;
   pincode: string;
   photoUri: string;
+  selectedDistrict: string;
+  selectedTirth: string;
+  selectedTirthName: string;
 }
 
 const TirthMitraGeneratorScreen = () => {
@@ -52,13 +67,58 @@ const TirthMitraGeneratorScreen = () => {
     state: '',
     pincode: '',
     photoUri: '',
+    selectedDistrict: '',
+    selectedTirth: '',
+    selectedTirthName: '',
   });
+
+  const [districts, setDistricts] = useState<string[]>([]);
+  const [filteredTirthas, setFilteredTirthas] = useState<Tirth[]>([]);
+  const [showDistrictPicker, setShowDistrictPicker] = useState(false);
+  const [showTirthPicker, setShowTirthPicker] = useState(false);
 
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<TirthMitraGeneratorScreenNavigationProp>();
 
+  React.useEffect(() => {
+    // Load unique districts
+    const allTirthas: Tirth[] = tirthData.tirthas;
+    const uniqueDistricts = [...new Set(allTirthas.map(t => t.district))];
+    setDistricts(uniqueDistricts);
+  }, []);
+
+  React.useEffect(() => {
+    // Filter tirthas when district changes
+    if (formData.selectedDistrict) {
+      const allTirthas: Tirth[] = tirthData.tirthas;
+      const filtered = allTirthas.filter(t => t.district === formData.selectedDistrict);
+      setFilteredTirthas(filtered);
+    } else {
+      setFilteredTirthas([]);
+    }
+  }, [formData.selectedDistrict]);
+
   const updateField = (field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleDistrictSelect = (district: string) => {
+    setFormData(prev => ({
+      ...prev,
+      selectedDistrict: district,
+      selectedTirth: '',
+      selectedTirthName: '',
+    }));
+    setShowDistrictPicker(false);
+  };
+
+  const handleTirthSelect = (tirth: Tirth) => {
+    setFormData(prev => ({
+      ...prev,
+      selectedTirth: tirth.id,
+      selectedTirthName: tirth.name,
+    }));
+    setShowTirthPicker(false);
   };
 
   const handleSelectPhoto = () => {
@@ -191,6 +251,60 @@ const TirthMitraGeneratorScreen = () => {
               </>
             )}
           </TouchableOpacity>
+        </View>
+
+        {/* Pilgrimage Information */}
+        <View style={styles.section}>
+          <H3 style={styles.sectionTitle} color={COLORS.text.primary} weight="bold" size="md">
+            Pilgrimage Information
+          </H3>
+
+          <View style={styles.inputGroup}>
+            <BodyText style={styles.label} color={COLORS.text.secondary} size="sm">
+              Select District <Text style={styles.required}>*</Text>
+            </BodyText>
+            <TouchableOpacity
+              style={styles.pickerButton}
+              onPress={() => setShowDistrictPicker(true)}
+            >
+              <BodyText
+                style={styles.pickerButtonText}
+                color={formData.selectedDistrict ? COLORS.text.primary : COLORS.text.tertiary}
+                size="sm"
+              >
+                {formData.selectedDistrict || 'Select your district'}
+              </BodyText>
+              <Ionicons name="chevron-down" size={20} color={COLORS.text.tertiary} />
+            </TouchableOpacity>
+          </View>
+
+          {formData.selectedDistrict && (
+            <View style={styles.inputGroup}>
+              <BodyText style={styles.label} color={COLORS.text.secondary} size="sm">
+                Select Tirth <Text style={styles.required}>*</Text>
+              </BodyText>
+              <TouchableOpacity
+                style={styles.pickerButton}
+                onPress={() => setShowTirthPicker(true)}
+              >
+                <BodyText
+                  style={styles.pickerButtonText}
+                  color={formData.selectedTirthName ? COLORS.text.primary : COLORS.text.tertiary}
+                  size="sm"
+                  numberOfLines={1}
+                >
+                  {formData.selectedTirthName || 'Select your tirth'}
+                </BodyText>
+                <Ionicons name="chevron-down" size={20} color={COLORS.text.tertiary} />
+              </TouchableOpacity>
+              {formData.selectedTirthName && (
+                <BodyText style={styles.selectedInfo} color={COLORS.success} size="xs">
+                  <Ionicons name="checkmark-circle" size={12} color={COLORS.success} />
+                  {' '}Selected: {formData.selectedTirthName}
+                </BodyText>
+              )}
+            </View>
+          )}
         </View>
 
         {/* Personal Information */}
@@ -385,6 +499,118 @@ const TirthMitraGeneratorScreen = () => {
 
         <View style={styles.bottomSpacing} />
       </ScrollView>
+
+      {/* District Picker Modal */}
+      <Modal
+        visible={showDistrictPicker}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowDistrictPicker(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <H3 style={styles.modalTitle} color={COLORS.text.primary} weight="bold" size="md">
+                Select District
+              </H3>
+              <TouchableOpacity onPress={() => setShowDistrictPicker(false)}>
+                <Ionicons name="close" size={24} color={COLORS.text.primary} />
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={districts}
+              keyExtractor={(item) => item}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.modalItem,
+                    formData.selectedDistrict === item && styles.modalItemSelected,
+                  ]}
+                  onPress={() => handleDistrictSelect(item)}
+                >
+                  <BodyText
+                    style={styles.modalItemText}
+                    color={
+                      formData.selectedDistrict === item
+                        ? COLORS.background.appColor
+                        : COLORS.text.primary
+                    }
+                    size="sm"
+                    weight={formData.selectedDistrict === item ? 'bold' : 'regular'}
+                  >
+                    {item}
+                  </BodyText>
+                  {formData.selectedDistrict === item && (
+                    <Ionicons name="checkmark" size={20} color={COLORS.background.appColor} />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </View>
+      </Modal>
+
+      {/* Tirth Picker Modal */}
+      <Modal
+        visible={showTirthPicker}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowTirthPicker(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <H3 style={styles.modalTitle} color={COLORS.text.primary} weight="bold" size="md">
+                Select Tirth - {formData.selectedDistrict}
+              </H3>
+              <TouchableOpacity onPress={() => setShowTirthPicker(false)}>
+                <Ionicons name="close" size={24} color={COLORS.text.primary} />
+              </TouchableOpacity>
+            </View>
+            <BodyText style={styles.modalSubtitle} color={COLORS.text.secondary} size="xs">
+              {filteredTirthas.length} tirthas in {formData.selectedDistrict}
+            </BodyText>
+            <FlatList
+              data={filteredTirthas}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.modalItem,
+                    formData.selectedTirth === item.id && styles.modalItemSelected,
+                  ]}
+                  onPress={() => handleTirthSelect(item)}
+                >
+                  <View style={styles.tirthItemContent}>
+                    <BodyText
+                      style={styles.modalItemText}
+                      color={
+                        formData.selectedTirth === item.id
+                          ? COLORS.background.appColor
+                          : COLORS.text.primary
+                      }
+                      size="sm"
+                      weight={formData.selectedTirth === item.id ? 'bold' : 'medium'}
+                    >
+                      {item.name}
+                    </BodyText>
+                    <BodyText
+                      style={styles.tirthLocation}
+                      color={COLORS.text.tertiary}
+                      size="xs"
+                    >
+                      {item.location.address}
+                    </BodyText>
+                  </View>
+                  {formData.selectedTirth === item.id && (
+                    <Ionicons name="checkmark" size={20} color={COLORS.background.appColor} />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -549,6 +775,85 @@ const styles = StyleSheet.create({
   },
   bottomSpacing: {
     height: 20,
+  },
+  pickerButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.border.light,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: COLORS.white,
+  },
+  pickerButtonText: {
+    flex: 1,
+    fontFamily: FONTS.gilroy.regular,
+    fontSize: FONT_SIZES.sm,
+  },
+  selectedInfo: {
+    fontFamily: FONTS.gilroy.medium,
+    fontSize: FONT_SIZES.xs,
+    marginTop: 6,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: COLORS.white,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '70%',
+    paddingBottom: 20,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border.light,
+  },
+  modalTitle: {
+    fontFamily: FONTS.gilroy.bold,
+    fontSize: FONT_SIZES.md,
+    flex: 1,
+  },
+  modalSubtitle: {
+    fontFamily: FONTS.gilroy.regular,
+    fontSize: FONT_SIZES.xs,
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    color: COLORS.text.secondary,
+  },
+  modalItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border.light,
+  },
+  modalItemSelected: {
+    backgroundColor: COLORS.background.appColor + '10',
+  },
+  modalItemText: {
+    fontFamily: FONTS.gilroy.regular,
+    fontSize: FONT_SIZES.sm,
+  },
+  tirthItemContent: {
+    flex: 1,
+    marginRight: 12,
+  },
+  tirthLocation: {
+    fontFamily: FONTS.gilroy.regular,
+    fontSize: FONT_SIZES.xs,
+    marginTop: 2,
   },
 });
 

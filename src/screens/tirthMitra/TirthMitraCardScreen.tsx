@@ -84,6 +84,16 @@ const TirthMitraCardScreen = () => {
                 <div class="label">Card Number</div>
                 <div class="value">${cardNumber}</div>
               </div>
+              ${cardData.selectedDistrict ? `
+              <div class="row">
+                <div class="label">District</div>
+                <div class="value">${cardData.selectedDistrict}</div>
+              </div>` : ''}
+              ${cardData.selectedTirthName ? `
+              <div class="row">
+                <div class="label">Visiting Tirth</div>
+                <div class="value">${cardData.selectedTirthName}</div>
+              </div>` : ''}
               <div class="row">
                 <div class="label">Contact</div>
                 <div class="value">${cardData.phone}</div>
@@ -281,6 +291,28 @@ const TirthMitraCardScreen = () => {
                         {cardNumber}
                       </BodyText>
                     </View>
+
+                    {cardData.selectedDistrict && (
+                      <View style={styles.infoRow}>
+                        <BodyText style={styles.infoLabel} color={COLORS.text.secondary} size="xs">
+                          District
+                        </BodyText>
+                        <BodyText style={styles.infoValue} color={COLORS.text.primary} size="xs">
+                          {cardData.selectedDistrict}
+                        </BodyText>
+                      </View>
+                    )}
+
+                    {cardData.selectedTirthName && (
+                      <View style={styles.infoRow}>
+                        <BodyText style={styles.infoLabel} color={COLORS.text.secondary} size="xs">
+                          Visiting Tirth
+                        </BodyText>
+                        <BodyText style={styles.infoValue} color={COLORS.text.primary} size="xs" numberOfLines={2}>
+                          {cardData.selectedTirthName}
+                        </BodyText>
+                      </View>
+                    )}
 
                     <View style={styles.infoRow}>
                       <BodyText style={styles.infoLabel} color={COLORS.text.secondary} size="xs">
