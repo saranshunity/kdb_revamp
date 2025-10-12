@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -7,252 +7,193 @@ import {
   StatusBar,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import {
-  H1,
-  H2,
-  H3,
-  BodyText,
-  ButtonTextSecondary,
-} from '../../components/Text';
+import { H1, H2, H3, BodyText } from '../../components/Text';
 import { COLORS } from '../../constants/colors';
+import { FONTS, FONT_SIZES } from '../../constants/fonts';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import CheckBox from '@react-native-community/checkbox';
 
 interface ProfileScreenProps {
   navigation: any;
 }
 
 const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const insets = useSafeAreaInsets();
 
-  const profileSections = [
-    {
-      title: 'Tirth Mitra',
-      items: [
-        {
-          id: 0,
-          title: 'Generate Tirth Mitra Card',
-          icon: '🎫',
-          subtitle: 'Get your official pilgrimage card',
-          action: () => navigation.navigate('TirthMitraIntro'),
-        },
-      ],
-    },
-    {
-      title: 'Account',
-      items: [
-        {
-          id: 1,
-          title: 'Personal Information',
-          icon: '👤',
-          subtitle: 'Update your details',
-        },
-        {
-          id: 2,
-          title: 'Security Settings',
-          icon: '🔒',
-          subtitle: 'Password, PIN, biometrics',
-        },
-        {
-          id: 3,
-          title: 'Notification Preferences',
-          icon: '🔔',
-          subtitle: 'Email, SMS, push notifications',
-        },
-        {
-          id: 4,
-          title: 'Privacy Settings',
-          icon: '🛡️',
-          subtitle: 'Data sharing and privacy',
-        },
-      ],
-    },
-    {
-      title: 'Banking',
-      items: [
-        {
-          id: 5,
-          title: 'Account Details',
-          icon: '🏦',
-          subtitle: 'View account information',
-        },
-        {
-          id: 6,
-          title: 'Cards & Payments',
-          icon: '💳',
-          subtitle: 'Manage your cards',
-        },
-        {
-          id: 7,
-          title: 'Statements & Documents',
-          icon: '📄',
-          subtitle: 'Download statements',
-        },
-        {
-          id: 8,
-          title: 'Transaction History',
-          icon: '📊',
-          subtitle: 'View all transactions',
-        },
-      ],
-    },
-    {
-      title: 'Support',
-      items: [
-        {
-          id: 9,
-          title: 'Help Center',
-          icon: '❓',
-          subtitle: 'FAQs and guides',
-        },
-        {
-          id: 10,
-          title: 'Contact Support',
-          icon: '💬',
-          subtitle: 'Get in touch with us',
-        },
-        {
-          id: 11,
-          title: 'Feedback',
-          icon: '💭',
-          subtitle: 'Share your feedback',
-        },
-        {
-          id: 12,
-          title: 'Rate App',
-          icon: '⭐',
-          subtitle: 'Rate us on App Store',
-        },
-      ],
-    },
-  ];
-
-  const handleLogout = () => {
-    // TODO: Implement logout logic
-    console.log('Logout pressed');
-    navigation.navigate('Auth');
-  };
-
-  const handleSectionItemPress = (item: any) => {
-    // Check if item has a custom action
-    if (item.action) {
-      item.action();
-    } else {
-      // TODO: Navigate to specific screens based on item
-      console.log('Pressed:', item.title);
-    }
+  const handleContinue = () => {
+    navigation.navigate('TirthMitraGenerator');
   };
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <StatusBar barStyle='dark-content' backgroundColor={COLORS.background.primary} />
+      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background.primary} />
 
-      <ScrollView
-        style={styles.scrollView}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
-        {/* Header */}
-        <View style={styles.header}>
-          <H1 color={COLORS.primary} weight='bold' size='2xl'>
-            Profile
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.headerContent}>
+          <H2 style={styles.headerTitle} color={COLORS.text.primary} weight="bold" size="lg">
+            Tirth Mitra Card
+          </H2>
+        </View>
+      </View>
+
+      <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
+        {/* Hero Section */}
+        <View style={styles.heroSection}>
+          <View style={styles.iconContainer}>
+            <Ionicons name="card" size={60} color={COLORS.background.appColor} />
+          </View>
+          <H1 style={styles.heroTitle} color={COLORS.text.primary} weight="bold" size="xl">
+            Welcome to Tirth Mitra
           </H1>
-          <TouchableOpacity style={styles.settingsButton}>
-            <BodyText size='lg'>⚙️</BodyText>
-          </TouchableOpacity>
+          <BodyText style={styles.heroSubtitle} color={COLORS.text.secondary} size="md">
+            Your Official Pilgrimage Companion Card
+          </BodyText>
         </View>
 
-        {/* Profile Info Card */}
-        <View style={styles.profileCard}>
-          <View style={styles.avatarContainer}>
-            <View style={styles.avatar}>
-              <BodyText size='3xl'>👤</BodyText>
-            </View>
-            <TouchableOpacity style={styles.editAvatarButton}>
-              <BodyText size='sm'>✏️</BodyText>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.profileInfo}>
-            <H2 color={COLORS.primary} weight='bold' size='xl'>
-              John Doe
-            </H2>
-            <BodyText color={COLORS.secondary} size='md'>
-              john.doe@example.com
-            </BodyText>
-            <BodyText color={COLORS.tertiary} size='sm'>
-              Member since 2020
-            </BodyText>
-          </View>
-
-          <TouchableOpacity style={styles.editProfileButton}>
-            <ButtonTextSecondary size='md'>Edit Profile</ButtonTextSecondary>
-          </TouchableOpacity>
-        </View>
-
-        {/* Profile Sections */}
-        {profileSections.map((section, sectionIndex) => (
-          <View key={sectionIndex} style={styles.section}>
-            <H3
-              color={COLORS.primary}
-              weight='bold'
-              size='lg'
-              style={styles.sectionTitle}
-            >
-              {section.title}
+        {/* About Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="information-circle" size={24} color={COLORS.background.appColor} />
+            <H3 style={styles.sectionTitle} color={COLORS.text.primary} weight="bold" size="md">
+              What is Tirth Mitra Card?
             </H3>
-
-            <View style={styles.sectionContent}>
-              {section.items.map((item, itemIndex) => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={[
-                    styles.sectionItem,
-                    itemIndex === section.items.length - 1 &&
-                      styles.lastSectionItem,
-                  ]}
-                  onPress={() => handleSectionItemPress(item)}
-                >
-                  <View style={styles.sectionItemLeft}>
-                    <View style={styles.sectionItemIcon}>
-                      <BodyText size='lg'>{item.icon}</BodyText>
-                    </View>
-                    <View style={styles.sectionItemText}>
-                      <BodyText
-                        color={COLORS.primary}
-                        size='md'
-                        weight='medium'
-                      >
-                        {item.title}
-                      </BodyText>
-                      <BodyText color={COLORS.tertiary} size='sm'>
-                        {item.subtitle}
-                      </BodyText>
-                    </View>
-                  </View>
-                  <BodyText color={COLORS.tertiary} size='lg'>
-                    ›
-                  </BodyText>
-                </TouchableOpacity>
-              ))}
-            </View>
           </View>
-        ))}
-
-        {/* App Info */}
-        <View style={styles.appInfo}>
-          <BodyText color={COLORS.tertiary} size='sm' style={styles.appVersion}>
-            KDB Mobile App v1.0.0
-          </BodyText>
-          <BodyText color={COLORS.tertiary} size='sm'>
-            © 2024 KDB Bank. All rights reserved.
+          <BodyText style={styles.sectionText} color={COLORS.text.secondary} size="sm">
+            Tirth Mitra Card is an official identification card for pilgrims visiting the 48 Kos
+            Parikrama of Kurukshetra. This card helps authorities identify genuine pilgrims and
+            provides access to special facilities and services during your pilgrimage.
           </BodyText>
         </View>
 
-        {/* Logout Button */}
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <BodyText color={COLORS.error} size='md' weight='medium'>
-            Sign Out
+        {/* Validity Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="calendar" size={24} color={COLORS.background.appColor} />
+            <H3 style={styles.sectionTitle} color={COLORS.text.primary} weight="bold" size="md">
+              Card Validity
+            </H3>
+          </View>
+          <BodyText style={styles.sectionText} color={COLORS.text.secondary} size="sm">
+            • Valid for 1 year from date of issue{'\n'}
+            • Can be renewed annually{'\n'}
+            • Valid across all 182 tirthas in Kurukshetra region{'\n'}
+            • Digital card accepted at all locations
           </BodyText>
+        </View>
+
+        {/* Authority Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="shield-checkmark" size={24} color={COLORS.background.appColor} />
+            <H3 style={styles.sectionTitle} color={COLORS.text.primary} weight="bold" size="md">
+              Issued Authority
+            </H3>
+          </View>
+          <BodyText style={styles.sectionText} color={COLORS.text.secondary} size="sm">
+            This card is issued by the Kurukshetra Development Board (KDB) under the Government
+            of Haryana. The card serves as an official document for pilgrims and is recognized
+            by all temple authorities and local administration.
+          </BodyText>
+        </View>
+
+        {/* Benefits Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="gift" size={24} color={COLORS.background.appColor} />
+            <H3 style={styles.sectionTitle} color={COLORS.text.primary} weight="bold" size="md">
+              Benefits & Facilities
+            </H3>
+          </View>
+          <BodyText style={styles.sectionText} color={COLORS.text.secondary} size="sm">
+            • Priority darshan at selected temples{'\n'}
+            • Access to special parking facilities{'\n'}
+            • Discounts at authorized accommodations{'\n'}
+            • Emergency assistance during pilgrimage{'\n'}
+            • Free entry to certain cultural events{'\n'}
+            • Digital guide and navigation support
+          </BodyText>
+        </View>
+
+        {/* Instructions Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="list" size={24} color={COLORS.background.appColor} />
+            <H3 style={styles.sectionTitle} color={COLORS.text.primary} weight="bold" size="md">
+              Instructions
+            </H3>
+          </View>
+          <BodyText style={styles.sectionText} color={COLORS.text.secondary} size="sm">
+            1. Fill accurate personal information{'\n'}
+            2. Upload a clear passport-size photograph{'\n'}
+            3. Provide valid contact details{'\n'}
+            4. Review all information before submission{'\n'}
+            5. Download and save your digital card{'\n'}
+            6. Keep both digital and printed copy during pilgrimage{'\n'}
+            7. Present card when requested by authorities
+          </BodyText>
+        </View>
+
+        {/* Important Notes */}
+        <View style={[styles.section, styles.warningSection]}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="alert-circle" size={24} color={COLORS.warning} />
+            <H3 style={styles.sectionTitle} color={COLORS.warning} weight="bold" size="md">
+              Important Notes
+            </H3>
+          </View>
+          <BodyText style={styles.sectionText} color={COLORS.text.secondary} size="sm">
+            • Card is non-transferable{'\n'}
+            • Misuse may lead to cancellation{'\n'}
+            • Report loss immediately{'\n'}
+            • Carry valid government ID along with card{'\n'}
+            • Follow temple rules and regulations
+          </BodyText>
+        </View>
+
+        {/* Agreement Checkbox */}
+        <View style={styles.agreementContainer}>
+          <CheckBox
+            value={agreedToTerms}
+            onValueChange={setAgreedToTerms}
+            tintColors={{ true: COLORS.background.appColor, false: COLORS.border.dark }}
+            style={styles.checkbox}
+          />
+          <TouchableOpacity
+            style={styles.agreementTextContainer}
+            onPress={() => setAgreedToTerms(!agreedToTerms)}
+            activeOpacity={0.7}
+          >
+            <BodyText style={styles.agreementText} color={COLORS.text.primary} size="sm">
+              I have read and understood all the terms, conditions, and instructions mentioned
+              above. I agree to comply with all rules and regulations during my pilgrimage.
+            </BodyText>
+          </TouchableOpacity>
+        </View>
+
+        {/* Continue Button */}
+        <TouchableOpacity
+          style={[
+            styles.continueButton,
+            !agreedToTerms && styles.continueButtonDisabled,
+          ]}
+          onPress={handleContinue}
+          disabled={!agreedToTerms}
+          activeOpacity={0.8}
+        >
+          <BodyText
+            style={styles.continueButtonText}
+            color={COLORS.white}
+            size="md"
+            weight="bold"
+          >
+            Continue to Generate Card
+          </BodyText>
+          <Ionicons name="arrow-forward" size={20} color={COLORS.white} />
         </TouchableOpacity>
+
+        <View style={styles.bottomSpacing} />
       </ScrollView>
     </View>
   );
@@ -261,138 +202,120 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background.primary
+    backgroundColor: COLORS.background.primary,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: COLORS.background.primary,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border.light,
+  },
+  headerContent: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontFamily: FONTS.gilroy.bold,
+    fontSize: FONT_SIZES.lg,
   },
   scrollView: {
     flex: 1,
   },
-  scrollContent: {
-    paddingBottom: 32,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  heroSection: {
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
+    paddingVertical: 32,
+    paddingHorizontal: 20,
+    backgroundColor: COLORS.background.secondary,
   },
-  settingsButton: {
-    padding: 8,
-  },
-  profileCard: {
-    backgroundColor: COLORS.background.primary,
-    marginHorizontal: 24,
-    marginBottom: 32,
-    padding: 24,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: COLORS.border.light,
-    shadowColor: COLORS.primary,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  avatarContainer: {
+  iconContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: COLORS.background.appColor + '20',
     alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 16,
   },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: COLORS.primary + '20',
-    justifyContent: 'center',
-    alignItems: 'center',
+  heroTitle: {
+    fontFamily: FONTS.gilroy.bold,
+    fontSize: FONT_SIZES.xl,
+    textAlign: 'center',
     marginBottom: 8,
   },
-  editAvatarButton: {
-    position: 'absolute',
-    bottom: 0,
-    right: '50%',
-    marginRight: -20,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: COLORS.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  profileInfo: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  editProfileButton: {
-    borderWidth: 1,
-    borderColor: COLORS.primary,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    alignItems: 'center',
+  heroSubtitle: {
+    fontFamily: FONTS.gilroy.medium,
+    fontSize: FONT_SIZES.md,
+    textAlign: 'center',
   },
   section: {
-    marginBottom: 32,
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border.light,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 8,
   },
   sectionTitle: {
-    marginBottom: 12,
-    paddingHorizontal: 24,
+    fontFamily: FONTS.gilroy.bold,
+    fontSize: FONT_SIZES.md,
   },
-  sectionContent: {
-    backgroundColor: COLORS.background.primary,
-    marginHorizontal: 24,
+  sectionText: {
+    fontFamily: FONTS.gilroy.regular,
+    fontSize: FONT_SIZES.sm,
+    lineHeight: 22,
+  },
+  warningSection: {
+    backgroundColor: COLORS.warning + '10',
+  },
+  agreementContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    backgroundColor: COLORS.background.secondary,
+    marginHorizontal: 20,
+    marginTop: 20,
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.border.light
+    gap: 12,
   },
-  sectionItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border.light
+  checkbox: {
+    marginTop: 2,
   },
-  lastSectionItem: {
-    borderBottomWidth: 0,
-  },
-  sectionItemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  agreementTextContainer: {
     flex: 1,
   },
-  sectionItemIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: COLORS.primary + '10',
+  agreementText: {
+    fontFamily: FONTS.gilroy.regular,
+    fontSize: FONT_SIZES.sm,
+    lineHeight: 20,
+  },
+  continueButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  sectionItemText: {
-    flex: 1,
-  },
-  appInfo: {
-    alignItems: 'center',
-    marginTop: 32,
-    marginBottom: 24,
-    paddingHorizontal: 24,
-  },
-  appVersion: {
-    marginBottom: 4,
-  },
-  logoutButton: {
-    backgroundColor: COLORS.error + '10',
-    marginHorizontal: 24,
+    backgroundColor: COLORS.background.appColor,
+    marginHorizontal: 20,
+    marginTop: 24,
     paddingVertical: 16,
     borderRadius: 12,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.error + '30',
+    gap: 8,
+  },
+  continueButtonDisabled: {
+    backgroundColor: COLORS.text.tertiary,
+    opacity: 0.5,
+  },
+  continueButtonText: {
+    fontFamily: FONTS.gilroy.bold,
+    fontSize: FONT_SIZES.md,
+  },
+  bottomSpacing: {
+    height: 20,
   },
 });
 
