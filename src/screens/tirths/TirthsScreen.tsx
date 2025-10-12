@@ -21,20 +21,35 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 
 type TirthsScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Tirths'>;
 
-// Simple Tirth interface
+// Import tirth data
+import tirthData from '../../../tirth.json';
+
+// Tirth interface matching JSON structure
 interface Tirth {
   id: string;
   name: string;
-  description: string;
-  location: {
-    city: string;
-    state: string;
-  };
-  images: {
-    main: string;
-  };
+  alternateName: string;
   category: string;
-  tags: string[];
+  district: string;
+  location: {
+    address: string;
+    coordinates: {
+      latitude: number | null;
+      longitude: number | null;
+    };
+  };
+  shortDescription: string;
+  description: string;
+  significance: string;
+  mythology: string;
+  bestTimeToVisit: string;
+  facilities: string[];
+  images: string[];
+  nearbyTirthas: string[];
+  distanceFromKurukshetra: string;
+  openingHours: string;
+  entryFee: string;
+  historicalReferences: string[];
 }
 
 const TirthsScreen = () => {
@@ -49,55 +64,6 @@ const TirthsScreen = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<TirthsScreenNavigationProp>();
 
-  // Sample data for demonstration
-  const sampleTirths: Tirth[] = [
-    {
-      id: '1',
-      name: 'Shri Krishna Janmabhoomi',
-      description: 'The birthplace of Lord Krishna, one of the most sacred places in Hinduism.',
-      location: { city: 'Mathura', state: 'Uttar Pradesh' },
-      images: { main: 'https://picsum.photos/400/300?random=1' },
-      category: 'Temple',
-      tags: ['Sacred', 'Birthplace', 'Krishna']
-    },
-    {
-      id: '2',
-      name: 'Banke Bihari Temple',
-      description: 'A famous temple dedicated to Lord Krishna in his child form.',
-      location: { city: 'Vrindavan', state: 'Uttar Pradesh' },
-      images: { main: 'https://picsum.photos/400/300?random=2' },
-      category: 'Temple',
-      tags: ['Krishna', 'Child Form', 'Devotion']
-    },
-    {
-      id: '3',
-      name: 'Radha Kund',
-      description: 'A sacred pond where Radha and Krishna used to bathe.',
-      location: { city: 'Vrindavan', state: 'Uttar Pradesh' },
-      images: { main: 'https://picsum.photos/400/300?random=3' },
-      category: 'Kund',
-      tags: ['Radha', 'Krishna', 'Sacred Water']
-    },
-    {
-      id: '4',
-      name: 'Govardhan Hill',
-      description: 'The hill that Lord Krishna lifted to protect the people from Indra\'s wrath.',
-      location: { city: 'Govardhan', state: 'Uttar Pradesh' },
-      images: { main: 'https://picsum.photos/400/300?random=4' },
-      category: 'Hill',
-      tags: ['Krishna', 'Miracle', 'Protection']
-    },
-    {
-      id: '5',
-      name: 'Barsana',
-      description: 'The birthplace of Radha, the beloved of Krishna.',
-      location: { city: 'Barsana', state: 'Uttar Pradesh' },
-      images: { main: 'https://picsum.photos/400/300?random=5' },
-      category: 'Temple',
-      tags: ['Radha', 'Birthplace', 'Love']
-    }
-  ];
-
   useEffect(() => {
     loadTirths();
   }, []);
@@ -110,11 +76,14 @@ const TirthsScreen = () => {
     try {
       setIsLoading(true);
       
-      // Simulate loading delay
-      await new Promise<void>(resolve => setTimeout(resolve, 1000));
+      // Load tirthas from JSON file
+      const tirthsList: Tirth[] = tirthData.tirthas;
       
-      setTirths(sampleTirths);
-      setCategories(['All', 'Temple', 'Kund', 'Hill']);
+      // Extract unique districts for categories
+      const districts = ['All', ...new Set(tirthsList.map(t => t.district))];
+      
+      setTirths(tirthsList);
+      setCategories(districts);
     } catch (error) {
       console.error('Error loading tirths:', error);
     } finally {
@@ -142,15 +111,15 @@ const TirthsScreen = () => {
       filtered = filtered.filter(tirth =>
         tirth.name.toLowerCase().includes(query) ||
         tirth.description.toLowerCase().includes(query) ||
-        tirth.location.city.toLowerCase().includes(query) ||
-        tirth.location.state.toLowerCase().includes(query) ||
-        tirth.tags.some(tag => tag.toLowerCase().includes(query))
+        tirth.shortDescription.toLowerCase().includes(query) ||
+        tirth.location.address.toLowerCase().includes(query) ||
+        tirth.district.toLowerCase().includes(query)
       );
     }
 
-    // Apply category filter
-    if (selectedCategory) {
-      filtered = filtered.filter(tirth => tirth.category === selectedCategory);
+    // Apply category filter (district filter)
+    if (selectedCategory && selectedCategory !== 'All') {
+      filtered = filtered.filter(tirth => tirth.district === selectedCategory);
     }
 
     setFilteredTirths(filtered);
@@ -158,8 +127,7 @@ const TirthsScreen = () => {
 
   const handleTirthPress = (tirth: Tirth) => {
     // Navigate to tirth detail screen
-    // navigation.navigate('TirthDetail', { tirthId: tirth.id });
-    console.log('Tirth pressed:', tirth.name);
+    navigation.navigate('TirthDetail', { tirth });
   };
 
   const renderTirthCard = ({ item }: { item: Tirth }) => (
@@ -167,29 +135,32 @@ const TirthsScreen = () => {
       style={styles.tirthCard}
       onPress={() => handleTirthPress(item)}
     >
-      {/* <FastImage
-        source={{ uri: item.images.main }}
-        style={styles.tirthImage}
-        resizeMode={FastImage.resizeMode.cover}
-      /> */}
       <View style={styles.tirthContent}>
         <H3 style={styles.tirthName} color={COLORS.text.primary} weight='semiBold' size='md'>
           {item.name}
         </H3>
         <BodyText style={styles.tirthLocation} color={COLORS.text.secondary} size='sm'>
-          {item.location.city}, {item.location.state}
+          <Ionicons name="location-outline" size={14} color={COLORS.text.secondary} />
+          {' '}{item.location.address}, {item.district}
         </BodyText>
-        <BodyText style={styles.tirthDescription} color={COLORS.text.tertiary} size='xs'>
-          {item.description.substring(0, 100)}...
-        </BodyText>
+        {item.shortDescription && (
+          <BodyText style={styles.tirthDescription} color={COLORS.text.tertiary} size='xs' numberOfLines={2}>
+            {item.shortDescription}
+          </BodyText>
+        )}
         <View style={styles.tirthTags}>
-          {item.tags.slice(0, 3).map((tag, index) => (
-            <View key={index} style={styles.tag}>
+          <View style={styles.tag}>
+            <BodyText style={styles.tagText} color={COLORS.primary} size='xs'>
+              {item.district}
+            </BodyText>
+          </View>
+          {item.category && (
+            <View style={styles.tag}>
               <BodyText style={styles.tagText} color={COLORS.primary} size='xs'>
-                {tag}
+                {item.category}
               </BodyText>
             </View>
-          ))}
+          )}
         </View>
       </View>
     </TouchableOpacity>
@@ -220,7 +191,8 @@ const TirthsScreen = () => {
           All
         </BodyText>
       </TouchableOpacity>
-      {categories.map((category) => (
+   
+      {categories.filter(cat => cat !== 'All').map((category) => (
         <TouchableOpacity
           key={category}
           style={[
@@ -394,20 +366,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: COLORS.background.secondary,
-    borderWidth: 1,
-    borderColor: COLORS.border.light,
-  },
-  activeCategoryButton: {
-    backgroundColor: COLORS.primary,
+    // backgroundColor: COLORS.white,
+    borderWidth: 1.5,
     borderColor: COLORS.primary,
   },
+  activeCategoryButton: {
+    backgroundColor: COLORS.background.appColor,
+    borderColor: COLORS.background.appColor,
+  },
   categoryText: {
-    fontFamily: FONTS.gilroy.medium,
+    fontFamily: FONTS.gilroy.semiBold,
     fontSize: FONT_SIZES.sm,
+    color: COLORS.primary,
   },
   activeCategoryText: {
-    fontFamily: FONTS.gilroy.semiBold,
+    fontFamily: FONTS.gilroy.bold,
+    color: COLORS.white,
   },
   resultsContainer: {
     paddingHorizontal: 20,

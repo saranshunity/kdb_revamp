@@ -20,8 +20,37 @@ import FamilyMembersScreen from '../screens/family/FamilyMembersScreen';
 import AddFamilyMemberScreen from '../screens/family/AddFamilyMemberScreen';
 import LocationMapScreen from '../screens/family/LocationMapScreen';
 import TirthsScreen from '../screens/tirths/TirthsScreen';
+import TirthDetailScreen from '../screens/tirths/TirthDetailScreen';
 import { COLORS } from '../constants/colors';
 import { FONTS, FONT_SIZES } from '../constants/fonts';
+
+// Tirth type for navigation
+interface Tirth {
+  id: string;
+  name: string;
+  alternateName: string;
+  category: string;
+  district: string;
+  location: {
+    address: string;
+    coordinates: {
+      latitude: number | null;
+      longitude: number | null;
+    };
+  };
+  shortDescription: string;
+  description: string;
+  significance: string;
+  mythology: string;
+  bestTimeToVisit: string;
+  facilities: string[];
+  images: string[];
+  nearbyTirthas: string[];
+  distanceFromKurukshetra: string;
+  openingHours: string;
+  entryFee: string;
+  historicalReferences: string[];
+}
 
 // Navigation types
 export type RootStackParamList = {
@@ -36,6 +65,7 @@ export type RootStackParamList = {
   AddFamilyMember: undefined;
   LocationMap: undefined;
   Tirths: undefined;
+  TirthDetail: { tirth: Tirth };
 };
 
 export type AuthStackParamList = {
@@ -174,6 +204,7 @@ function AppNavigator() {
         <Stack.Screen name='AddFamilyMember' component={AddFamilyMemberScreen} />
         <Stack.Screen name='LocationMap' component={LocationMapScreen} />
         <Stack.Screen name='Tirths' component={TirthsScreen} />
+        <Stack.Screen name='TirthDetail' component={TirthDetailScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
