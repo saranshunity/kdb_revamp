@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   StyleSheet,
@@ -56,6 +56,21 @@ const onboardingData = [
 const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  // Auto-scroll functionality
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (currentIndex < onboardingData.length - 1) {
+        setCurrentIndex(currentIndex + 1);
+      } else {
+        // Navigate to main tab navigator after last slide
+        // navigation.replace('Main');
+      }
+    }, 3000); // Auto-scroll every 3 seconds
+
+    return () => clearInterval(timer);
+  }, [currentIndex, navigation]);
 
   const handleNext = () => {
     if (currentIndex < onboardingData.length - 1) {
@@ -66,27 +81,18 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
     }
   };
 
-  const handleSkip = () => {
-    navigation.replace('Main');
-  };
-
   const currentSlide = onboardingData[currentIndex];
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar barStyle='dark-content' backgroundColor={COLORS.background.primary}/>
   
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
-          <BodyText color={COLORS.tertiary} size='md'>
-            Skip
-          </BodyText>
-        </TouchableOpacity>
-      </View>
+      {/* Header - Removed skip button */}
+      <View style={styles.header} />
 
       {/* Content */}
       <ScrollView
+        ref={scrollViewRef}
         style={styles.content}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.contentContainer}
@@ -148,9 +154,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
       >
         <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
           <ButtonTextPrimary size='lg'>
-            {currentIndex === onboardingData.length - 1
-              ? 'Get Started'
-              : 'Next'}
+            Get Started
           </ButtonTextPrimary>
         </TouchableOpacity>
       </View>
@@ -164,14 +168,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background.primary
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    paddingHorizontal: 24,
     paddingVertical: 16,
-  },
-  skipButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
   },
   content: {
     flex: 1,
