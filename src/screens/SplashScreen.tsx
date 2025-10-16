@@ -26,21 +26,19 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ navigation }) => {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar
         barStyle='dark-content'
-        backgroundColor={COLORS.background.appColor}
+        backgroundColor={COLORS.white}
       />
 
       <View style={styles.content}>
         {/* Logo placeholder - replace with actual KDB logo */}
         <View style={styles.logoContainer}>
           <View style={styles.logoPlaceholder}>
-            <H1 color={COLORS.white} weight='bold'>
-              KDB
-            </H1>
+           <Image source={require('../assets/images/appLogo.png')} style={{width: 100, height: 100}} />
           </View>
         </View>
 
-        <View style={styles.textContainer}>
-          <H1 color={COLORS.white} weight='bold' size='3xl'>
+        {/* <View style={styles.textContainer}>
+          <H1 color={COLORS.white} weight='bold'>
            48 Kos Kurukshetra
           </H1>
           {/* <BodyText
@@ -50,7 +48,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ navigation }) => {
           >
             Your trusted financial partner
           </BodyText> */}
-        </View>
+        {/* </View>  */}
 
         {/* <View style={styles.loadingContainer}>
           <View style={styles.loadingBar}>
@@ -72,7 +70,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background.appColor
+    backgroundColor: COLORS.white
     ,
   },
   content: {

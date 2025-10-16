@@ -200,7 +200,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         >
         <QuickLinkItem 
           key="events-1" 
-          icon="restaurant-outline" 
+          icon="calendar-outline" 
           label="Events" 
           onPress={() => stackNavigation.navigate('Events')}
         />
@@ -228,9 +228,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         <TodaysEvents listData={todaysEventsDataArray} />
       <View style={styles.promotionalCard}>
           <View style={styles.promotionalContent}>
-            <H3 color={COLORS.primary} weight='bold' size='lg'>
+            <H4 color={COLORS.primary} weight='bold' size='lg'>
               Locate your family members
-            </H3>
+            </H4>
             <BodyText
               color={COLORS.secondary}
               size='sm'
