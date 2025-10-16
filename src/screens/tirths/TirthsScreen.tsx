@@ -356,19 +356,21 @@ const styles = StyleSheet.create({
   },
   categoryContainer: {
     backgroundColor: COLORS.background.primary,
-    paddingBottom: 16,
+    // maxHeight:60,
+    marginBottom: 16,
+    // paddingBottom: 16,
   },
   categoryContent: {
     paddingHorizontal: 20,
-    gap: 8,
+    paddingVertical: 4,
   },
   categoryButton: {
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 2,
     borderRadius: 20,
-    // backgroundColor: COLORS.white,
-    borderWidth: 1.5,
-    borderColor: COLORS.primary,
+    backgroundColor: COLORS.background.secondary,
+    marginRight: 4,
+    height: 32,
   },
   activeCategoryButton: {
     backgroundColor: COLORS.background.appColor,

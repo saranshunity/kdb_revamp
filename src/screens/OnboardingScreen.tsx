@@ -6,11 +6,14 @@ import {
   Dimensions,
   TouchableOpacity,
   StatusBar,
+  Animated,
+  Easing,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { H1, H2, BodyText, ButtonTextPrimary } from '../components/Text';
 import { COLORS } from '../constants/colors';
 import OnboardingCard from '../components/OnboardingCard';
+import { IGMIllustration, KosIllustration, TirthMitraIllustration } from '../components/OnboardingIllustrations';
 
 interface OnboardingScreenProps {
   navigation: any;
@@ -21,35 +24,27 @@ const { width: screenWidth } = Dimensions.get('window');
 const onboardingData = [
   {
     id: 1,
-    title: 'Welcome to KDB',
-    subtitle: 'Your Financial Journey Starts Here',
+    title: 'International Gita Mahotsav',
+    subtitle: 'Celebrate the Divine Wisdom',
     description:
-      'Experience banking like never before with our innovative digital platform designed for the modern world.',
-    icon: '🏦',
+      'Join the grand celebration of the Bhagavad Gita with cultural events, spiritual discourses, and divine experiences.',
+    illustration: 'igm',
   },
   {
     id: 2,
-    title: 'Secure & Fast',
-    subtitle: 'Banking Made Simple',
+    title: '48 Kos Pilgrimage',
+    subtitle: 'Explore 182 Sacred Tirths',
     description:
-      'Enjoy lightning-fast transactions with bank-grade security that keeps your money and data safe.',
-    icon: '🔒',
+      'Discover the sacred 48 Kos area of Kurukshetra with detailed information about all 182 holy tirths and their significance.',
+    illustration: 'kos',
   },
   {
     id: 3,
-    title: 'Smart Features',
-    subtitle: 'Intelligent Financial Tools',
+    title: 'Tirth Mitra',
+    subtitle: 'Your Spiritual Companion',
     description:
-      'Get insights, track spending, and make smarter financial decisions with our AI-powered features.',
-    icon: '📊',
-  },
-  {
-    id: 4,
-    title: '24/7 Support',
-    subtitle: 'Always Here for You',
-    description:
-      'Our dedicated support team is available around the clock to help you with any questions.',
-    icon: '💬',
+      'Get your digital Tirth Mitra card to access exclusive facilities and services during your pilgrimage journey.',
+    illustration: 'tirth-mitra',
   },
 ];
 
@@ -57,6 +52,33 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
+  
+  // Animation values
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const slideAnim = useRef(new Animated.Value(0)).current;
+
+  // Animation on slide change
+  useEffect(() => {
+    // Reset animation values
+    fadeAnim.setValue(0);
+    slideAnim.setValue(15);
+
+    // Animate in with staggered timing
+    Animated.sequence([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 300,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [currentIndex]);
 
   // Auto-scroll functionality
   useEffect(() => {
@@ -64,10 +86,10 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
       if (currentIndex < onboardingData.length - 1) {
         setCurrentIndex(currentIndex + 1);
       } else {
-        // Navigate to main tab navigator after last slide
-        // navigation.replace('Main');
+        // Restart from the first screen
+        setCurrentIndex(0);
       }
-    }, 3000); // Auto-scroll every 3 seconds
+    }, 3500); // Auto-scroll every 3.5 seconds
 
     return () => clearInterval(timer);
   }, [currentIndex, navigation]);
@@ -83,12 +105,25 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
 
   const currentSlide = onboardingData[currentIndex];
 
+  const renderIllustration = (type: string) => {
+    switch (type) {
+      case 'igm':
+        return <IGMIllustration size={120} />;
+      case 'kos':
+        return <KosIllustration size={120} />;
+      case 'tirth-mitra':
+        return <TirthMitraIllustration size={120} />;
+      default:
+        return <IGMIllustration size={120} />;
+    }
+  };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar barStyle='dark-content' backgroundColor={COLORS.background.primary}/>
   
-      {/* Header - Removed skip button */}
-      <View style={styles.header} />
+      {/* Background gradient overlay */}
+      <View style={styles.backgroundOverlay} />
 
       {/* Content */}
       <ScrollView
@@ -97,15 +132,33 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.contentContainer}
       >
-        {/* Icon */}
-        <View style={styles.iconContainer}>
-          <View style={styles.iconBackground}>
-            <BodyText size='4xl'>{currentSlide.icon}</BodyText>
-          </View>
-        </View>
+        {/* Illustration */}
+        <Animated.View 
+          style={[
+            styles.iconContainer,
+            {
+              opacity: fadeAnim,
+              transform: [
+                { translateY: slideAnim }
+              ]
+            }
+          ]}
+        >
+          {renderIllustration(currentSlide.illustration)}
+        </Animated.View>
 
         {/* Text Content */}
-        <View style={styles.textContainer}>
+        <Animated.View 
+          style={[
+            styles.textContainer,
+            {
+              opacity: fadeAnim,
+              transform: [
+                { translateY: slideAnim }
+              ]
+            }
+          ]}
+        >
           <H1
             color={COLORS.primary}
             weight='bold'
@@ -129,18 +182,18 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
           >
             {currentSlide.description}
           </BodyText>
-        </View>
+        </Animated.View>
 
         {/* Progress Indicators */}
         <View style={styles.progressContainer}>
           {onboardingData.map((_, index) => (
-            <View
+            <Animated.View
               key={index}
               style={[
                 styles.progressDot,
                 {
                   backgroundColor:
-                    index === currentIndex ? COLORS.primary : COLORS.border.light
+                    index === currentIndex ? COLORS.primary : COLORS.border.light,
                 },
               ]}
             />
@@ -150,9 +203,18 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
 
       {/* Bottom Button */}
       <View
-        style={[styles.bottomContainer, { paddingBottom: insets.bottom + 16 }]}
+        style={[
+          styles.bottomContainer, 
+          { 
+            paddingBottom: insets.bottom + 16,
+          }
+        ]}
       >
-        <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
+        <TouchableOpacity 
+          style={styles.nextButton} 
+          onPress={handleNext}
+          activeOpacity={0.8}
+        >
           <ButtonTextPrimary size='lg'>
             Get Started
           </ButtonTextPrimary>
@@ -165,75 +227,93 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background.primary
+    backgroundColor: COLORS.background.primary,
   },
-  header: {
-    paddingVertical: 16,
+  backgroundOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: COLORS.primary + '08',
+    opacity: 0.8,
   },
   content: {
     flex: 1,
   },
   contentContainer: {
     flexGrow: 1,
-    paddingHorizontal: 32,
+    paddingHorizontal: 24,
+    paddingTop: 40,
+    paddingBottom: 20,
   },
   iconContainer: {
     alignItems: 'center',
-    marginBottom: 48,
-    marginTop: 32,
-  },
-  iconBackground: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: COLORS.primary + '10',
-    justifyContent: 'center',
-    alignItems: 'center',
+    marginBottom: 60,
+    marginTop: 20,
   },
   textContainer: {
     alignItems: 'center',
-    marginBottom: 48,
+    marginBottom: 60,
+    paddingHorizontal: 16,
   },
   title: {
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
+    lineHeight: 40,
+    letterSpacing: -0.5,
   },
   subtitle: {
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: 28,
+    lineHeight: 28,
+    letterSpacing: -0.3,
   },
   description: {
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: 26,
+    letterSpacing: 0.2,
+    maxWidth: screenWidth * 0.8,
   },
   progressContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 40,
   },
   progressDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginHorizontal: 4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginHorizontal: 6,
+    shadowColor: COLORS.primary,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
   },
   bottomContainer: {
-    paddingHorizontal: 32,
+    paddingHorizontal: 24,
+    paddingTop: 20,
   },
   nextButton: {
     backgroundColor: COLORS.primary,
-    paddingVertical: 16,
-    borderRadius: 12,
+    paddingVertical: 18,
+    borderRadius: 16,
     alignItems: 'center',
     shadowColor: COLORS.primary,
     shadowOffset: {
       width: 0,
-      height: 4,
+      height: 8,
     },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 8,
+    borderWidth: 1,
+    borderColor: COLORS.primary + '20',
   },
 });
 
