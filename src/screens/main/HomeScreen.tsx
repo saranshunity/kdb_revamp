@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
   StatusBar,
+  Animated,
+  Easing,
 } from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -35,6 +38,14 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const [showPermissionSheet, setShowPermissionSheet] = useState(false);
   const { allGranted, hasShownPermissionPrompt, setHasShownPermissionPrompt } = usePermissionContext();
 
+  // Animation values for family illustration
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const member1Anim = useRef(new Animated.Value(0)).current;
+  const member2Anim = useRef(new Animated.Value(0)).current;
+  const member3Anim = useRef(new Animated.Value(0)).current;
+  const member4Anim = useRef(new Animated.Value(0)).current;
+  const lineAnim = useRef(new Animated.Value(0)).current;
+
   // Check permissions on screen focus
   useEffect(() => {
     if (!allGranted && !hasShownPermissionPrompt) {
@@ -47,6 +58,74 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       return () => clearTimeout(timer);
     }
   }, [allGranted, hasShownPermissionPrompt, setHasShownPermissionPrompt]);
+
+  // Animation effects for family illustration
+  useEffect(() => {
+    // Pulse animation for location pin
+    const pulseAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.2,
+          duration: 1000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+
+    // Staggered animation for family members
+    const memberAnimations = Animated.stagger(200, [
+      Animated.timing(member1Anim, {
+        toValue: 1,
+        duration: 600,
+        easing: Easing.out(Easing.back(1.2)),
+        useNativeDriver: true,
+      }),
+      Animated.timing(member2Anim, {
+        toValue: 1,
+        duration: 600,
+        easing: Easing.out(Easing.back(1.2)),
+        useNativeDriver: true,
+      }),
+      Animated.timing(member3Anim, {
+        toValue: 1,
+        duration: 600,
+        easing: Easing.out(Easing.back(1.2)),
+        useNativeDriver: true,
+      }),
+      Animated.timing(member4Anim, {
+        toValue: 1,
+        duration: 600,
+        easing: Easing.out(Easing.back(1.2)),
+        useNativeDriver: true,
+      }),
+    ]);
+
+    // Connection lines animation
+    const lineAnimation = Animated.timing(lineAnim, {
+      toValue: 1,
+      duration: 800,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: true,
+    });
+
+    // Start animations
+    pulseAnimation.start();
+    memberAnimations.start();
+    lineAnimation.start();
+
+    return () => {
+      pulseAnimation.stop();
+      memberAnimations.stop();
+      lineAnimation.stop();
+    };
+  }, []);
 
   const handlePermissionGranted = () => {
     setShowPermissionSheet(false);
@@ -393,28 +472,196 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         <View style={{marginTop: 26}}/>
         <MahotsavHulchal listData={mahotsavHulchal} type="mahotsav" />
         <TodaysEvents listData={todaysEventsDataArray} type="events" />
-      <View style={styles.promotionalCard}>
-          <View style={styles.promotionalContent}>
-            <H4 color={COLORS.primary} weight='bold' size='lg'>
-              Locate your family members
-            </H4>
-            <BodyText
-              color={COLORS.secondary}
-              size='sm'
-              style={styles.promotionalText}
-            >
-              Use your KDB card for all purchases and earn 2% cashback on every
-              transaction.
-            </BodyText>
-            <TouchableOpacity 
-              style={styles.promotionalButton}
-              onPress={() => stackNavigation.navigate('FamilyMembers')}
-            >
-              <ButtonTextPrimary size='md'>Locate Now</ButtonTextPrimary>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.promotionalIcon}>
-            <BodyText size='3xl'>💳</BodyText>
+      <View style={styles.familyLocationCard}>
+          {/* Google Maps Background */}
+          <MapView
+            provider={PROVIDER_GOOGLE}
+            style={styles.mapView}
+            initialRegion={{
+              latitude: 29.96321722479801,
+              longitude: 76.82765492188825,
+              latitudeDelta: 0.003,
+              longitudeDelta: 0.003,
+            }}
+            mapType="standard"
+            scrollEnabled={false}
+            zoomEnabled={false}
+            pitchEnabled={false}
+            rotateEnabled={false}
+            showsUserLocation={false}
+            showsMyLocationButton={false}
+            showsCompass={false}
+            showsScale={false}
+            showsBuildings={true}
+            showsTraffic={false}
+            showsIndoors={false}
+          />
+          <View style={styles.mapOverlayLarge} />
+          
+          {/* Content Overlay */}
+          <View style={styles.contentOverlay}>
+            <View style={styles.textContent}>
+              <H5 color={COLORS.white} weight='semiBold' size='lg'>
+                Locate your family members
+              </H5>
+              <TouchableOpacity 
+                style={styles.overlayButton}
+                onPress={() => stackNavigation.navigate('FamilyMembers')}
+              >
+                <BodyText 
+                  color={COLORS.white} 
+                  size='md' 
+                  weight='semiBold'
+                  style={{ fontFamily: FONTS.gilroy.bold }}
+                >
+                  Locate Now
+                </BodyText>
+              </TouchableOpacity>
+            </View>
+            
+            {/* Animated Markers on Right */}
+            <View style={styles.markersContainer}>
+              <View style={styles.familyIllustration}>
+                {/* Location Pin */}
+                <Animated.View 
+                  style={[
+                    styles.locationPin,
+                    {
+                      transform: [{ scale: pulseAnim }]
+                    }
+                  ]}
+                >
+                  <Ionicons name="location" size={14} color={COLORS.white} />
+                </Animated.View>
+                
+                {/* Family Members */}
+                <View style={styles.familyMembers}>
+                  <Animated.View 
+                    style={[
+                      styles.memberDot, 
+                      styles.member1,
+                      {
+                        opacity: member1Anim,
+                        transform: [
+                          {
+                            scale: member1Anim.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [0.3, 1],
+                            })
+                          }
+                        ]
+                      }
+                    ]} 
+                  />
+                  <Animated.View 
+                    style={[
+                      styles.memberDot, 
+                      styles.member2,
+                      {
+                        opacity: member2Anim,
+                        transform: [
+                          {
+                            scale: member2Anim.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [0.3, 1],
+                            })
+                          }
+                        ]
+                      }
+                    ]} 
+                  />
+                  <Animated.View 
+                    style={[
+                      styles.memberDot, 
+                      styles.member3,
+                      {
+                        opacity: member3Anim,
+                        transform: [
+                          {
+                            scale: member3Anim.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [0.3, 1],
+                            })
+                          }
+                        ]
+                      }
+                    ]} 
+                  />
+                  <Animated.View 
+                    style={[
+                      styles.memberDot, 
+                      styles.member4,
+                      {
+                        opacity: member4Anim,
+                        transform: [
+                          {
+                            scale: member4Anim.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [0.3, 1],
+                            })
+                          }
+                        ]
+                      }
+                    ]} 
+                  />
+                </View>
+                
+                {/* Connection Lines */}
+                <View style={styles.connectionLines}>
+                  <Animated.View 
+                    style={[
+                      styles.line, 
+                      styles.line1,
+                      {
+                        opacity: lineAnim,
+                        transform: [
+                          {
+                            scaleX: lineAnim.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [0, 1],
+                            })
+                          }
+                        ]
+                      }
+                    ]} 
+                  />
+                  <Animated.View 
+                    style={[
+                      styles.line, 
+                      styles.line2,
+                      {
+                        opacity: lineAnim,
+                        transform: [
+                          {
+                            scaleX: lineAnim.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [0, 1],
+                            })
+                          }
+                        ]
+                      }
+                    ]} 
+                  />
+                  <Animated.View 
+                    style={[
+                      styles.line, 
+                      styles.line3,
+                      {
+                        opacity: lineAnim,
+                        transform: [
+                          {
+                            scaleX: lineAnim.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [0, 1],
+                            })
+                          }
+                        ]
+                      }
+                    ]} 
+                  />
+                </View>
+              </View>
+            </View>
           </View>
         </View>
         <TirthsList listData={tirthsList} />
@@ -693,34 +940,209 @@ const styles = StyleSheet.create({
   transactionDetails: {
     flex: 1,
   },
-  promotionalCard: {
-    backgroundColor: COLORS.background.appColor + '10',
-    marginHorizontal: 20,
-    padding: 20,
-    borderRadius: 16,
+  familyLocationCard: {
+    // marginHorizontal: 20,
+    height: 200,
+    // borderRadius: 20,
+    overflow: 'hidden',
+    marginBottom: 30,
+    position: 'relative',
+  },
+  mapView: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+  },
+  mapOverlayLarge: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  },
+  contentOverlay: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.background.appColor + '30',
-    marginBottom: 30,
+    paddingHorizontal: 24,
+    paddingVertical: 20,
   },
-  promotionalContent: {
+  textContent: {
     flex: 1,
+    paddingRight: 20,
   },
-  promotionalText: {
-    marginVertical: 8,
-    lineHeight: 20,
-  },
-  promotionalButton: {
-    backgroundColor: COLORS.background.appColor,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
+  overlayButton: {
+    backgroundColor: COLORS.appColor,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 12,
     alignSelf: 'flex-start',
-    marginTop: 8,
+    marginTop: 14,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+    // marginTop: 10,
   },
-  promotionalIcon: {
-    marginLeft: 16,
+  markersContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  familyIllustration: {
+    width: 100,
+    height: 100,
+    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  mapBackground: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#E8F4FD',
+    borderRadius: 12,
+  },
+  mapGrid: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+  },
+  gridLine: {
+    position: 'absolute',
+    backgroundColor: '#B8D4F0',
+  },
+  gridLine1: {
+    top: '25%',
+    left: 0,
+    right: 0,
+    height: 1,
+  },
+  gridLine2: {
+    top: '50%',
+    left: 0,
+    right: 0,
+    height: 1,
+  },
+  gridLine3: {
+    top: '75%',
+    left: 0,
+    right: 0,
+    height: 1,
+  },
+  gridLine4: {
+    left: '25%',
+    top: 0,
+    bottom: 0,
+    width: 1,
+  },
+  mapOverlay: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 12,
+  },
+  locationPin: {
+    position: 'absolute',
+    top: 15,
+    left: 38,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: COLORS.appColor,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 4,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  familyMembers: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+  },
+  memberDot: {
+    position: 'absolute',
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: COLORS.primary,
+    borderWidth: 3,
+    borderColor: COLORS.white,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+    elevation: 3,
+  },
+  member1: {
+    top: 25,
+    right: 15,
+  },
+  member2: {
+    top: 55,
+    right: 10,
+  },
+  member3: {
+    bottom: 25,
+    right: 20,
+  },
+  member4: {
+    top: 40,
+    left: 10,
+  },
+  connectionLines: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+  },
+  line: {
+    position: 'absolute',
+    height: 3,
+    backgroundColor: COLORS.appColor,
+    borderRadius: 1.5,
+    shadowColor: COLORS.appColor,
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  line1: {
+    top: 31,
+    right: 28,
+    width: 25,
+    transform: [{ rotate: '-30deg' }],
+  },
+  line2: {
+    top: 61,
+    right: 23,
+    width: 20,
+    transform: [{ rotate: '-45deg' }],
+  },
+  line3: {
+    top: 46,
+    left: 23,
+    width: 30,
+    transform: [{ rotate: '15deg' }],
   },
   spotlightTitle: {
     marginBottom: 6,
