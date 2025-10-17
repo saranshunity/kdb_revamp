@@ -74,9 +74,9 @@ const ItemDetailScreen: React.FC<ItemDetailScreenProps> = ({ navigation }) => {
           <Ionicons name="arrow-back" size={24} color={COLORS.text.primary} />
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.shareButton}>
+        {/* <TouchableOpacity style={styles.shareButton}>
           <Ionicons name="share-outline" size={24} color={COLORS.text.primary} />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
       {/* Scrollable Content */}
@@ -90,8 +90,8 @@ const ItemDetailScreen: React.FC<ItemDetailScreenProps> = ({ navigation }) => {
           <H5 
             style={[styles.title, { fontFamily: FONTS.gilroy.bold }]} 
             color={COLORS.text.primary} 
-            weight='bold' 
-            size='2xl'
+            weight='medium' 
+            size='md'
           >
             {item.title}
           </H5>
@@ -120,8 +120,8 @@ const ItemDetailScreen: React.FC<ItemDetailScreenProps> = ({ navigation }) => {
             <H5 
               style={[styles.sectionTitle, { fontFamily: FONTS.gilroy.bold }]} 
               color={COLORS.text.primary} 
-              weight='bold' 
-              size='xl'
+              weight='semiBold' 
+              size='md'
             >
               About
             </H5>
@@ -140,8 +140,8 @@ const ItemDetailScreen: React.FC<ItemDetailScreenProps> = ({ navigation }) => {
           <H5 
             style={[styles.sectionTitle, { fontFamily: FONTS.gilroy.bold }]} 
             color={COLORS.text.primary} 
-            weight='bold' 
-            size='xl'
+            weight='semiBold' 
+            size='md'
           >
             Event Details
           </H5>
@@ -162,8 +162,8 @@ const ItemDetailScreen: React.FC<ItemDetailScreenProps> = ({ navigation }) => {
             <H5 
               style={[styles.sectionTitle, { fontFamily: FONTS.gilroy.bold }]} 
               color={COLORS.text.primary} 
-              weight='bold' 
-              size='xl'
+              weight='semiBold' 
+              size='md'
             >
               Additional Information
             </H5>
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: FONTS.gilroy.bold,
-    fontSize: FONT_SIZES['2xl'],
+    fontSize: FONT_SIZES['xl'],
     marginBottom: 16,
   },
   categoriesContainer: {
@@ -270,14 +270,14 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   sectionTitle: {
-    fontFamily: FONTS.gilroy.bold,
-    fontSize: FONT_SIZES.xl,
-    marginBottom: 16,
+    fontFamily: FONTS.gilroy.semiBold,
+    fontSize: FONT_SIZES.lg,
+    marginBottom: 8,
   },
   description: {
     fontFamily: FONTS.gilroy.regular,
-    fontSize: FONT_SIZES.lg,
-    lineHeight: 28,
+    fontSize: FONT_SIZES.sm,
+    lineHeight: 20,
   },
   detailsContainer: {
     gap: 20,
@@ -288,8 +288,8 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   infoIconContainer: {
-    width: 48,
-    height: 48,
+    width: 32,
+    height: 32,
     borderRadius: 24,
     backgroundColor: COLORS.appColor + '20',
     justifyContent: 'center',
@@ -300,17 +300,17 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontFamily: FONTS.gilroy.medium,
-    fontSize: FONT_SIZES.md,
+    fontSize: FONT_SIZES.sm,
     marginBottom: 4,
   },
   infoValue: {
     fontFamily: FONTS.gilroy.regular,
-    fontSize: FONT_SIZES.lg,
+    fontSize: FONT_SIZES.sm,
   },
   additionalInfo: {
     fontFamily: FONTS.gilroy.regular,
-    fontSize: FONT_SIZES.lg,
-    lineHeight: 28,
+    fontSize: FONT_SIZES.sm,
+    lineHeight: 20,
   },
   actionButtons: {
     paddingHorizontal: 20,
