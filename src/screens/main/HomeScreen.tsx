@@ -174,16 +174,22 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         <View style={styles.headerContainer}>
           <View style={styles.header}>
             <View style={styles.headerLeft}>
-              <H2 style={styles.greetingText} color={COLORS.text.primary} weight='bold' size='lg'>
-                Hello, John Doe
-              </H2>
+              <View style={styles.greetingContainer}>
+                <BodyText style={styles.namasteIcon} size='xl'>🙏</BodyText>
+                <H2 style={styles.greetingText} color={COLORS.text.primary} weight='bold' size='lg'>
+                  John Doe
+                </H2>
+              </View>
               <BodyText style={styles.addressText} color={COLORS.text.primary} size='sm'>
                 123 Main Street, City, State 12345
               </BodyText>
             </View>
             <View style={styles.headerRight}>
-              <TouchableOpacity style={styles.settingsButton}>
-                <Ionicons name="settings-outline" size={24} color={COLORS.text.primary} />
+              <TouchableOpacity 
+                style={styles.menuButton}
+                onPress={() => stackNavigation.navigate('Menu')}
+              >
+                <Ionicons name="menu-outline" size={24} color={COLORS.text.primary} />
               </TouchableOpacity>
             </View>
           </View>
@@ -394,6 +400,13 @@ const styles = StyleSheet.create({
   headerLeft: {
     flex: 1,
   },
+  greetingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  namasteIcon: {
+    marginRight: 8,
+  },
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -402,14 +415,14 @@ const styles = StyleSheet.create({
   greetingText: {
     fontFamily: FONTS.gilroy.semiBold,
     fontSize: FONT_SIZES.lg,
-    marginBottom: 2,
+    // marginBottom: 2,
   },
   addressText: {
     fontFamily: FONTS.gilroy.regular,
     fontSize: FONT_SIZES.sm,
     opacity: 0.9,
   },
-  settingsButton: {
+  menuButton: {
     padding: 8,
     backgroundColor: 'rgba(0, 0, 0, 0.1)',
     borderRadius: 20,

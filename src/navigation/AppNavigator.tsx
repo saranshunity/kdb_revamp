@@ -24,6 +24,11 @@ import TirthDetailScreen from '../screens/tirths/TirthDetailScreen';
 import TirthMitraIntroScreen from '../screens/tirthMitra/TirthMitraIntroScreen';
 import TirthMitraGeneratorScreen from '../screens/tirthMitra/TirthMitraGeneratorScreen';
 import TirthMitraCardScreen from '../screens/tirthMitra/TirthMitraCardScreen';
+import MenuScreen from '../screens/main/MenuScreen';
+import AboutKDBScreen from '../screens/main/AboutKDBScreen';
+import AdministrationScreen from '../screens/main/AdministrationScreen';
+import SriKrishnaMuseumScreen from '../screens/main/SriKrishnaMuseumScreen';
+import JyotisarScreen from '../screens/main/JyotisarScreen';
 import { COLORS } from '../constants/colors';
 import { FONTS, FONT_SIZES } from '../constants/fonts';
 
@@ -90,6 +95,11 @@ export type RootStackParamList = {
   TirthMitraIntro: undefined;
   TirthMitraGenerator: undefined;
   TirthMitraCard: { cardData: TirthMitraFormData };
+  Menu: undefined;
+  AboutKDB: undefined;
+  Administration: undefined;
+  SriKrishnaMuseum: undefined;
+  Jyotisar: undefined;
 };
 
 export type AuthStackParamList = {
@@ -232,6 +242,11 @@ function AppNavigator() {
         <Stack.Screen name='TirthMitraIntro' component={TirthMitraIntroScreen} />
         <Stack.Screen name='TirthMitraGenerator' component={TirthMitraGeneratorScreen} />
         <Stack.Screen name='TirthMitraCard' component={TirthMitraCardScreen} />
+        <Stack.Screen name='Menu' component={MenuScreen} />
+        <Stack.Screen name='AboutKDB' component={AboutKDBScreen} />
+        <Stack.Screen name='Administration' component={AdministrationScreen} />
+        <Stack.Screen name='SriKrishnaMuseum' component={SriKrishnaMuseumScreen} />
+        <Stack.Screen name='Jyotisar' component={JyotisarScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
