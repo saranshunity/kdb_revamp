@@ -59,6 +59,12 @@ const MenuScreen: React.FC<MenuScreenProps> = ({ navigation }) => {
     //   type: 'divider',
     // },
     {
+      id: 'permissions',
+      title: 'Permissions',
+      icon: 'shield-outline',
+      onPress: () => stackNavigation.navigate('Permissions'),
+    },
+    {
       id: 'settings',
       title: 'Settings',
       icon: 'settings-outline',

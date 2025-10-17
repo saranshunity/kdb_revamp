@@ -29,6 +29,7 @@ import AboutKDBScreen from '../screens/main/AboutKDBScreen';
 import AdministrationScreen from '../screens/main/AdministrationScreen';
 import SriKrishnaMuseumScreen from '../screens/main/SriKrishnaMuseumScreen';
 import JyotisarScreen from '../screens/main/JyotisarScreen';
+import PermissionsScreen from '../screens/main/PermissionsScreen';
 import { COLORS } from '../constants/colors';
 import { FONTS, FONT_SIZES } from '../constants/fonts';
 
@@ -100,6 +101,7 @@ export type RootStackParamList = {
   Administration: undefined;
   SriKrishnaMuseum: undefined;
   Jyotisar: undefined;
+  Permissions: undefined;
 };
 
 export type AuthStackParamList = {
@@ -247,6 +249,7 @@ function AppNavigator() {
         <Stack.Screen name='Administration' component={AdministrationScreen} />
         <Stack.Screen name='SriKrishnaMuseum' component={SriKrishnaMuseumScreen} />
         <Stack.Screen name='Jyotisar' component={JyotisarScreen} />
+        <Stack.Screen name='Permissions' component={PermissionsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
