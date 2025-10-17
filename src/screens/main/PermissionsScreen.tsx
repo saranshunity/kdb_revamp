@@ -8,6 +8,7 @@ import {
   Alert,
   Linking,
   Platform,
+  Switch,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -138,12 +139,22 @@ const PermissionsScreen: React.FC<PermissionsScreenProps> = ({ navigation }) => 
     const status = getPermissionStatus(permissions[permissionKey]);
     const isGranted = permissions[permissionKey] === 'granted';
     const isBlocked = permissions[permissionKey] === 'blocked';
+    const isUnavailable = permissions[permissionKey] === 'unavailable';
+
+    const handleSwitchToggle = (value: boolean) => {
+      if (value) {
+        onRequest();
+      } else {
+        // If user wants to turn off, show settings to disable
+        PermissionService.openAppSettings();
+      }
+    };
 
     return (
       <View key={permissionKey} style={styles.permissionCard}>
         <View style={styles.permissionHeader}>
           <View style={styles.permissionIconContainer}>
-            <Ionicons name={icon} size={32} color={COLORS.primary} />
+            <Ionicons name={icon} size={32} color={COLORS.appColor} />
           </View>
           <View style={styles.permissionTitleContainer}>
             <H3 style={styles.permissionTitle} color={COLORS.text.primary} weight='bold' size='lg'>
@@ -156,16 +167,26 @@ const PermissionsScreen: React.FC<PermissionsScreenProps> = ({ navigation }) => 
               </BodyText>
             </View>
           </View>
+          <View style={styles.switchContainer}>
+            <Switch
+              value={isGranted}
+              onValueChange={handleSwitchToggle}
+              disabled={isLoading || isUnavailable}
+              trackColor={{
+                false: COLORS.border.light,
+                true: COLORS.appColor + '40',
+              }}
+              thumbColor={isGranted ? COLORS.appColor : COLORS.text.tertiary}
+              ios_backgroundColor={COLORS.border.light}
+            />
+          </View>
         </View>
 
         <BodyText style={styles.permissionDescription} color={COLORS.text.primary} size='md'>
           {description}
         </BodyText>
 
-        <View style={styles.benefitsContainer}>
-          <BodyText style={styles.benefitsTitle} color={COLORS.text.secondary} size='sm' weight='semiBold'>
-            Benefits:
-          </BodyText>
+        {/* <View style={styles.benefitsContainer}>
           {benefits.map((benefit, index) => (
             <View key={index} style={styles.benefitItem}>
               <Ionicons name="checkmark" size={14} color={COLORS.success} />
@@ -174,34 +195,28 @@ const PermissionsScreen: React.FC<PermissionsScreenProps> = ({ navigation }) => 
               </BodyText>
             </View>
           ))}
-        </View>
+        </View> */}
 
-        {!isGranted && (
+        {isBlocked && (
           <TouchableOpacity
-            style={[
-              styles.permissionButton,
-              isBlocked && styles.permissionButtonBlocked,
-            ]}
-            onPress={isBlocked ? PermissionService.openAppSettings : onRequest}
+            style={styles.settingsButton}
+            onPress={PermissionService.openAppSettings}
             disabled={isLoading}
           >
-            <Ionicons 
-              name={isBlocked ? "settings-outline" : "add-circle-outline"} 
-              size={20} 
-              color={isBlocked ? COLORS.text.primary : COLORS.white} 
-            />
-            <BodyText 
-              style={[
-                styles.permissionButtonText,
-                isBlocked && styles.permissionButtonTextBlocked,
-              ]} 
-              color={isBlocked ? COLORS.text.primary : COLORS.white} 
-              size='md' 
-              weight='semiBold'
-            >
-              {isBlocked ? 'Open Settings' : 'Grant Permission'}
+            <Ionicons name="settings-outline" size={20} color={COLORS.appColor} />
+            <BodyText style={styles.settingsButtonText} color={COLORS.appColor} size='md' weight='semiBold'>
+              Open Settings to Enable
             </BodyText>
           </TouchableOpacity>
+        )}
+
+        {isUnavailable && (
+          <View style={styles.unavailableContainer}>
+            <Ionicons name="information-circle" size={16} color={COLORS.text.tertiary} />
+            <BodyText style={styles.unavailableText} color={COLORS.text.tertiary} size='sm'>
+              Not available on this device
+            </BodyText>
+          </View>
         )}
       </View>
     );
@@ -233,83 +248,52 @@ const PermissionsScreen: React.FC<PermissionsScreenProps> = ({ navigation }) => 
         contentContainerStyle={styles.scrollContent}
       >
         {/* Introduction */}
-        <View style={styles.introSection}>
+        {/* <View style={styles.introSection}>
           <View style={styles.introIconContainer}>
-            <Ionicons name="shield-checkmark" size={48} color={COLORS.primary} />
+            <Ionicons name="shield-checkmark" size={48} color={COLORS.appColor} />
           </View>
           <H2 style={styles.introTitle} color={COLORS.text.primary} weight='bold' size='xl'>
             App Permissions
           </H2>
           <BodyText style={styles.introDescription} color={COLORS.text.primary} size='md'>
-            To provide you with the best experience and access to all features, this app requires certain permissions. Your privacy is important to us, and we only request permissions that are necessary for the app's functionality.
+            Grant permissions to access all app features and get the best experience.
           </BodyText>
-        </View>
+        </View> */}
 
         {/* Permission Cards */}
         <View style={styles.permissionsContainer}>
           {renderPermissionCard(
             'Location Access',
-            'Allow the app to access your location to provide location-based services, find nearby places, and help you navigate to important sites.',
+            'Find nearby temples, get directions, and locate family members.',
             'location-outline',
             'location',
             requestLocationPermission,
             [
-              'Find nearby temples and religious sites',
-              'Get directions to pilgrimage locations',
-              'Locate family members during events',
-              'Discover local events and activities',
-              'Emergency location sharing'
+              'Find nearby temples',
+              'Get directions',
+              'Locate family members',
+              'Emergency sharing'
             ]
           )}
 
           {renderPermissionCard(
             'Notifications',
-            'Enable notifications to receive important updates about events, reminders, and special announcements related to your pilgrimage journey.',
+            'Get event reminders, important updates, and safety alerts.',
             'notifications-outline',
             'notifications',
             requestNotificationPermission,
             [
-              'Event reminders and updates',
-              'Important announcements',
-              'Safety alerts and notifications',
-              'Daily spiritual quotes and messages',
+              'Event reminders',
+              'Important updates',
+              'Safety alerts',
               'Emergency notifications'
             ]
           )}
         </View>
 
-        {/* Summary */}
-        <View style={styles.summarySection}>
-          <H3 style={styles.summaryTitle} color={COLORS.text.primary} weight='bold' size='lg'>
-            Why These Permissions?
-          </H3>
-          <BodyText style={styles.summaryText} color={COLORS.text.primary} size='md'>
-            These permissions are essential for the core features of the KDB app. Without them, you may not be able to:
-          </BodyText>
-          <View style={styles.summaryList}>
-            <View style={styles.summaryItem}>
-              <Ionicons name="location" size={16} color={COLORS.error} />
-              <BodyText style={styles.summaryItemText} color={COLORS.text.primary} size='sm'>
-                Access location-based features and navigation
-              </BodyText>
-            </View>
-            <View style={styles.summaryItem}>
-              <Ionicons name="notifications" size={16} color={COLORS.error} />
-              <BodyText style={styles.summaryItemText} color={COLORS.text.primary} size='sm'>
-                Receive important updates and reminders
-              </BodyText>
-            </View>
-            <View style={styles.summaryItem}>
-              <Ionicons name="people" size={16} color={COLORS.error} />
-              <BodyText style={styles.summaryItemText} color={COLORS.text.primary} size='sm'>
-                Use family location and safety features
-              </BodyText>
-            </View>
-          </View>
-        </View>
 
         {/* Debug Section - Remove in production */}
-        <PermissionDebugger />
+        {/* <PermissionDebugger /> */}
 
         {/* Action Buttons */}
         <View style={styles.actionButtons}>
@@ -318,8 +302,8 @@ const PermissionsScreen: React.FC<PermissionsScreenProps> = ({ navigation }) => 
             onPress={checkAllPermissions}
             disabled={isLoading}
           >
-            <Ionicons name="refresh" size={20} color={COLORS.primary} />
-            <BodyText style={styles.refreshButtonText} color={COLORS.primary} size='md' weight='semiBold'>
+            <Ionicons name="refresh" size={20} color={COLORS.appColor} />
+            <BodyText style={styles.refreshButtonText} color={COLORS.appColor} size='md' weight='semiBold'>
               Refresh Status
             </BodyText>
           </TouchableOpacity>
@@ -376,7 +360,7 @@ const styles = StyleSheet.create({
   introSection: {
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 32,
+    paddingVertical: 24,
     backgroundColor: COLORS.background.tertiary,
   },
   introIconContainer: {
@@ -396,13 +380,13 @@ const styles = StyleSheet.create({
   },
   permissionsContainer: {
     paddingHorizontal: 20,
-    paddingTop: 24,
+    paddingTop: 20,
   },
   permissionCard: {
     backgroundColor: COLORS.background.primary,
     borderRadius: 16,
-    padding: 20,
-    marginBottom: 20,
+    padding: 16,
+    marginBottom: 16,
     shadowColor: COLORS.text.primary,
     shadowOffset: {
       width: 0,
@@ -430,6 +414,9 @@ const styles = StyleSheet.create({
   },
   permissionTitleContainer: {
     flex: 1,
+  },
+  switchContainer: {
+    marginLeft: 12,
   },
   permissionTitle: {
     fontFamily: FONTS.gilroy.bold,
@@ -493,37 +480,36 @@ const styles = StyleSheet.create({
   permissionButtonTextBlocked: {
     color: COLORS.text.primary,
   },
-  summarySection: {
-    paddingHorizontal: 20,
-    paddingVertical: 24,
+  settingsButton: {
     backgroundColor: COLORS.background.tertiary,
-    marginTop: 20,
-  },
-  summaryTitle: {
-    fontFamily: FONTS.gilroy.bold,
-    fontSize: FONT_SIZES.lg,
-    marginBottom: 12,
-  },
-  summaryText: {
-    fontFamily: FONTS.gilroy.regular,
-    fontSize: FONT_SIZES.md,
-    lineHeight: 22,
-    marginBottom: 16,
-  },
-  summaryList: {
-    marginTop: 8,
-  },
-  summaryItem: {
+    borderWidth: 1,
+    borderColor: COLORS.appColor,
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginTop: 12,
+    gap: 8,
   },
-  summaryItemText: {
+  settingsButtonText: {
+    fontFamily: FONTS.gilroy.semiBold,
+    fontSize: FONT_SIZES.md,
+  },
+  unavailableContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: COLORS.background.tertiary,
+    borderRadius: 6,
+  },
+  unavailableText: {
     fontFamily: FONTS.gilroy.regular,
     fontSize: FONT_SIZES.sm,
-    marginLeft: 8,
-    flex: 1,
-    lineHeight: 20,
+    marginLeft: 6,
   },
   actionButtons: {
     paddingHorizontal: 20,
@@ -533,7 +519,7 @@ const styles = StyleSheet.create({
   refreshButton: {
     backgroundColor: COLORS.background.primary,
     borderWidth: 1,
-    borderColor: COLORS.primary,
+    borderColor: COLORS.appColor,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -546,7 +532,7 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZES.md,
   },
   continueButton: {
-    backgroundColor: COLORS.success,
+    backgroundColor: COLORS.appColor,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

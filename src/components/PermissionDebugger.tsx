@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   button: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.appColor,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
