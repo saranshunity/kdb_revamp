@@ -8,7 +8,7 @@ import {
   StatusBar,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { H2, H3, BodyText, ButtonTextPrimary } from './Text';
+import { H2, H3, BodyText, ButtonTextPrimary, H5 } from './Text';
 import { COLORS } from '../constants/colors';
 import { FONTS, FONT_SIZES } from '../constants/fonts';
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -113,9 +113,9 @@ const PermissionBottomSheet: React.FC<PermissionBottomSheetProps> = ({
             <Ionicons name={icon} size={24} color={COLORS.appColor} />
           </View>
           <View style={styles.permissionItemContent}>
-            <H3 style={styles.permissionItemTitle} color={COLORS.text.primary} weight='bold' size='md'>
+            <H5 style={styles.permissionItemTitle} color={COLORS.text.primary} weight='semiBold' size='md'>
               {title}
-            </H3>
+            </H5>
             <BodyText style={styles.permissionItemDescription} color={COLORS.text.secondary} size='sm'>
               {description}
             </BodyText>
@@ -155,9 +155,9 @@ const PermissionBottomSheet: React.FC<PermissionBottomSheetProps> = ({
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.dragHandle} />
-            <H2 style={styles.title} color={COLORS.text.primary} weight='bold' size='xl'>
+            <H5 style={styles.title} color={COLORS.text.primary} weight='semiBold' size='lg'>
               {isOnboarding ? 'Enable Permissions' : 'Permissions Required'}
-            </H2>
+            </H5>
             <BodyText style={styles.subtitle} color={COLORS.text.secondary} size='md'>
               {isOnboarding 
                 ? 'Grant permissions to access all app features and get the best experience.'
@@ -200,10 +200,7 @@ const PermissionBottomSheet: React.FC<PermissionBottomSheetProps> = ({
             )}
             
             <TouchableOpacity
-              style={[
-                styles.primaryButton,
-                allPermissionsGranted && styles.primaryButtonSuccess
-              ]}
+              style={styles.primaryButton}
               onPress={allPermissionsGranted ? onPermissionsGranted : requestAllPermissions}
               disabled={isLoading}
             >
@@ -342,9 +339,6 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 12,
     gap: 8,
-  },
-  primaryButtonSuccess: {
-    backgroundColor: COLORS.success,
   },
   primaryButtonText: {
     color: COLORS.white,

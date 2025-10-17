@@ -10,12 +10,13 @@ import {
   Easing,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { H1, H2, BodyText, ButtonTextPrimary } from '../components/Text';
+import { H1, H2, BodyText, ButtonTextPrimary, H5 } from '../components/Text';
 import { COLORS } from '../constants/colors';
 import OnboardingCard from '../components/OnboardingCard';
 import { IGMIllustration, KosIllustration, TirthMitraIllustration } from '../components/OnboardingIllustrations';
 import PermissionBottomSheet from '../components/PermissionBottomSheet';
 import { usePermissionContext } from '../contexts/PermissionContext';
+import { FONT_SIZES } from '../constants/fonts';
 
 interface OnboardingScreenProps {
   navigation: any;
@@ -26,7 +27,7 @@ const { width: screenWidth } = Dimensions.get('window');
 const onboardingData = [
   {
     id: 1,
-    title: 'International Gita Mahotsav',
+    title: 'International Gita Mahotsav 2025',
     subtitle: 'Celebrate the Divine Wisdom',
     description:
       'Join the grand celebration of the Bhagavad Gita with cultural events, spiritual discourses, and divine experiences.',
@@ -34,7 +35,7 @@ const onboardingData = [
   },
   {
     id: 2,
-    title: '48 Kos Pilgrimage',
+    title: '48 Kos Kurukshetra',
     subtitle: 'Explore 182 Sacred Tirths',
     description:
       'Discover the sacred 48 Kos area of Kurukshetra with detailed information about all 182 holy tirths and their significance.',
@@ -194,18 +195,13 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <StatusBar barStyle='dark-content' backgroundColor={COLORS.background.primary}/>
+      <StatusBar barStyle='light-content' backgroundColor={COLORS.appColor}/>
   
-      {/* Background gradient overlay */}
-      <View style={styles.backgroundOverlay} />
+      {/* App Color Background */}
+      <View style={styles.appColorBackground} />
 
-      {/* Content */}
-      <ScrollView
-        ref={scrollViewRef}
-        style={styles.content}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.contentContainer}
-      >
+      {/* Main Content Area */}
+      <View style={styles.mainContent}>
         {/* Illustration */}
         <Animated.View 
           style={[
@@ -220,6 +216,32 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
         >
           {renderIllustration(currentSlide.illustration)}
         </Animated.View>
+      </View>
+
+      {/* Bottom Sheet */}
+      <Animated.View 
+        style={[
+          styles.bottomSheet,
+          { 
+            paddingBottom: insets.bottom + 24,
+          }
+        ]}
+      >
+        {/* Progress Indicators */}
+        <View style={styles.progressContainer}>
+          {onboardingData.map((_, index) => (
+            <Animated.View
+              key={index}
+              style={[
+                styles.progressDot,
+                {
+                  backgroundColor:
+                    index === currentIndex ? COLORS.appColor : COLORS.border.light,
+                },
+              ]}
+            />
+          ))}
+        </View>
 
         {/* Text Content */}
         <Animated.View 
@@ -233,57 +255,32 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
             }
           ]}
         >
-          <H1
+          <H5
             color={COLORS.primary}
-            weight='bold'
-            size='3xl'
+            weight='semiBold'
+            size='lg'
             style={styles.title}
           >
             {currentSlide.title}
-          </H1>
-          <H2
+          </H5>
+          {/* <H5
             color={COLORS.secondary}
             weight='medium'
             size='xl'
             style={styles.subtitle}
           >
             {currentSlide.subtitle}
-          </H2>
+          </H5> */}
           <BodyText
             color={COLORS.secondary}
-            size='lg'
+            size='md'
             style={styles.description}
           >
             {currentSlide.description}
           </BodyText>
         </Animated.View>
 
-        {/* Progress Indicators */}
-        <View style={styles.progressContainer}>
-          {onboardingData.map((_, index) => (
-            <Animated.View
-              key={index}
-              style={[
-                styles.progressDot,
-                {
-                  backgroundColor:
-                    index === currentIndex ? COLORS.primary : COLORS.border.light,
-                },
-              ]}
-            />
-          ))}
-        </View>
-      </ScrollView>
-
-      {/* Bottom Button */}
-      <View
-        style={[
-          styles.bottomContainer, 
-          { 
-            paddingBottom: insets.bottom + 16,
-          }
-        ]}
-      >
+        {/* Button */}
         <TouchableOpacity 
           style={[
             styles.nextButton,
@@ -318,7 +315,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
             </ButtonTextPrimary>
           )}
         </TouchableOpacity>
-      </View>
+      </Animated.View>
 
       {/* Permission Bottom Sheet */}
       <PermissionBottomSheet
@@ -334,97 +331,96 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background.primary,
+    backgroundColor: COLORS.appColor,
   },
-  backgroundOverlay: {
+  appColorBackground: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: COLORS.primary + '08',
-    opacity: 0.8,
+    backgroundColor: COLORS.appColor,
   },
-  content: {
+  mainContent: {
     flex: 1,
-  },
-  contentContainer: {
-    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingHorizontal: 24,
-    paddingTop: 40,
-    paddingBottom: 20,
   },
   iconContainer: {
     alignItems: 'center',
-    marginBottom: 60,
-    marginTop: 20,
+    justifyContent: 'center',
+  },
+  bottomSheet: {
+    backgroundColor: COLORS.white,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: -4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 8,
   },
   textContainer: {
     alignItems: 'center',
-    marginBottom: 60,
+    marginBottom: 24,
     paddingHorizontal: 16,
   },
   title: {
     textAlign: 'center',
-    marginBottom: 20,
-    lineHeight: 40,
+    marginBottom: 12,
+    lineHeight: 32,
     letterSpacing: -0.5,
+    fontSize: FONT_SIZES['2xl'],
   },
   subtitle: {
     textAlign: 'center',
-    marginBottom: 28,
-    lineHeight: 28,
+    marginBottom: 16,
+    lineHeight: 24,
     letterSpacing: -0.3,
+    opacity: 0.9,
   },
   description: {
     textAlign: 'center',
-    lineHeight: 26,
+    lineHeight: 22,
     letterSpacing: 0.2,
     maxWidth: screenWidth * 0.8,
+    opacity: 0.8,
   },
   progressContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 20,
   },
   progressDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginHorizontal: 6,
-    shadowColor: COLORS.primary,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  bottomContainer: {
-    paddingHorizontal: 24,
-    paddingTop: 20,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginHorizontal: 4,
   },
   nextButton: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.appColor,
     paddingVertical: 18,
     borderRadius: 16,
     alignItems: 'center',
-    shadowColor: COLORS.primary,
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 8,
+      height: 4,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
-    elevation: 8,
-    borderWidth: 1,
-    borderColor: COLORS.primary + '20',
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
   },
   nextButtonDisabled: {
     opacity: 0.6,
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.05,
     elevation: 2,
   },
   loadingContainer: {
@@ -437,7 +433,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderWidth: 2,
-    borderColor: COLORS.white,
+    borderColor: COLORS.appColor,
     borderTopColor: 'transparent',
     borderRadius: 10,
   },
