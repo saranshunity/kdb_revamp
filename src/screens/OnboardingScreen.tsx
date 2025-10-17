@@ -8,6 +8,7 @@ import {
   StatusBar,
   Animated,
   Easing,
+  Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { H1, H2, BodyText, ButtonTextPrimary, H5 } from '../components/Text';
@@ -180,16 +181,41 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
 
   const currentSlide = onboardingData[currentIndex];
 
-  const renderIllustration = (type: string) => {
-    switch (type) {
+  const renderIllustration = (slide: any) => {
+    // Show appropriate logo based on slide
+    switch (slide.illustration) {
       case 'igm':
-        return <IGMIllustration size={120} />;
+        return (
+          <Image
+            source={require('../assets/images/igmLogo.png')}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
+        );
       case 'kos':
-        return <KosIllustration size={120} />;
+        return (
+          <Image
+            source={require('../assets/images/appLogo.png')}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
+        );
       case 'tirth-mitra':
-        return <TirthMitraIllustration size={120} />;
+        return (
+          <Image
+            source={require('../assets/images/hr_logo.png')}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
+        );
       default:
-        return <IGMIllustration size={120} />;
+        return (
+          <Image
+            source={require('../assets/images/igmLogo.png')}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
+        );
     }
   };
 
@@ -202,7 +228,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
 
       {/* Main Content Area */}
       <View style={styles.mainContent}>
-        {/* Illustration */}
+        {/* Logo */}
         <Animated.View 
           style={[
             styles.iconContainer,
@@ -214,7 +240,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
             }
           ]}
         >
-          {renderIllustration(currentSlide.illustration)}
+          {renderIllustration(currentSlide)}
         </Animated.View>
       </View>
 
@@ -346,10 +372,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 24,
+    position: 'relative',
   },
   iconContainer: {
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  logoImage: {
+    width: 200,
+    height: 200,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 8,
   },
   bottomSheet: {
     backgroundColor: COLORS.white,
