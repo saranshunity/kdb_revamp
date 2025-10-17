@@ -54,6 +54,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showPermissionSheet, setShowPermissionSheet] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const autoScrollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -62,6 +63,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
   // Animation values
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
+  const spinAnim = useRef(new Animated.Value(0)).current;
 
   // Clear auto-scroll timer
   const clearAutoScrollTimer = () => {
@@ -118,7 +120,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
 
   const handleNext = () => {
     // Prevent multiple rapid clicks
-    if (isAnimating) return;
+    if (isAnimating || isLoading) return;
     
     clearAutoScrollTimer();
     setIsAnimating(true);
@@ -127,24 +129,52 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
       // Move to next slide
       setCurrentIndex(prev => prev + 1);
     } else {
-      // On last slide, show permission sheet
+      // On last slide, show permission sheet immediately
+      setIsAnimating(false);
       setShowPermissionSheet(true);
     }
   };
 
   const handlePermissionGranted = () => {
+    setIsLoading(true);
     setShowPermissionSheet(false);
-    navigation.replace('Main');
+    // Start spinning animation
+    Animated.loop(
+      Animated.timing(spinAnim, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      })
+    ).start();
+    // Small delay to show loading state
+    setTimeout(() => {
+      navigation.replace('Main');
+    }, 300);
   };
 
   const handlePermissionSkip = () => {
+    setIsLoading(true);
     setShowPermissionSheet(false);
-    navigation.replace('Main');
+    // Start spinning animation
+    Animated.loop(
+      Animated.timing(spinAnim, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      })
+    ).start();
+    // Small delay to show loading state
+    setTimeout(() => {
+      navigation.replace('Main');
+    }, 300);
   };
 
   // Cleanup on unmount
   useEffect(() => {
-    return () => clearAutoScrollTimer();
+    return () => {
+      clearAutoScrollTimer();
+      spinAnim.stopAnimation();
+    };
   }, []);
 
   const currentSlide = onboardingData[currentIndex];
@@ -257,15 +287,36 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
         <TouchableOpacity 
           style={[
             styles.nextButton,
-            isAnimating && styles.nextButtonDisabled
+            (isAnimating || isLoading) && styles.nextButtonDisabled
           ]} 
           onPress={handleNext}
           activeOpacity={0.7}
-          disabled={isAnimating}
+          disabled={isAnimating || isLoading}
         >
-          <ButtonTextPrimary size='lg'>
-            Get Started
-          </ButtonTextPrimary>
+          {isLoading ? (
+            <View style={styles.loadingContainer}>
+              <Animated.View 
+                style={[
+                  styles.loadingSpinner,
+                  {
+                    transform: [{
+                      rotate: spinAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: ['0deg', '360deg'],
+                      })
+                    }]
+                  }
+                ]} 
+              />
+              <ButtonTextPrimary size='lg' style={styles.loadingText}>
+                Loading...
+              </ButtonTextPrimary>
+            </View>
+          ) : (
+            <ButtonTextPrimary size='lg'>
+              {currentIndex < onboardingData.length - 1 ? 'Next' : 'Get Started'}
+            </ButtonTextPrimary>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -375,6 +426,23 @@ const styles = StyleSheet.create({
     opacity: 0.6,
     shadowOpacity: 0.1,
     elevation: 2,
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+  },
+  loadingSpinner: {
+    width: 20,
+    height: 20,
+    borderWidth: 2,
+    borderColor: COLORS.white,
+    borderTopColor: 'transparent',
+    borderRadius: 10,
+  },
+  loadingText: {
+    color: COLORS.white,
   },
 });
 
