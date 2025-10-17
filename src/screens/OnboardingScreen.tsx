@@ -14,6 +14,8 @@ import { H1, H2, BodyText, ButtonTextPrimary } from '../components/Text';
 import { COLORS } from '../constants/colors';
 import OnboardingCard from '../components/OnboardingCard';
 import { IGMIllustration, KosIllustration, TirthMitraIllustration } from '../components/OnboardingIllustrations';
+import PermissionBottomSheet from '../components/PermissionBottomSheet';
+import { usePermissionContext } from '../contexts/PermissionContext';
 
 interface OnboardingScreenProps {
   navigation: any;
@@ -51,9 +53,11 @@ const onboardingData = [
 const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [showPermissionSheet, setShowPermissionSheet] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const autoScrollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const { allGranted, checkPermissions } = usePermissionContext();
   
   // Animation values
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -119,10 +123,23 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
     clearAutoScrollTimer();
     setIsAnimating(true);
     
-  
-      // Navigate to main tab navigator
-      navigation.replace('Main');
-    
+    if (currentIndex < onboardingData.length - 1) {
+      // Move to next slide
+      setCurrentIndex(prev => prev + 1);
+    } else {
+      // On last slide, show permission sheet
+      setShowPermissionSheet(true);
+    }
+  };
+
+  const handlePermissionGranted = () => {
+    setShowPermissionSheet(false);
+    navigation.replace('Main');
+  };
+
+  const handlePermissionSkip = () => {
+    setShowPermissionSheet(false);
+    navigation.replace('Main');
   };
 
   // Cleanup on unmount
@@ -251,6 +268,14 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
           </ButtonTextPrimary>
         </TouchableOpacity>
       </View>
+
+      {/* Permission Bottom Sheet */}
+      <PermissionBottomSheet
+        visible={showPermissionSheet}
+        onClose={handlePermissionSkip}
+        onPermissionsGranted={handlePermissionGranted}
+        isOnboarding={true}
+      />
     </View>
   );
 };

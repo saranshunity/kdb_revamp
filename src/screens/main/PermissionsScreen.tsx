@@ -14,7 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
-import { H2, H3, BodyText, ButtonTextPrimary } from '../../components/Text';
+import { H2, H3, BodyText, ButtonTextPrimary, H5 } from '../../components/Text';
 import { COLORS } from '../../constants/colors';
 import { FONTS, FONT_SIZES } from '../../constants/fonts';
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -157,9 +157,9 @@ const PermissionsScreen: React.FC<PermissionsScreenProps> = ({ navigation }) => 
             <Ionicons name={icon} size={32} color={COLORS.appColor} />
           </View>
           <View style={styles.permissionTitleContainer}>
-            <H3 style={styles.permissionTitle} color={COLORS.text.primary} weight='bold' size='lg'>
+            <H5 style={styles.permissionTitle} color={COLORS.text.primary} weight='semiBold' size='lg'>
               {title}
-            </H3>
+            </H5>
             <View style={styles.statusContainer}>
               <Ionicons name={status.icon} size={16} color={status.color} />
               <BodyText style={[styles.statusText, { color: status.color }]} size='sm' weight='medium'>
@@ -174,9 +174,9 @@ const PermissionsScreen: React.FC<PermissionsScreenProps> = ({ navigation }) => 
               disabled={isLoading || isUnavailable}
               trackColor={{
                 false: COLORS.border.light,
-                true: COLORS.appColor + '40',
+                true: COLORS.primary + '40',
               }}
-              thumbColor={isGranted ? COLORS.appColor : COLORS.text.tertiary}
+              thumbColor={isGranted ? COLORS.primary : COLORS.text.tertiary}
               ios_backgroundColor={COLORS.border.light}
             />
           </View>

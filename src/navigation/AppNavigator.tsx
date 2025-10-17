@@ -32,6 +32,7 @@ import JyotisarScreen from '../screens/main/JyotisarScreen';
 import PermissionsScreen from '../screens/main/PermissionsScreen';
 import { COLORS } from '../constants/colors';
 import { FONTS, FONT_SIZES } from '../constants/fonts';
+import { PermissionProvider } from '../contexts/PermissionContext';
 
 // Tirth type for navigation
 interface Tirth {
@@ -221,14 +222,15 @@ function MainTabNavigator() {
 // Main App Navigator
 function AppNavigator() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator
-        initialRouteName='Splash'
-        screenOptions={{
-          headerShown: false,
-          gestureEnabled: true,
-        }}
-      >
+    <PermissionProvider>
+      <NavigationContainer>
+        <Stack.Navigator
+          initialRouteName='Splash'
+          screenOptions={{
+            headerShown: false,
+            gestureEnabled: true,
+          }}
+        >
         <Stack.Screen name='Splash' component={SplashScreen} />
         <Stack.Screen name='Onboarding' component={OnboardingScreen} />
         <Stack.Screen name='Auth' component={AuthNavigator} />
@@ -250,8 +252,9 @@ function AppNavigator() {
         <Stack.Screen name='SriKrishnaMuseum' component={SriKrishnaMuseumScreen} />
         <Stack.Screen name='Jyotisar' component={JyotisarScreen} />
         <Stack.Screen name='Permissions' component={PermissionsScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
+        </Stack.Navigator>
+      </NavigationContainer>
+    </PermissionProvider>
   );
 }
 

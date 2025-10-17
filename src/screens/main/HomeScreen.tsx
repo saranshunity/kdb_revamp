@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -19,6 +19,8 @@ import QuickLinkItem from '../../components/QuickLinks';
 import MahotsavHulchal from './components/MahotsavHulchal';
 import TirthsList from './components/TirthsList';
 import TodaysEvents from '../events/components/TodaysEvents';
+import PermissionBottomSheet from '../../components/PermissionBottomSheet';
+import { usePermissionContext } from '../../contexts/PermissionContext';
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
@@ -30,6 +32,29 @@ interface HomeScreenProps {
 const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const stackNavigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const [showPermissionSheet, setShowPermissionSheet] = useState(false);
+  const { allGranted, hasShownPermissionPrompt, setHasShownPermissionPrompt } = usePermissionContext();
+
+  // Check permissions on screen focus
+  useEffect(() => {
+    if (!allGranted && !hasShownPermissionPrompt) {
+      // Show permission sheet after a short delay to let the screen load
+      const timer = setTimeout(() => {
+        setShowPermissionSheet(true);
+        setHasShownPermissionPrompt(true);
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [allGranted, hasShownPermissionPrompt, setHasShownPermissionPrompt]);
+
+  const handlePermissionGranted = () => {
+    setShowPermissionSheet(false);
+  };
+
+  const handlePermissionSkip = () => {
+    setShowPermissionSheet(false);
+  };
 
   const quickActions = [
     { id: 1, title: 'Transfer Money', icon: '💸', color: COLORS.primary },
@@ -176,12 +201,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
             <View style={styles.headerLeft}>
               <View style={styles.greetingContainer}>
                 <BodyText style={styles.namasteIcon} size='xl'>🙏</BodyText>
-                <H2 style={styles.greetingText} color={COLORS.text.primary} weight='bold' size='lg'>
-                  John Doe
-                </H2>
+                <H5 style={styles.greetingText} weight="semiBold">Saransh Bansal</H5>
               </View>
               <BodyText style={styles.addressText} color={COLORS.text.primary} size='sm'>
-                123 Main Street, City, State 12345
+                Kurukshetra, Haryana, India
               </BodyText>
             </View>
             <View style={styles.headerRight}>
@@ -377,6 +400,14 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
 
       </ScrollView>
+
+      {/* Permission Bottom Sheet for existing users */}
+      <PermissionBottomSheet
+        visible={showPermissionSheet}
+        onClose={handlePermissionSkip}
+        onPermissionsGranted={handlePermissionGranted}
+        isOnboarding={false}
+      />
     </View>
   );
 };
@@ -413,7 +444,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   greetingText: {
-    fontFamily: FONTS.gilroy.semiBold,
+    fontFamily: FONTS.gilroy.bold,
     fontSize: FONT_SIZES.lg,
     // marginBottom: 2,
   },
