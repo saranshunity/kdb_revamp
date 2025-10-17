@@ -23,6 +23,14 @@ interface ListItem {
   title: string;
   image: string;
   description?: string;
+  categories?: string[];
+  rating?: number;
+  time?: string;
+  price?: number;
+  location?: string;
+  organizer?: string;
+  contactInfo?: string;
+  additionalInfo?: string;
 }
 
 interface ListScreenProps {
@@ -39,7 +47,24 @@ const ListScreen: React.FC<ListScreenProps> = ({ navigation }) => {
   };
 
   const renderListItem = ({ item }: { item: ListItem }) => (
-    <TouchableOpacity style={styles.listItem} activeOpacity={0.7}>
+    <TouchableOpacity 
+      style={styles.listItem} 
+      activeOpacity={0.7}
+      onPress={() => navigation.navigate('ItemDetailScreen', {
+        id: item.id,
+        title: item.title,
+        image: item.image,
+        description: item.description,
+        categories: item.categories,
+        rating: item.rating,
+        time: item.time,
+        price: item.price,
+        location: item.location,
+        organizer: item.organizer,
+        contactInfo: item.contactInfo,
+        additionalInfo: item.additionalInfo,
+      })}
+    >
       <View style={styles.imageContainer}>
         <Image source={{ uri: item.image }} style={styles.itemImage} />
       </View>
