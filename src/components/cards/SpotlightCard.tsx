@@ -13,18 +13,13 @@ type SpotlightCardProps = {
   image: string;
   categories: string[];
   title: string;
-  rating: number;
-  time: boolean;
   onPress?: () => void;
-
 };
 
 const SpotlightCard: React.FC<SpotlightCardProps> = ({
   image,
   categories,
   title,
-  rating,
-  time,
   onPress,
 }) => {
   return (
@@ -53,21 +48,6 @@ const SpotlightCard: React.FC<SpotlightCardProps> = ({
         <Text style={styles.title} numberOfLines={2}>
           {title}
         </Text>
-
-        {/* Footer */}
-        <View style={styles.footer}>
-          {rating && (
-            <View style={styles.rating}>
-            <Text style={styles.ratingText}>{rating?.toFixed(1)}</Text>
-            {/* <Ionicons name="star" size={14} color="#2ecc71" /> */}
-          </View>
-          )}
-          {time && (
-          <Text style={styles.price}>
-            {time}
-          </Text>
-          )}
-        </View>
       </View>
     </TouchableOpacity>
   );
@@ -125,40 +105,8 @@ const styles = StyleSheet.create({
   title: {
     fontSize: FONT_SIZES.md,
     fontFamily: FONTS.gilroy.semiBold,
-    marginBottom: 8,
     color: "#111",
     flexWrap: "wrap",
     lineHeight: 20,
-  },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    flex: 1,
-  },
-  rating: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f3fef7",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-  },
-  ratingText: {
-    fontFamily: FONTS.gilroy.semiBold,
-    color: "#27ae60",
-    marginRight: 4,
-    fontSize: FONT_SIZES.xs,
-  },
-  price: {
-    fontFamily: FONTS.gilroy.bold,
-    color: "#e67e22",
-    fontSize: FONT_SIZES.sm,
-    flexShrink: 1,
-  },
-  perPerson: {
-    color: "#777",
-    fontFamily: FONTS.gilroy.regular,
-    fontSize: FONT_SIZES.xs,
   },
 });

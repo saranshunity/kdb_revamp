@@ -2,17 +2,34 @@ import SpotlightCard from "../cards/SpotlightCard";
 import { BodyText, H3, H4, H5 } from "../Text";
 import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { COLORS } from "../../constants/colors";
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../navigation/AppNavigator';
 
-const HorizontalListViews = ({title,listData}: {title: string,listData: any[]}) => {
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
+const HorizontalListViews = ({title,listData,type}: {title: string,listData: any[], type?: 'mahotsav' | 'events' | 'tirths'}) => {
+  const navigation = useNavigation<NavigationProp>();
   return (
     <View style={styles.container}>
         <View style={styles.titleContainer}>   
     <H5 style={styles.title} weight="semiBold">{title}</H5>
-    <TouchableOpacity style={styles.viewAll}>
-    <BodyText color={COLORS.appColor} size='md' weight='semiBold'>
-                Show All
-              </BodyText>
-                 </TouchableOpacity>
+    <TouchableOpacity 
+      style={styles.viewAll}
+      onPress={() => {
+        if (type) {
+          navigation.navigate('ListScreen', {
+            title: title,
+            data: listData,
+            type: type
+          });
+        }
+      }}
+    >
+      <BodyText color={COLORS.appColor} size='md' weight='semiBold'>
+        Show All
+      </BodyText>
+    </TouchableOpacity>
     </View>
     <ScrollView horizontal style={{ flex: 1, padding: 16 }} showsHorizontalScrollIndicator={false}>
     {listData?.map((item) => (
@@ -21,12 +38,7 @@ const HorizontalListViews = ({title,listData}: {title: string,listData: any[]}) 
     image={item?.image}
     categories={item?.categories}
     title={item?.title}
-    rating={item?.rating}
-    time={item?.time}
-    
     onPress={() => console.log("Card Pressed")}
-    // onFavoritePress={() => console.log("Favorite Pressed")}
-    // isFavorite={item?.isFavorite}
     />
     ))}
     

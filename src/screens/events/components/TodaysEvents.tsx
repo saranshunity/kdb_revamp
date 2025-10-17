@@ -1,8 +1,8 @@
 import HorizontalListViews from "../../../components/lists/HorizontalListViews";
 
-const TodaysEvents = ({listData}: {listData: any[]}) => {
+const TodaysEvents = ({listData, type}: {listData: any[], type?: 'mahotsav' | 'events' | 'tirths'}) => {
     return (
-        <HorizontalListViews title="Today's Events" listData={listData} />
+        <HorizontalListViews title="Today's Events" listData={listData} type={type} />
     )
 }
 

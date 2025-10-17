@@ -30,6 +30,7 @@ import AdministrationScreen from '../screens/main/AdministrationScreen';
 import SriKrishnaMuseumScreen from '../screens/main/SriKrishnaMuseumScreen';
 import JyotisarScreen from '../screens/main/JyotisarScreen';
 import PermissionsScreen from '../screens/main/PermissionsScreen';
+import ListScreen from '../screens/main/ListScreen';
 import { COLORS } from '../constants/colors';
 import { FONTS, FONT_SIZES } from '../constants/fonts';
 import { PermissionProvider } from '../contexts/PermissionContext';
@@ -103,6 +104,11 @@ export type RootStackParamList = {
   SriKrishnaMuseum: undefined;
   Jyotisar: undefined;
   Permissions: undefined;
+  ListScreen: {
+    title: string;
+    data: any[];
+    type: 'mahotsav' | 'events' | 'tirths';
+  };
 };
 
 export type AuthStackParamList = {
@@ -252,6 +258,7 @@ function AppNavigator() {
         <Stack.Screen name='SriKrishnaMuseum' component={SriKrishnaMuseumScreen} />
         <Stack.Screen name='Jyotisar' component={JyotisarScreen} />
         <Stack.Screen name='Permissions' component={PermissionsScreen} />
+        <Stack.Screen name='ListScreen' component={ListScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </PermissionProvider>

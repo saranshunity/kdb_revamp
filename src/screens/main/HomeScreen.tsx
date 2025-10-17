@@ -95,22 +95,47 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   ];
 
   const mahotsavHulchal = [
-
     {
       id: 1,
-      title: 'Mahotsav Hulchal',
+      title: 'Cultural Dance Performance',
       image: 'https://picsum.photos/600/400',
-      categories: ['Coffee', 'Cultural Tour'],
-      price: 28,
-      isFavorite: true,
+      categories: ['Dance', 'Cultural'],
+      description: 'Traditional Indian classical dance performance by renowned artists showcasing the rich cultural heritage of India.',
     },
     {
       id: 2,
-      title: 'Mahotsav Hulchal',
+      title: 'Spiritual Discourse',
       image: 'https://picsum.photos/600/400',
-      categories: ['Coffee', 'Cultural Tour'],
-      price: 28,
-      isFavorite: true,
+      categories: ['Spiritual', 'Lecture'],
+      description: 'Enlightening discourse on Bhagavad Gita by spiritual leaders, providing deep insights into ancient wisdom.',
+    },
+    {
+      id: 3,
+      title: 'Art Exhibition',
+      image: 'https://picsum.photos/600/400',
+      categories: ['Art', 'Exhibition'],
+      description: 'Contemporary and traditional art exhibition showcasing local talent and creative expressions.',
+    },
+    {
+      id: 4,
+      title: 'Food Festival',
+      image: 'https://picsum.photos/600/400',
+      categories: ['Food', 'Festival'],
+      description: 'Delicious traditional and modern cuisine from across India, celebrating the diverse flavors of our nation.',
+    },
+    {
+      id: 5,
+      title: 'Music Concert',
+      image: 'https://picsum.photos/600/400',
+      categories: ['Music', 'Concert'],
+      description: 'Soulful devotional music concert featuring famous artists performing classical and contemporary pieces.',
+    },
+    {
+      id: 6,
+      title: 'Workshop on Yoga',
+      image: 'https://picsum.photos/600/400',
+      categories: ['Yoga', 'Wellness'],
+      description: 'Learn ancient yoga techniques from certified instructors and experience the benefits of this ancient practice.',
     },
   ];
 
@@ -171,18 +196,47 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   ];
 
   const todaysEventsDataArray = [
-
     {
       id: 1,
-      title: 'The Romanian – Solo Exhibition',
+      title: 'Bhagavad Gita Recitation',
       image: 'https://picsum.photos/600/400',
-      categories: ['Art', 'Exhibition'],
+      categories: ['Spiritual', 'Recitation'],
+      description: 'Daily recitation of Bhagavad Gita verses with detailed explanations and spiritual insights.',
     },
     {
       id: 2,
-      title: 'M.A in Arts & Management',
+      title: 'Temple Darshan',
       image: 'https://picsum.photos/600/400',
-      categories: ['Art', 'Exhibition'],
+      categories: ['Spiritual', 'Darshan'],
+      description: 'Guided tour of ancient temples with historical significance and architectural marvels.',
+    },
+    {
+      id: 3,
+      title: 'Cultural Workshop',
+      image: 'https://picsum.photos/600/400',
+      categories: ['Workshop', 'Cultural'],
+      description: 'Learn traditional Indian arts and crafts from master artisans and preserve our heritage.',
+    },
+    {
+      id: 4,
+      title: 'Meditation Session',
+      image: 'https://picsum.photos/600/400',
+      categories: ['Meditation', 'Wellness'],
+      description: 'Guided meditation session for inner peace, spiritual growth, and mental well-being.',
+    },
+    {
+      id: 5,
+      title: 'Evening Aarti',
+      image: 'https://picsum.photos/600/400',
+      categories: ['Aarti', 'Spiritual'],
+      description: 'Traditional evening prayer ceremony with devotional songs and spiritual atmosphere.',
+    },
+    {
+      id: 6,
+      title: 'Storytelling Session',
+      image: 'https://picsum.photos/600/400',
+      categories: ['Storytelling', 'Education'],
+      description: 'Fascinating stories from Indian mythology and history, bringing ancient wisdom to life.',
     },
   ];
 
@@ -253,8 +307,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       />
         </ScrollView>
         <View style={{marginTop: 26}}/>
-        <MahotsavHulchal listData={mahotsavHulchal} />
-        <TodaysEvents listData={todaysEventsDataArray} />
+        <MahotsavHulchal listData={mahotsavHulchal} type="mahotsav" />
+        <TodaysEvents listData={todaysEventsDataArray} type="events" />
       <View style={styles.promotionalCard}>
           <View style={styles.promotionalContent}>
             <H4 color={COLORS.primary} weight='bold' size='lg'>
