@@ -52,13 +52,25 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const autoScrollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   
   // Animation values
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
 
+  // Clear auto-scroll timer
+  const clearAutoScrollTimer = () => {
+    if (autoScrollTimerRef.current) {
+      clearInterval(autoScrollTimerRef.current);
+      autoScrollTimerRef.current = null;
+    }
+  };
+
   // Animation on slide change
   useEffect(() => {
+    setIsAnimating(true);
+    
     // Reset animation values
     fadeAnim.setValue(0);
     slideAnim.setValue(15);
@@ -67,41 +79,56 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
     Animated.sequence([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 300,
+        duration: 250,
         easing: Easing.out(Easing.ease),
         useNativeDriver: true,
       }),
       Animated.timing(slideAnim, {
         toValue: 0,
-        duration: 300,
+        duration: 250,
         easing: Easing.out(Easing.ease),
         useNativeDriver: true,
       }),
-    ]).start();
+    ]).start(() => {
+      setIsAnimating(false);
+    });
   }, [currentIndex]);
 
   // Auto-scroll functionality
   useEffect(() => {
-    const timer = setInterval(() => {
-      if (currentIndex < onboardingData.length - 1) {
-        setCurrentIndex(currentIndex + 1);
-      } else {
-        // Restart from the first screen
-        setCurrentIndex(0);
-      }
-    }, 3500); // Auto-scroll every 3.5 seconds
+    clearAutoScrollTimer();
+    
+    if (!isAnimating) {
+      autoScrollTimerRef.current = setInterval(() => {
+        if (currentIndex < onboardingData.length - 1) {
+          setCurrentIndex(prev => prev + 1);
+        } else {
+          // Restart from the first screen
+          setCurrentIndex(0);
+        }
+      }, 4000); // Auto-scroll every 4 seconds
+    }
 
-    return () => clearInterval(timer);
-  }, [currentIndex, navigation]);
+    return () => clearAutoScrollTimer();
+  }, [currentIndex, isAnimating]);
 
   const handleNext = () => {
-    if (currentIndex < onboardingData.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-    } else {
+    // Prevent multiple rapid clicks
+    if (isAnimating) return;
+    
+    clearAutoScrollTimer();
+    setIsAnimating(true);
+    
+  
       // Navigate to main tab navigator
       navigation.replace('Main');
-    }
+    
   };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => clearAutoScrollTimer();
+  }, []);
 
   const currentSlide = onboardingData[currentIndex];
 
@@ -211,9 +238,13 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
         ]}
       >
         <TouchableOpacity 
-          style={styles.nextButton} 
+          style={[
+            styles.nextButton,
+            isAnimating && styles.nextButtonDisabled
+          ]} 
           onPress={handleNext}
-          activeOpacity={0.8}
+          activeOpacity={0.7}
+          disabled={isAnimating}
         >
           <ButtonTextPrimary size='lg'>
             Get Started
@@ -314,6 +345,11 @@ const styles = StyleSheet.create({
     elevation: 8,
     borderWidth: 1,
     borderColor: COLORS.primary + '20',
+  },
+  nextButtonDisabled: {
+    opacity: 0.6,
+    shadowOpacity: 0.1,
+    elevation: 2,
   },
 });
 
