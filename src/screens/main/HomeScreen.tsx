@@ -46,6 +46,34 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const member4Anim = useRef(new Animated.Value(0)).current;
   const lineAnim = useRef(new Animated.Value(0)).current;
 
+  // Date-based visibility for Apply for Stalls section
+  const [showApplyStalls, setShowApplyStalls] = useState(false);
+
+  // Check if Apply for Stalls section should be visible (until November 7th)
+  useEffect(() => {
+    const currentDate = new Date();
+    // Set deadline to November 7th, 2024 at end of day
+    const deadlineDate = new Date(2024, 10, 7, 23, 59, 59); // Month is 0-indexed, so 10 = November
+    
+    console.log('Current Date:', currentDate);
+    console.log('Deadline Date:', deadlineDate);
+    console.log('Current Date String:', currentDate.toDateString());
+    console.log('Deadline Date String:', deadlineDate.toDateString());
+    console.log('Should show stalls:', currentDate <= deadlineDate);
+    
+    // TEMPORARY: Always show for testing - remove this line later
+    setShowApplyStalls(true);
+    
+    // Show the section if current date is before or on November 7th
+    // if (currentDate <= deadlineDate) {
+    //   setShowApplyStalls(true);
+    //   console.log('Apply for Stalls section will be shown');
+    // } else {
+    //   setShowApplyStalls(false);
+    //   console.log('Apply for Stalls section will be hidden');
+    // }
+  }, []);
+
   // Check permissions on screen focus
   useEffect(() => {
     if (!allGranted && !hasShownPermissionPrompt) {
@@ -453,7 +481,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       <QuickLinkItem 
         key="stalls" 
         icon="cart-outline" 
-        label="Stalls" 
+        label="Stalls Directory" 
         onPress={() => stackNavigation.navigate('Stalls')}
       />
       <QuickLinkItem 
@@ -463,12 +491,47 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         onPress={() => console.log('Hotels pressed')}
       />
       <QuickLinkItem 
-        key="events-2" 
-        icon="calendar-outline" 
+        key="quiz" 
+        icon="school-outline" 
         label="Quiz" 
-        onPress={() => stackNavigation.navigate('Events')}
+        onPress={() => stackNavigation.navigate('Quiz')}
       />
         </ScrollView>
+        
+        {/* Apply for Stalls - Attention Grabbing Section (Visible until November 7th) */}
+        {showApplyStalls && (
+          <TouchableOpacity 
+            style={styles.applyStallsCard}
+            onPress={() => stackNavigation.navigate('StallCategories')}
+            activeOpacity={0.8}
+          >
+            <View style={styles.applyStallsContent}>
+              <View style={styles.applyStallsLeft}>
+                {/* <View style={styles.applyStallsIconContainer}>
+                  <Ionicons name="storefront-outline" size={28} color={COLORS.white} />
+                </View> */}
+                <View style={styles.applyStallsTextContainer}>
+                  <H4 color={COLORS.white} weight='semiBold' size='lg'>
+                    Apply for Stalls/Shops
+                  </H4>
+                  <BodyText color={COLORS.white} size='sm' style={styles.applyStallsDescription}>
+                    Book your stall at International Gita Mahotsav 2025
+                  </BodyText>
+                </View>
+              </View>
+              <View style={styles.applyStallsRight}>
+                {/* <View style={styles.applyStallsBadge}>
+                  <BodyText color={COLORS.white} size='xs' weight='bold'>
+                    LIMITED
+                  </BodyText>
+                </View> */}
+                <Ionicons name="chevron-forward" size={24} color={COLORS.white} />
+              </View>
+            </View>
+            <View style={styles.applyStallsGradient} />
+          </TouchableOpacity>
+        )}
+        
         <View style={{marginTop: 26}}/>
         <MahotsavHulchal listData={mahotsavHulchal} type="mahotsav" />
         <TodaysEvents listData={todaysEventsDataArray} type="events" />
@@ -1161,6 +1224,71 @@ const styles = StyleSheet.create({
   quickLinkTitle: {
     marginBottom: 10,
     paddingHorizontal: 20,
+  },
+  applyStallsCard: {
+    marginHorizontal: 20,
+    marginTop: 20,
+    borderRadius: 16,
+    backgroundColor: COLORS.primary,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 8,
+    position: 'relative',
+  },
+  applyStallsContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 20,
+    zIndex: 2,
+  },
+  applyStallsLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  applyStallsIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  applyStallsTextContainer: {
+    flex: 1,
+  },
+  applyStallsDescription: {
+    marginTop: 4,
+    opacity: 0.9,
+    lineHeight: 18,
+  },
+  applyStallsRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  applyStallsBadge: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    marginRight: 12,
+  },
+  applyStallsGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)',
+    opacity: 0.1,
   },
 });
 

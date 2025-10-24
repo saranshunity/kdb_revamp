@@ -16,6 +16,9 @@ import SettingsScreen from '../screens/main/SettingsScreen';
 import EventsScreen from '../screens/events/EventScreen';
 import EventDetailScreen from '../screens/events/EventDetailScreen';
 import StallsScreen from '../screens/stalls/StallsScreen';
+import StallCategoriesScreen from '../screens/stalls/StallCategoriesScreen';
+import StallApplicationScreen from '../screens/stalls/StallApplicationScreen';
+import StallApplicationStatusScreen from '../screens/stalls/StallApplicationStatusScreen';
 import FamilyMembersScreen from '../screens/family/FamilyMembersScreen';
 import AddFamilyMemberScreen from '../screens/family/AddFamilyMemberScreen';
 import LocationMapScreen from '../screens/family/LocationMapScreen';
@@ -91,6 +94,15 @@ export type RootStackParamList = {
   Events: undefined;
   EventDetail: undefined;
   Stalls: undefined;
+  StallCategories: undefined;
+  Quiz: undefined;
+  StallApplication: { category: any };
+  StallApplicationStatus: { 
+    applicationId: string; 
+    category: any; 
+    formData: any; 
+    status: 'pending' | 'approved' | 'rejected';
+  };
   FamilyMembers: undefined;
   AddFamilyMember: undefined;
   LocationMap: undefined;
@@ -259,6 +271,9 @@ function AppNavigator() {
         <Stack.Screen name='Events' component={EventsScreen} />
         <Stack.Screen name='EventDetail' component={EventDetailScreen} />
         <Stack.Screen name='Stalls' component={StallsScreen} />
+        <Stack.Screen name='StallCategories' component={StallCategoriesScreen} />
+        <Stack.Screen name='StallApplication' component={StallApplicationScreen} />
+        <Stack.Screen name='StallApplicationStatus' component={StallApplicationStatusScreen} />
         <Stack.Screen name='FamilyMembers' component={FamilyMembersScreen} />
         <Stack.Screen name='AddFamilyMember' component={AddFamilyMemberScreen} />
         <Stack.Screen name='LocationMap' component={LocationMapScreen} />
