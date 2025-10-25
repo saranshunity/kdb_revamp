@@ -10,6 +10,7 @@ import { BodyText } from './Text';
 import { COLORS } from '../constants/colors';
 import { FONTS, FONT_SIZES } from '../constants/fonts';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { pickDocumentFromFileSystem, uploadDocumentToFirebase } from '../utils/documentUploader';
 
 interface FileData {
   name: string;
@@ -21,6 +22,7 @@ interface FileData {
 interface FileUploadProps {
   label: string;
   fileName?: string;
+  fileSize?: number; // in bytes
   onFileSelect: (file: FileData | null) => void;
   error?: string;
   required?: boolean;
@@ -33,6 +35,7 @@ interface FileUploadProps {
 const FileUpload: React.FC<FileUploadProps> = ({
   label,
   fileName,
+  fileSize,
   onFileSelect,
   error,
   required = false,
@@ -50,40 +53,43 @@ const FileUpload: React.FC<FileUploadProps> = ({
     try {
       setIsPicking(true);
       
-      // Simple file selection using Alert for now
-      Alert.alert(
-        'Select File Type',
-        'Choose the type of file you want to upload:',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'PDF Document',
-            onPress: () => {
-              const mockFile: FileData = {
-                name: 'document.pdf',
-                uri: 'file:///tmp/mock_document.pdf',
-                size: 1024 * 1024 * 2, // 2MB
-                type: 'application/pdf',
-              };
-              onFileSelect(mockFile);
-            },
-          },
-          {
-            text: 'Image File',
-            onPress: () => {
-              const mockFile: FileData = {
-                name: 'image.jpg',
-                uri: 'file:///tmp/mock_image.jpg',
-                size: 1024 * 1024 * 1, // 1MB
-                type: 'image/jpeg',
-              };
-              onFileSelect(mockFile);
-            },
-          },
-        ]
-      );
+      // Use react-native-blob-util document picker
+      const selectedFile = await pickDocumentFromFileSystem();
+      
+      if (!selectedFile) {
+        // User cancelled selection
+        return;
+      }
+
+      // Validate file size
+      const fileSizeInMB = selectedFile.size / (1024 * 1024);
+      if (fileSizeInMB > maxSize) {
+        Alert.alert(
+          'File Too Large',
+          `File size (${fileSizeInMB.toFixed(1)} MB) exceeds the maximum allowed size of ${maxSize} MB.`
+        );
+        return;
+      }
+
+      // Validate file type
+      if (selectedFile.type && !allowedTypes.includes(selectedFile.type)) {
+        Alert.alert(
+          'Invalid File Type',
+          `File type "${selectedFile.type}" is not allowed. Please select a supported file type.`
+        );
+        return;
+      }
+
+      // Pass the selected file to parent component
+      onFileSelect(selectedFile);
     } catch (error: any) {
       console.error('File selection error:', error);
+      
+      // Handle user cancellation
+      if (error.message === 'User canceled') {
+        return;
+      }
+      
       Alert.alert('Error', 'Failed to select file. Please try again.');
     } finally {
       setIsPicking(false);
@@ -127,7 +133,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
               </BodyText>
               {showPreview && (
                 <BodyText color={COLORS.text.tertiary} size='xs' style={styles.fileSize}>
-                  {fileName.length > 0 ? '2.0 MB' : '0 Bytes'} {/* Mock size for now */}
+                  {fileSize ? `${(fileSize / (1024 * 1024)).toFixed(1)} MB` : '0 Bytes'}
                 </BodyText>
               )}
             </View>

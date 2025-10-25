@@ -20,6 +20,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import TextInput from '../../components/TextInput';
 import FileUpload from '../../components/FileUpload';
 import FirebaseService from '../../services/FirebaseService';
+import { uploadDocumentToFirebase } from '../../utils/documentUploader';
 
 type StallApplicationScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'StallApplication'>;
 type StallApplicationScreenRouteProp = RouteProp<RootStackParamList, 'StallApplication'>;
@@ -176,22 +177,22 @@ const StallApplicationScreen = () => {
       // Upload Aadhar Card
       if (formData.aadharCardFile) {
         console.log('Uploading Aadhar Card...');
-        aadharCardUrl = await FirebaseService.uploadFile(
-          formData.aadharCardFile.uri,
-          `aadhar_${Date.now()}_${formData.aadharCardFile.name}`,
+        const aadharUploadResult = await uploadDocumentToFirebase(
+          formData.aadharCardFile,
           'stallApplications'
         );
+        aadharCardUrl = aadharUploadResult.url;
         console.log('Aadhar Card uploaded:', aadharCardUrl);
       }
 
       // Upload Registration Certificate
       if (formData.registrationCertificateFile) {
         console.log('Uploading Registration Certificate...');
-        registrationCertificateUrl = await FirebaseService.uploadFile(
-          formData.registrationCertificateFile.uri,
-          `registration_${Date.now()}_${formData.registrationCertificateFile.name}`,
+        const registrationUploadResult = await uploadDocumentToFirebase(
+          formData.registrationCertificateFile,
           'stallApplications'
         );
+        registrationCertificateUrl = registrationUploadResult.url;
         console.log('Registration Certificate uploaded:', registrationCertificateUrl);
       }
 
@@ -536,6 +537,7 @@ const StallApplicationScreen = () => {
             <FileUpload
               label="Upload Aadhar Card"
               fileName={formData.aadharCardFile?.name}
+              fileSize={formData.aadharCardFile?.size}
               onFileSelect={(file) => handleInputChange('aadharCardFile', file)}
               error={errors.aadharCardFile}
               required
@@ -548,6 +550,7 @@ const StallApplicationScreen = () => {
             <FileUpload
               label="Upload Certificate of Registration"
               fileName={formData.registrationCertificateFile?.name}
+              fileSize={formData.registrationCertificateFile?.size}
               onFileSelect={(file) => handleInputChange('registrationCertificateFile', file)}
               error={errors.registrationCertificateFile}
               required
