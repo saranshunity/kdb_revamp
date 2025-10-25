@@ -10,6 +10,8 @@ import OnboardingScreen from '../screens/OnboardingScreen';
 import LoginScreen from '../screens/auth/LoginScreen';
 import RegisterScreen from '../screens/auth/RegisterScreen';
 import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
+import PhoneAuthScreen from '../screens/auth/PhoneAuthScreen';
+import OTPVerificationScreen from '../screens/auth/OTPVerificationScreen';
 import HomeScreen from '../screens/main/HomeScreen';
 import ProfileScreen from '../screens/main/ProfileScreen';
 import SettingsScreen from '../screens/main/SettingsScreen';
@@ -30,6 +32,7 @@ import TirthMitraCardScreen from '../screens/tirthMitra/TirthMitraCardScreen';
 import MenuScreen from '../screens/main/MenuScreen';
 import AboutKDBScreen from '../screens/main/AboutKDBScreen';
 import AdministrationScreen from '../screens/main/AdministrationScreen';
+import AdminPanelScreen from '../screens/admin/AdminPanelScreen';
 import SriKrishnaMuseumScreen from '../screens/main/SriKrishnaMuseumScreen';
 import JyotisarScreen from '../screens/main/JyotisarScreen';
 import PermissionsScreen from '../screens/main/PermissionsScreen';
@@ -114,9 +117,11 @@ export type RootStackParamList = {
   Menu: undefined;
   AboutKDB: undefined;
   Administration: undefined;
+  AdminPanel: undefined;
   SriKrishnaMuseum: undefined;
   Jyotisar: undefined;
   Permissions: undefined;
+  NotificationSettings: undefined;
   ListScreen: {
     title: string;
     data: any[];
@@ -139,6 +144,8 @@ export type RootStackParamList = {
 };
 
 export type AuthStackParamList = {
+  PhoneAuth: undefined;
+  OTPVerification: { phoneNumber: string; confirmation: any };
   Login: undefined;
   Register: undefined;
   ForgotPassword: undefined;
@@ -203,11 +210,14 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
 function AuthNavigator() {
   return (
     <AuthStack.Navigator
+      initialRouteName='PhoneAuth'
       screenOptions={{
         headerShown: false,
         gestureEnabled: true,
       }}
     >
+      <AuthStack.Screen name='PhoneAuth' component={PhoneAuthScreen} />
+      <AuthStack.Screen name='OTPVerification' component={OTPVerificationScreen} />
       <AuthStack.Screen name='Login' component={LoginScreen} />
       <AuthStack.Screen name='Register' component={RegisterScreen} />
       <AuthStack.Screen
@@ -285,6 +295,7 @@ function AppNavigator() {
         <Stack.Screen name='Menu' component={MenuScreen} />
         <Stack.Screen name='AboutKDB' component={AboutKDBScreen} />
         <Stack.Screen name='Administration' component={AdministrationScreen} />
+        <Stack.Screen name='AdminPanel' component={AdminPanelScreen} />
         <Stack.Screen name='SriKrishnaMuseum' component={SriKrishnaMuseumScreen} />
         <Stack.Screen name='Jyotisar' component={JyotisarScreen} />
         <Stack.Screen name='Permissions' component={PermissionsScreen} />

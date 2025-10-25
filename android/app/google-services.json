@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "729332956551",
+    "project_id": "kdbrevampnew",
+    "storage_bucket": "kdbrevampnew.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:729332956551:android:65e8b0696af6ed0f596722",
+        "android_client_info": {
+          "package_name": "com.kdb_revamp_code"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA7fHw0uBGLM3dIT7AMOxjUERKtjptvth0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -82,7 +82,10 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
       // TODO: Implement actual registration logic
       console.log('Registration attempt:', formData);
       // For now, navigate to main app
-      navigation.navigate('Main');
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Main' }],
+      });
     }
   };
 

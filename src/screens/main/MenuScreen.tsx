@@ -38,6 +38,12 @@ const MenuScreen: React.FC<MenuScreenProps> = ({ navigation }) => {
       icon: 'people-outline',
       onPress: () => stackNavigation.navigate('Administration'),
     },
+    {
+      id: 'admin',
+      title: 'Admin Panel',
+      icon: 'shield-checkmark-outline',
+      onPress: () => stackNavigation.navigate('AdminPanel'),
+    },
     // {
     //   id: 'divider1',
     //   type: 'divider',

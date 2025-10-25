@@ -19,9 +19,17 @@ import { FONTS, FONT_SIZES } from '../../constants/fonts';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import TextInput from '../../components/TextInput';
 import FileUpload from '../../components/FileUpload';
+import FirebaseService from '../../services/FirebaseService';
 
 type StallApplicationScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'StallApplication'>;
 type StallApplicationScreenRouteProp = RouteProp<RootStackParamList, 'StallApplication'>;
+
+interface FileData {
+  name: string;
+  uri: string;
+  size: number;
+  type: string;
+}
 
 interface ApplicationFormData {
   email: string;
@@ -38,8 +46,8 @@ interface ApplicationFormData {
   typeOfWork: string;
   awardAchievement: string;
   otherRemarks: string;
-  aadharCardFile?: string;
-  registrationCertificateFile?: string;
+  aadharCardFile?: FileData;
+  registrationCertificateFile?: FileData;
 }
 
 const StallApplicationScreen = () => {
@@ -65,11 +73,11 @@ const StallApplicationScreen = () => {
     otherRemarks: '',
   });
 
-  const [errors, setErrors] = useState<Partial<ApplicationFormData>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof ApplicationFormData, string>>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<ApplicationFormData> = {};
+    const newErrors: Partial<Record<keyof ApplicationFormData, string>> = {};
 
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
@@ -131,11 +139,11 @@ const StallApplicationScreen = () => {
       newErrors.awardAchievement = 'Award/Achievement/Experience is required';
     }
 
-    if (!formData.aadharCardFile?.trim()) {
+    if (!formData.aadharCardFile) {
       newErrors.aadharCardFile = 'Aadhar Card upload is required';
     }
 
-    if (!formData.registrationCertificateFile?.trim()) {
+    if (!formData.registrationCertificateFile) {
       newErrors.registrationCertificateFile = 'Certificate of Registration upload is required';
     }
 
@@ -143,7 +151,7 @@ const StallApplicationScreen = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleInputChange = (field: keyof ApplicationFormData, value: string) => {
+  const handleInputChange = (field: keyof ApplicationFormData, value: string | FileData | null) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {
@@ -160,13 +168,49 @@ const StallApplicationScreen = () => {
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Upload files to Firebase Storage if they exist
+      let aadharCardUrl = '';
+      let registrationCertificateUrl = '';
 
-      // Generate application ID
-      const applicationId = `APP${Date.now()}`;
+      if (formData.aadharCardFile) {
+        aadharCardUrl = await FirebaseService.uploadFile(
+          formData.aadharCardFile.uri,
+          `aadhar_${Date.now()}.pdf`,
+          'stallApplications'
+        );
+      }
 
-      // Navigate to waiting screen
+      if (formData.registrationCertificateFile) {
+        registrationCertificateUrl = await FirebaseService.uploadFile(
+          formData.registrationCertificateFile.uri,
+          `registration_${Date.now()}.pdf`,
+          'stallApplications'
+        );
+      }
+
+      // Submit application to Firebase
+      const applicationId = await FirebaseService.submitApplication({
+        categoryId: category.id,
+        categoryName: category.name,
+        email: formData.email,
+        firmName: formData.firmName,
+        ownerName: formData.ownerName,
+        fatherName: formData.fatherName,
+        aadharNumber: formData.aadharNumber,
+        correspondenceAddress: formData.correspondenceAddress,
+        district: formData.district,
+        pinCode: formData.pinCode,
+        state: formData.state,
+        mobileNumber: formData.mobileNumber,
+        alternateMobileNumber: formData.alternateMobileNumber,
+        typeOfWork: formData.typeOfWork,
+        awardAchievement: formData.awardAchievement,
+        otherRemarks: formData.otherRemarks,
+        aadharCardFile: aadharCardUrl,
+        registrationCertificateFile: registrationCertificateUrl,
+      });
+
+      // Navigate to status screen
       navigation.navigate('StallApplicationStatus', {
         applicationId,
         category,
@@ -465,8 +509,8 @@ const StallApplicationScreen = () => {
 
             <FileUpload
               label="Upload Aadhar Card"
-              fileName={formData.aadharCardFile}
-              onFileSelect={(file) => handleInputChange('aadharCardFile', file?.name || '')}
+              fileName={formData.aadharCardFile?.name}
+              onFileSelect={(file) => handleInputChange('aadharCardFile', file)}
               error={errors.aadharCardFile}
               required
               maxSize={10}
@@ -474,8 +518,8 @@ const StallApplicationScreen = () => {
 
             <FileUpload
               label="Upload Certificate of Registration"
-              fileName={formData.registrationCertificateFile}
-              onFileSelect={(file) => handleInputChange('registrationCertificateFile', file?.name || '')}
+              fileName={formData.registrationCertificateFile?.name}
+              onFileSelect={(file) => handleInputChange('registrationCertificateFile', file)}
               error={errors.registrationCertificateFile}
               required
               maxSize={10}

@@ -10,10 +10,17 @@ import { COLORS } from '../constants/colors';
 import { FONTS, FONT_SIZES } from '../constants/fonts';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
+interface FileData {
+  name: string;
+  uri: string;
+  size: number;
+  type: string;
+}
+
 interface FileUploadProps {
   label: string;
   fileName?: string;
-  onFileSelect: (file: any) => void;
+  onFileSelect: (file: FileData | null) => void;
   error?: string;
   required?: boolean;
   maxSize?: number; // in MB
@@ -29,7 +36,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
 }) => {
   const handleFileSelect = () => {
     // In a real app, this would open a file picker
-    // For now, we'll simulate file selection
+    // For now, we'll simulate file selection with a proper file URI
     Alert.alert(
       'File Upload',
       'File upload functionality will be implemented with react-native-document-picker or similar library.',
@@ -38,11 +45,13 @@ const FileUpload: React.FC<FileUploadProps> = ({
         {
           text: 'Simulate Upload',
           onPress: () => {
-            // Simulate file upload
-            const mockFile = {
+            // Simulate file upload with a mock URI
+            // In a real implementation, this would be the actual file URI from document picker
+            const mockFile: FileData = {
               name: 'document.pdf',
               size: 1024 * 1024 * 2, // 2MB
               type: 'application/pdf',
+              uri: 'file:///tmp/mock_document.pdf', // Mock file URI for testing
             };
             onFileSelect(mockFile);
           },

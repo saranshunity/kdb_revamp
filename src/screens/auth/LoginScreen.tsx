@@ -57,7 +57,10 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       // TODO: Implement actual login logic
       console.log('Login attempt:', { email, password });
       // For now, navigate to main app
-      navigation.navigate('Main');
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Main' }],
+      });
     }
   };
 

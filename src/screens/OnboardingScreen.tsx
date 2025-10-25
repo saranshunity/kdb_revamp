@@ -150,7 +150,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
     ).start();
     // Small delay to show loading state
     setTimeout(() => {
-      navigation.replace('Main');
+      navigation.replace('Auth');
     }, 300);
   };
 
@@ -167,7 +167,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
     ).start();
     // Small delay to show loading state
     setTimeout(() => {
-      navigation.replace('Main');
+      navigation.replace('Auth');
     }, 300);
   };
 
