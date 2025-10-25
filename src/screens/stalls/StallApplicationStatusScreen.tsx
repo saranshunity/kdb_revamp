@@ -17,6 +17,7 @@ import { H1, H2, H3, BodyText, ButtonTextPrimary } from '../../components/Text';
 import { COLORS } from '../../constants/colors';
 import { FONTS, FONT_SIZES } from '../../constants/fonts';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import FirebaseService from '../../services/FirebaseService';
 
 type StallApplicationStatusScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'StallApplicationStatus'>;
 type StallApplicationStatusScreenRouteProp = RouteProp<RootStackParamList, 'StallApplicationStatus'>;
@@ -58,34 +59,31 @@ const StallApplicationStatusScreen = () => {
     loadApplicationStatus();
     startAnimations();
     startTimer();
-
-    // Simulate status check every 30 seconds
-    const interval = setInterval(loadApplicationStatus, 30000);
-    return () => clearInterval(interval);
   }, []);
 
   const loadApplicationStatus = async () => {
     try {
       setIsLoading(true);
       
-      // Simulate API call to check application status
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Get the actual application data from Firebase
+      const allApplications = await FirebaseService.getAllApplications();
+      const currentApplication = allApplications.find(app => app.id === applicationId);
       
-      // Simulate different statuses for demo purposes
-      // In real app, this would come from your backend
-      const randomStatus: ApplicationStatus = Math.random() > 0.7 
-        ? (Math.random() > 0.5 ? 'approved' : 'rejected')
-        : 'pending';
-      
-      setApplicationData(prev => ({
-        ...prev,
-        status: randomStatus,
-        reviewedDate: randomStatus !== 'pending' ? new Date().toISOString() : undefined,
-        remarks: randomStatus === 'rejected' ? 'Application rejected due to incomplete documentation.' : undefined,
-      }));
+      if (currentApplication) {
+        setApplicationData(prev => ({
+          ...prev,
+          status: currentApplication.status as ApplicationStatus,
+          reviewedDate: currentApplication.reviewedAt ? new Date(currentApplication.reviewedAt).toISOString() : undefined,
+          remarks: currentApplication.status === 'rejected' ? 'Application rejected due to incomplete documentation.' : undefined,
+        }));
+      } else {
+        // If application not found, keep the passed status
+        console.log('Application not found in database, using passed status');
+      }
       
     } catch (error) {
       console.error('Error loading application status:', error);
+      // If there's an error, keep the current status
     } finally {
       setIsLoading(false);
     }
@@ -367,6 +365,21 @@ const StallApplicationStatusScreen = () => {
             </TouchableOpacity>
           )}
 
+          {applicationData.status === 'approved' && (
+            <TouchableOpacity
+              style={styles.payNowButton}
+              onPress={() => navigation.navigate('Payment', {
+                applicationId: applicationData.applicationId,
+                category: applicationData.category,
+                formData: applicationData.formData,
+              })}
+            >
+              <ButtonTextPrimary size='md'>
+                Pay Now
+              </ButtonTextPrimary>
+            </TouchableOpacity>
+          )}
+
           <TouchableOpacity
             style={styles.backToHomeButton}
             onPress={handleGoBack}
@@ -511,6 +524,13 @@ const styles = StyleSheet.create({
   },
   backToHomeButton: {
     backgroundColor: COLORS.primary,
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  payNowButton: {
+    backgroundColor: COLORS.success,
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',

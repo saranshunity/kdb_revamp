@@ -16,7 +16,6 @@ import { COLORS } from '../../constants/colors';
 import { FONTS, FONT_SIZES } from '../../constants/fonts';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FirebaseService, { StallApplication } from '../../services/FirebaseService';
-import { testFirebaseConnection, testStallCategories } from '../../utils/firebaseTest';
 import { Alert } from 'react-native';
 
 type AdminPanelScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'AdminPanel'>;
@@ -64,38 +63,51 @@ const AdminPanelScreen = () => {
     setIsRefreshing(false);
   };
 
-  const handleTestFirebase = async () => {
-    try {
-      Alert.alert('Testing Firebase', 'Starting Firebase connection test...');
-      const success = await testFirebaseConnection();
-      if (success) {
-        Alert.alert('Success!', 'Firebase connection test passed! Check console for details.');
-      } else {
-        Alert.alert('Error', 'Firebase connection test failed! Check console for details.');
-      }
-    } catch (error: any) {
-      console.error('Firebase test error:', error);
-      Alert.alert('Error', 'Firebase test failed: ' + (error.message || 'Unknown error'));
-    }
+  const handleViewApplications = () => {
+    navigation.navigate('AdminApplications');
+  };
+
+  const handleViewPendingApplications = () => {
+    Alert.alert(
+      'Pending Applications',
+      `There are ${stats.pending} applications pending review. Feature coming soon!`,
+      [{ text: 'OK' }]
+    );
   };
 
   const adminOptions = [
     {
-      id: 'test-firebase',
-      title: 'Test Firebase Connection',
-      description: 'Test Firestore and Storage connection',
-      icon: 'flask-outline',
+      id: 'all-applications',
+      title: 'All Applications',
+      description: `View and manage all ${stats.total} applications`,
+      icon: 'document-text-outline',
       color: COLORS.primary,
-      onPress: handleTestFirebase,
+      onPress: handleViewApplications,
     },
-    {
-      id: 'view-stats',
-      title: 'View Statistics',
-      description: `Total: ${stats.total}, Pending: ${stats.pending}, Approved: ${stats.approved}`,
-      icon: 'bar-chart-outline',
-      color: COLORS.secondary,
-      onPress: () => Alert.alert('Statistics', `Total Applications: ${stats.total}\nPending: ${stats.pending}\nApproved: ${stats.approved}\nRejected: ${stats.rejected}`),
-    },
+    // {
+    //   id: 'pending-applications',
+    //   title: 'Pending Review',
+    //   description: `${stats.pending} applications awaiting review`,
+    //   icon: 'time-outline',
+    //   color: COLORS.warning,
+    //   onPress: handleViewPendingApplications,
+    // },
+    // {
+    //   id: 'approved-applications',
+    //   title: 'Approved Applications',
+    //   description: `${stats.approved} applications approved`,
+    //   icon: 'checkmark-circle-outline',
+    //   color: COLORS.success,
+    //   onPress: () => Alert.alert('Approved Applications', `There are ${stats.approved} approved applications. Feature coming soon!`),
+    // },
+    // {
+    //   id: 'rejected-applications',
+    //   title: 'Rejected Applications',
+    //   description: `${stats.rejected} applications rejected`,
+    //   icon: 'close-circle-outline',
+    //   color: COLORS.error,
+    //   onPress: () => Alert.alert('Rejected Applications', `There are ${stats.rejected} rejected applications. Feature coming soon!`),
+    // },
   ];
 
   const renderStatsCard = (title: string, value: number, color: string, icon: string) => (

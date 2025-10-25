@@ -48,6 +48,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
   // Date-based visibility for Apply for Stalls section
   const [showApplyStalls, setShowApplyStalls] = useState(false);
+  
 
   // Check if Apply for Stalls section should be visible (until November 7th)
   useEffect(() => {
@@ -63,6 +64,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     
     // TEMPORARY: Always show for testing - remove this line later
     setShowApplyStalls(true);
+    
     
     // Show the section if current date is before or on November 7th
     // if (currentDate <= deadlineDate) {
@@ -431,6 +433,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     },
   ];
 
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar barStyle='dark-content' backgroundColor={COLORS.background.primary} />
@@ -502,7 +505,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         {showApplyStalls && (
           <TouchableOpacity 
             style={styles.applyStallsCard}
-            onPress={() => stackNavigation.navigate('StallCategories')}
+            onPress={() => stackNavigation.navigate('Stalls')}
             activeOpacity={0.8}
           >
             <View style={styles.applyStallsContent}>
@@ -531,6 +534,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
             <View style={styles.applyStallsGradient} />
           </TouchableOpacity>
         )}
+
         
         <View style={{marginTop: 26}}/>
         <MahotsavHulchal listData={mahotsavHulchal} type="mahotsav" />

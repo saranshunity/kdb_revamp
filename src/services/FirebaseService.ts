@@ -116,25 +116,6 @@ class FirebaseService {
     }
   }
 
-  // Update application status (approve/reject)
-  async updateApplicationStatus(
-    applicationId: string, 
-    status: 'approved' | 'rejected', 
-    reviewedBy: string,
-    reviewNotes?: string
-  ): Promise<void> {
-    try {
-      await this.applicationsCollection.doc(applicationId).update({
-        status,
-        reviewedAt: firestore.FieldValue.serverTimestamp(),
-        reviewedBy,
-        reviewNotes,
-      });
-    } catch (error) {
-      console.error('Error updating application status:', error);
-      throw error;
-    }
-  }
 
   // Get application by ID
   async getApplicationById(applicationId: string): Promise<StallApplication | null> {
@@ -197,6 +178,34 @@ class FirebaseService {
       return await reference.getDownloadURL();
     } catch (error) {
       console.error('Error getting download URL:', error);
+      throw error;
+    }
+  }
+
+  // Update application status
+  async updateApplicationStatus(applicationId: string, status: 'approved' | 'rejected'): Promise<void> {
+    try {
+      // Update the application status
+      await this.applicationsCollection.doc(applicationId).update({
+        status: status,
+        reviewedAt: firestore.FieldValue.serverTimestamp(),
+      });
+
+      // Get the application details for notification
+      const applicationDoc = await this.applicationsCollection.doc(applicationId).get();
+      const applicationData = applicationDoc.data();
+      
+      if (applicationData) {
+        // Log the status change for admin tracking
+        console.log(`Application ${applicationId} status changed to ${status} for ${applicationData.firmName}`);
+        
+        // In a real app, you would send push notifications or emails here
+        // For now, we'll just log the notification details
+        console.log(`Notification would be sent to: ${applicationData.email}`);
+        console.log(`Message: Your stall application for "${applicationData.firmName}" has been ${status}.`);
+      }
+    } catch (error) {
+      console.error('Error updating application status:', error);
       throw error;
     }
   }

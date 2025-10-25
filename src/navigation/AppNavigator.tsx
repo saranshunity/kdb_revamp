@@ -17,10 +17,12 @@ import ProfileScreen from '../screens/main/ProfileScreen';
 import SettingsScreen from '../screens/main/SettingsScreen';
 import EventsScreen from '../screens/events/EventScreen';
 import EventDetailScreen from '../screens/events/EventDetailScreen';
-import StallsScreen from '../screens/stalls/StallsScreen';
+import StallsScreen from '../screens/stalls/StallsMainScreen';
 import StallCategoriesScreen from '../screens/stalls/StallCategoriesScreen';
+import CheckApplicationStatusScreen from '../screens/stalls/CheckApplicationStatusScreen';
 import StallApplicationScreen from '../screens/stalls/StallApplicationScreen';
 import StallApplicationStatusScreen from '../screens/stalls/StallApplicationStatusScreen';
+import PaymentScreen from '../screens/stalls/PaymentScreen';
 import FamilyMembersScreen from '../screens/family/FamilyMembersScreen';
 import AddFamilyMemberScreen from '../screens/family/AddFamilyMemberScreen';
 import LocationMapScreen from '../screens/family/LocationMapScreen';
@@ -33,6 +35,7 @@ import MenuScreen from '../screens/main/MenuScreen';
 import AboutKDBScreen from '../screens/main/AboutKDBScreen';
 import AdministrationScreen from '../screens/main/AdministrationScreen';
 import AdminPanelScreen from '../screens/admin/AdminPanelScreen';
+import AdminApplicationsScreen from '../screens/admin/AdminApplicationsScreen';
 import SriKrishnaMuseumScreen from '../screens/main/SriKrishnaMuseumScreen';
 import JyotisarScreen from '../screens/main/JyotisarScreen';
 import PermissionsScreen from '../screens/main/PermissionsScreen';
@@ -99,6 +102,7 @@ export type RootStackParamList = {
   EventDetail: undefined;
   Stalls: undefined;
   StallCategories: undefined;
+  CheckApplicationStatus: undefined;
   Quiz: undefined;
   StallApplication: { category: any };
   StallApplicationStatus: { 
@@ -106,6 +110,11 @@ export type RootStackParamList = {
     category: any; 
     formData: any; 
     status: 'pending' | 'approved' | 'rejected';
+  };
+  Payment: {
+    applicationId: string;
+    category: any;
+    formData: any;
   };
   FamilyMembers: undefined;
   AddFamilyMember: undefined;
@@ -119,6 +128,7 @@ export type RootStackParamList = {
   AboutKDB: undefined;
   Administration: undefined;
   AdminPanel: undefined;
+  AdminApplications: undefined;
   SriKrishnaMuseum: undefined;
   Jyotisar: undefined;
   Permissions: undefined;
@@ -284,8 +294,10 @@ function AppNavigator() {
         <Stack.Screen name='EventDetail' component={EventDetailScreen} />
         <Stack.Screen name='Stalls' component={StallsScreen} />
         <Stack.Screen name='StallCategories' component={StallCategoriesScreen} />
+        <Stack.Screen name='CheckApplicationStatus' component={CheckApplicationStatusScreen} />
         <Stack.Screen name='StallApplication' component={StallApplicationScreen} />
         <Stack.Screen name='StallApplicationStatus' component={StallApplicationStatusScreen} />
+        <Stack.Screen name='Payment' component={PaymentScreen} />
         <Stack.Screen name='FamilyMembers' component={FamilyMembersScreen} />
         <Stack.Screen name='AddFamilyMember' component={AddFamilyMemberScreen} />
         <Stack.Screen name='LocationMap' component={LocationMapScreen} />
@@ -298,6 +310,7 @@ function AppNavigator() {
         <Stack.Screen name='AboutKDB' component={AboutKDBScreen} />
         <Stack.Screen name='Administration' component={AdministrationScreen} />
         <Stack.Screen name='AdminPanel' component={AdminPanelScreen} />
+        <Stack.Screen name='AdminApplications' component={AdminApplicationsScreen} />
         <Stack.Screen name='SriKrishnaMuseum' component={SriKrishnaMuseumScreen} />
         <Stack.Screen name='Jyotisar' component={JyotisarScreen} />
         <Stack.Screen name='Permissions' component={PermissionsScreen} />
