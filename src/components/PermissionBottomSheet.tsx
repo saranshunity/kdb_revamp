@@ -33,6 +33,7 @@ const PermissionBottomSheet: React.FC<PermissionBottomSheetProps> = ({
   const [permissions, setPermissions] = useState({
     location: 'checking' as 'granted' | 'denied' | 'blocked' | 'unavailable' | 'checking',
     notifications: 'checking' as 'granted' | 'denied' | 'blocked' | 'unavailable' | 'checking',
+    storage: 'checking' as 'granted' | 'denied' | 'blocked' | 'unavailable' | 'checking',
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -45,10 +46,14 @@ const PermissionBottomSheet: React.FC<PermissionBottomSheetProps> = ({
   const checkPermissions = async () => {
     setIsLoading(true);
     try {
-      const results = await PermissionService.checkAllCriticalPermissions();
+      const [criticalResults, storageResult] = await Promise.all([
+        PermissionService.checkAllCriticalPermissions(),
+        PermissionService.checkStoragePermission(),
+      ]);
       setPermissions({
-        location: results.location.status as any,
-        notifications: results.notifications.status as any,
+        location: criticalResults.location.status as any,
+        notifications: criticalResults.notifications.status as any,
+        storage: storageResult.status as any,
       });
     } catch (error) {
       console.error('Error checking permissions:', error);
@@ -87,14 +92,30 @@ const PermissionBottomSheet: React.FC<PermissionBottomSheetProps> = ({
     }
   };
 
+  const requestStoragePermission = async () => {
+    try {
+      setIsLoading(true);
+      const result = await PermissionService.requestStoragePermission();
+      setPermissions(prev => ({
+        ...prev,
+        storage: result.status as any,
+      }));
+    } catch (error) {
+      console.error('Error requesting storage permission:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const requestAllPermissions = async () => {
     await Promise.all([
       requestLocationPermission(),
       requestNotificationPermission(),
+      requestStoragePermission(),
     ]);
   };
 
-  const allPermissionsGranted = permissions.location === 'granted' && permissions.notifications === 'granted';
+  const allPermissionsGranted = permissions.location === 'granted' && permissions.notifications === 'granted' && permissions.storage === 'granted';
 
   const renderPermissionItem = (
     title: string,
@@ -182,6 +203,14 @@ const PermissionBottomSheet: React.FC<PermissionBottomSheetProps> = ({
               'notifications-outline',
               'notifications',
               requestNotificationPermission
+            )}
+            
+            {renderPermissionItem(
+              'Storage Access',
+              'Upload documents and photos for applications',
+              'folder-outline',
+              'storage',
+              requestStoragePermission
             )}
           </View>
 

@@ -4,6 +4,7 @@ import PermissionService from '../services/PermissionService';
 interface PermissionState {
   location: 'granted' | 'denied' | 'blocked' | 'unavailable' | 'checking';
   notifications: 'granted' | 'denied' | 'blocked' | 'unavailable' | 'checking';
+  storage: 'granted' | 'denied' | 'blocked' | 'unavailable' | 'checking';
 }
 
 interface PermissionContextType {
@@ -13,6 +14,7 @@ interface PermissionContextType {
   checkPermissions: () => Promise<void>;
   requestLocation: () => Promise<boolean>;
   requestNotifications: () => Promise<boolean>;
+  requestStorage: () => Promise<boolean>;
   requestAll: () => Promise<boolean>;
   hasShownPermissionPrompt: boolean;
   setHasShownPermissionPrompt: (shown: boolean) => void;
@@ -28,6 +30,7 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
   const [permissions, setPermissions] = useState<PermissionState>({
     location: 'checking',
     notifications: 'checking',
+    storage: 'checking',
   });
   const [isLoading, setIsLoading] = useState(false);
   const [hasShownPermissionPrompt, setHasShownPermissionPrompt] = useState(false);
@@ -35,10 +38,14 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
   const checkPermissions = async () => {
     setIsLoading(true);
     try {
-      const results = await PermissionService.checkAllCriticalPermissions();
+      const [criticalResults, storageResult] = await Promise.all([
+        PermissionService.checkAllCriticalPermissions(),
+        PermissionService.checkStoragePermission(),
+      ]);
       setPermissions({
-        location: results.location.status as PermissionState['location'],
-        notifications: results.notifications.status as PermissionState['notifications'],
+        location: criticalResults.location.status as PermissionState['location'],
+        notifications: criticalResults.notifications.status as PermissionState['notifications'],
+        storage: storageResult.status as PermissionState['storage'],
       });
     } catch (error) {
       console.error('Error checking permissions:', error);
@@ -81,14 +88,32 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
     }
   };
 
+  const requestStorage = async (): Promise<boolean> => {
+    setIsLoading(true);
+    try {
+      const result = await PermissionService.requestStoragePermission();
+      setPermissions(prev => ({
+        ...prev,
+        storage: result.status as PermissionState['storage'],
+      }));
+      return result.status === 'granted';
+    } catch (error) {
+      console.error('Error requesting storage permission:', error);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const requestAll = async (): Promise<boolean> => {
     setIsLoading(true);
     try {
-      const [locationResult, notificationResult] = await Promise.all([
+      const [locationResult, notificationResult, storageResult] = await Promise.all([
         requestLocation(),
         requestNotifications(),
+        requestStorage(),
       ]);
-      return locationResult && notificationResult;
+      return locationResult && notificationResult && storageResult;
     } catch (error) {
       console.error('Error requesting all permissions:', error);
       return false;
@@ -101,7 +126,7 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
     checkPermissions();
   }, []);
 
-  const allGranted = permissions.location === 'granted' && permissions.notifications === 'granted';
+  const allGranted = permissions.location === 'granted' && permissions.notifications === 'granted' && permissions.storage === 'granted';
 
   const value: PermissionContextType = {
     permissions,
@@ -110,6 +135,7 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
     checkPermissions,
     requestLocation,
     requestNotifications,
+    requestStorage,
     requestAll,
     hasShownPermissionPrompt,
     setHasShownPermissionPrompt,
