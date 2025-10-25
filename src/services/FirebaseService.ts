@@ -38,9 +38,33 @@ export interface StallCategory {
   color: string;
 }
 
+export interface TirthMitraApplication {
+  id: string;
+  fullName: string;
+  fatherName: string;
+  dateOfBirth: string;
+  gender: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  pincode: string;
+  photoUri: string;
+  selectedDistrict: string;
+  selectedTirth: string;
+  selectedTirthName: string;
+  status: 'pending' | 'approved' | 'rejected';
+  submittedAt: Date;
+  reviewedAt?: Date;
+  reviewedBy?: string;
+  reviewNotes?: string;
+}
+
 class FirebaseService {
   private applicationsCollection = firestore().collection('stallApplications');
   private categoriesCollection = firestore().collection('stallCategories');
+  private tirthMitraApplicationsCollection = firestore().collection('tirthMitraApplications');
 
   // Submit a new stall application
   async submitApplication(applicationData: Omit<StallApplication, 'id' | 'submittedAt' | 'status'>): Promise<string> {
@@ -239,6 +263,142 @@ class FirebaseService {
       return stats;
     } catch (error) {
       console.error('Error getting application stats:', error);
+      throw error;
+    }
+  }
+
+  // ==================== TIRTH MITRA APPLICATION METHODS ====================
+
+  // Submit a new Tirth Mitra application
+  async submitTirthMitraApplication(applicationData: Omit<TirthMitraApplication, 'id' | 'submittedAt' | 'status'>): Promise<string> {
+    try {
+      const docRef = await this.tirthMitraApplicationsCollection.add({
+        ...applicationData,
+        submittedAt: firestore.FieldValue.serverTimestamp(),
+        status: 'pending',
+      });
+      return docRef.id;
+    } catch (error) {
+      console.error('Error submitting Tirth Mitra application:', error);
+      throw error;
+    }
+  }
+
+  // Get all Tirth Mitra applications (for admin)
+  async getAllTirthMitraApplications(): Promise<TirthMitraApplication[]> {
+    try {
+      const snapshot = await this.tirthMitraApplicationsCollection
+        .orderBy('submittedAt', 'desc')
+        .get();
+      
+      return snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        submittedAt: doc.data().submittedAt?.toDate() || new Date(),
+        reviewedAt: doc.data().reviewedAt?.toDate(),
+      })) as TirthMitraApplication[];
+    } catch (error) {
+      console.error('Error fetching Tirth Mitra applications:', error);
+      throw error;
+    }
+  }
+
+  // Get Tirth Mitra applications by status
+  async getTirthMitraApplicationsByStatus(status: 'pending' | 'approved' | 'rejected'): Promise<TirthMitraApplication[]> {
+    try {
+      const snapshot = await this.tirthMitraApplicationsCollection
+        .where('status', '==', status)
+        .orderBy('submittedAt', 'desc')
+        .get();
+      
+      return snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        submittedAt: doc.data().submittedAt?.toDate() || new Date(),
+        reviewedAt: doc.data().reviewedAt?.toDate(),
+      })) as TirthMitraApplication[];
+    } catch (error) {
+      console.error('Error fetching Tirth Mitra applications by status:', error);
+      throw error;
+    }
+  }
+
+  // Get Tirth Mitra application by ID
+  async getTirthMitraApplicationById(applicationId: string): Promise<TirthMitraApplication | null> {
+    try {
+      const doc = await this.tirthMitraApplicationsCollection.doc(applicationId).get();
+      if (doc.exists) {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          submittedAt: data?.submittedAt?.toDate() || new Date(),
+          reviewedAt: data?.reviewedAt?.toDate(),
+        } as TirthMitraApplication;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error fetching Tirth Mitra application by ID:', error);
+      throw error;
+    }
+  }
+
+  // Update Tirth Mitra application status
+  async updateTirthMitraApplicationStatus(applicationId: string, status: 'approved' | 'rejected'): Promise<void> {
+    try {
+      // Update the application status
+      await this.tirthMitraApplicationsCollection.doc(applicationId).update({
+        status: status,
+        reviewedAt: firestore.FieldValue.serverTimestamp(),
+      });
+
+      // Get the application details for notification
+      const applicationDoc = await this.tirthMitraApplicationsCollection.doc(applicationId).get();
+      const applicationData = applicationDoc.data();
+      
+      if (applicationData) {
+        // Log the status change for admin tracking
+        console.log(`Tirth Mitra Application ${applicationId} status changed to ${status} for ${applicationData.fullName}`);
+        
+        // In a real app, you would send push notifications or emails here
+        console.log(`Notification would be sent to: ${applicationData.email}`);
+        console.log(`Message: Your Tirth Mitra application has been ${status}.`);
+      }
+    } catch (error) {
+      console.error('Error updating Tirth Mitra application status:', error);
+      throw error;
+    }
+  }
+
+  // Get Tirth Mitra application statistics
+  async getTirthMitraApplicationStats(): Promise<{
+    total: number;
+    pending: number;
+    approved: number;
+    rejected: number;
+    byDistrict: { [district: string]: number };
+  }> {
+    try {
+      const snapshot = await this.tirthMitraApplicationsCollection.get();
+      const applications = snapshot.docs.map(doc => doc.data());
+      
+      const stats = {
+        total: applications.length,
+        pending: applications.filter(app => app.status === 'pending').length,
+        approved: applications.filter(app => app.status === 'approved').length,
+        rejected: applications.filter(app => app.status === 'rejected').length,
+        byDistrict: {} as { [district: string]: number },
+      };
+
+      // Count by district
+      applications.forEach(app => {
+        const district = app.selectedDistrict || 'Unknown';
+        stats.byDistrict[district] = (stats.byDistrict[district] || 0) + 1;
+      });
+
+      return stats;
+    } catch (error) {
+      console.error('Error getting Tirth Mitra application stats:', error);
       throw error;
     }
   }

@@ -1,31 +1,25 @@
 import React, { useState } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
   StatusBar,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../navigation/AppNavigator';
+import { H1, H2, H3, BodyText } from '../../components/Text';
 import { COLORS } from '../../constants/colors';
 import { FONTS, FONT_SIZES } from '../../constants/fonts';
-import { H1, H2, H3, BodyText } from '../../components/Text';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import CheckBox from '@react-native-community/checkbox';
 
-type TirthMitraIntroScreenNavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  'TirthMitraIntro'
->;
+interface TirthMitraIntroScreenProps {
+  navigation: any;
+}
 
-const TirthMitraIntroScreen = () => {
+const TirthMitraIntroScreen: React.FC<TirthMitraIntroScreenProps> = ({ navigation }) => {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation<TirthMitraIntroScreenNavigationProp>();
 
   const handleContinue = () => {
     navigation.navigate('TirthMitraGenerator');
@@ -227,7 +221,6 @@ const styles = StyleSheet.create({
     borderBottomColor: COLORS.border.light,
   },
   backButton: {
-    padding: 8,
     width: 40,
   },
   headerContent: {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   StyleSheet,
@@ -7,22 +7,24 @@ import {
   StatusBar,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { H1, H2, H3, BodyText } from '../../components/Text';
+import { H1, H2, BodyText, H3 } from '../../components/Text';
 import { COLORS } from '../../constants/colors';
 import { FONTS, FONT_SIZES } from '../../constants/fonts';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import CheckBox from '@react-native-community/checkbox';
 
 interface ProfileScreenProps {
   navigation: any;
 }
 
 const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const insets = useSafeAreaInsets();
 
-  const handleContinue = () => {
-    navigation.navigate('TirthMitraGenerator');
+  const handleApply = () => {
+    navigation.navigate('TirthMitraIntro');
+  };
+
+  const handleCheckStatus = () => {
+    navigation.navigate('TirthMitraStatus', {});
   };
 
   return (
@@ -32,168 +34,73 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerContent}>
-          <H2 style={styles.headerTitle} color={COLORS.text.primary} weight="bold" size="lg">
+          <H3 style={styles.headerTitle} color={COLORS.text.primary} weight="semiBold" size="md">
             Tirth Mitra Card
-          </H2>
+          </H3>
         </View>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
-        {/* Hero Section */}
-        <View style={styles.heroSection}>
-          <View style={styles.iconContainer}>
-            <Ionicons name="card" size={60} color={COLORS.background.appColor} />
+        <View style={styles.contentContainer}>
+    
+
+          {/* Action Buttons */}
+          <View style={styles.actionButtonsContainer}>
+            {/* Apply Button */}
+            <TouchableOpacity
+              style={[styles.actionButton, styles.primaryButton]}
+              onPress={handleApply}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="document-text" size={24} color={COLORS.white} />
+              <View style={styles.buttonTextContainer}>
+                <BodyText
+                  style={styles.actionButtonText}
+                  color={COLORS.white}
+                  size="lg"
+                  weight="bold"
+                >
+                  Apply for Card
+                </BodyText>
+                <BodyText
+                  style={styles.actionButtonSubtext}
+                  color={COLORS.white}
+                  size="sm"
+                >
+                  New Application
+                </BodyText>
+              </View>
+              <Ionicons name="arrow-forward" size={20} color={COLORS.white} />
+            </TouchableOpacity>
+
+            {/* Check Status Button */}
+            <TouchableOpacity
+              style={[styles.actionButton, styles.secondaryButton]}
+              onPress={handleCheckStatus}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="search" size={24} color={COLORS.background.appColor} />
+              <View style={styles.buttonTextContainer}>
+                <BodyText
+                  style={styles.secondaryButtonText}
+                  color={COLORS.background.appColor}
+                  size="lg"
+                  weight="bold"
+                >
+                  Check Status
+                </BodyText>
+                <BodyText
+                  style={styles.secondaryButtonSubtext}
+                  color={COLORS.text.secondary}
+                  size="sm"
+                >
+                  Track your application
+                </BodyText>
+              </View>
+              <Ionicons name="arrow-forward" size={20} color={COLORS.background.appColor} />
+            </TouchableOpacity>
           </View>
-          <H1 style={styles.heroTitle} color={COLORS.text.primary} weight="bold" size="xl">
-            Welcome to Tirth Mitra
-          </H1>
-          <BodyText style={styles.heroSubtitle} color={COLORS.text.secondary} size="md">
-            Your Official Pilgrimage Companion Card
-          </BodyText>
         </View>
-
-        {/* About Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Ionicons name="information-circle" size={24} color={COLORS.background.appColor} />
-            <H3 style={styles.sectionTitle} color={COLORS.text.primary} weight="bold" size="md">
-              What is Tirth Mitra Card?
-            </H3>
-          </View>
-          <BodyText style={styles.sectionText} color={COLORS.text.secondary} size="sm">
-            Tirth Mitra Card is an official identification card for pilgrims visiting the 48 Kos
-            Parikrama of Kurukshetra. This card helps authorities identify genuine pilgrims and
-            provides access to special facilities and services during your pilgrimage.
-          </BodyText>
-        </View>
-
-        {/* Validity Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Ionicons name="calendar" size={24} color={COLORS.background.appColor} />
-            <H3 style={styles.sectionTitle} color={COLORS.text.primary} weight="bold" size="md">
-              Card Validity
-            </H3>
-          </View>
-          <BodyText style={styles.sectionText} color={COLORS.text.secondary} size="sm">
-            • Valid for 1 year from date of issue{'\n'}
-            • Can be renewed annually{'\n'}
-            • Valid across all 182 tirthas in Kurukshetra region{'\n'}
-            • Digital card accepted at all locations
-          </BodyText>
-        </View>
-
-        {/* Authority Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Ionicons name="shield-checkmark" size={24} color={COLORS.background.appColor} />
-            <H3 style={styles.sectionTitle} color={COLORS.text.primary} weight="bold" size="md">
-              Issued Authority
-            </H3>
-          </View>
-          <BodyText style={styles.sectionText} color={COLORS.text.secondary} size="sm">
-            This card is issued by the Kurukshetra Development Board (KDB) under the Government
-            of Haryana. The card serves as an official document for pilgrims and is recognized
-            by all temple authorities and local administration.
-          </BodyText>
-        </View>
-
-        {/* Benefits Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Ionicons name="gift" size={24} color={COLORS.background.appColor} />
-            <H3 style={styles.sectionTitle} color={COLORS.text.primary} weight="bold" size="md">
-              Benefits & Facilities
-            </H3>
-          </View>
-          <BodyText style={styles.sectionText} color={COLORS.text.secondary} size="sm">
-            • Priority darshan at selected temples{'\n'}
-            • Access to special parking facilities{'\n'}
-            • Discounts at authorized accommodations{'\n'}
-            • Emergency assistance during pilgrimage{'\n'}
-            • Free entry to certain cultural events{'\n'}
-            • Digital guide and navigation support
-          </BodyText>
-        </View>
-
-        {/* Instructions Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Ionicons name="list" size={24} color={COLORS.background.appColor} />
-            <H3 style={styles.sectionTitle} color={COLORS.text.primary} weight="bold" size="md">
-              Instructions
-            </H3>
-          </View>
-          <BodyText style={styles.sectionText} color={COLORS.text.secondary} size="sm">
-            1. Fill accurate personal information{'\n'}
-            2. Upload a clear passport-size photograph{'\n'}
-            3. Provide valid contact details{'\n'}
-            4. Review all information before submission{'\n'}
-            5. Download and save your digital card{'\n'}
-            6. Keep both digital and printed copy during pilgrimage{'\n'}
-            7. Present card when requested by authorities
-          </BodyText>
-        </View>
-
-        {/* Important Notes */}
-        <View style={[styles.section, styles.warningSection]}>
-          <View style={styles.sectionHeader}>
-            <Ionicons name="alert-circle" size={24} color={COLORS.warning} />
-            <H3 style={styles.sectionTitle} color={COLORS.warning} weight="bold" size="md">
-              Important Notes
-            </H3>
-          </View>
-          <BodyText style={styles.sectionText} color={COLORS.text.secondary} size="sm">
-            • Card is non-transferable{'\n'}
-            • Misuse may lead to cancellation{'\n'}
-            • Report loss immediately{'\n'}
-            • Carry valid government ID along with card{'\n'}
-            • Follow temple rules and regulations
-          </BodyText>
-        </View>
-
-        {/* Agreement Checkbox */}
-        <View style={styles.agreementContainer}>
-          <CheckBox
-            value={agreedToTerms}
-            onValueChange={setAgreedToTerms}
-            tintColors={{ true: COLORS.background.appColor, false: COLORS.border.dark }}
-            style={styles.checkbox}
-          />
-          <TouchableOpacity
-            style={styles.agreementTextContainer}
-            onPress={() => setAgreedToTerms(!agreedToTerms)}
-            activeOpacity={0.7}
-          >
-            <BodyText style={styles.agreementText} color={COLORS.text.primary} size="sm">
-              I have read and understood all the terms, conditions, and instructions mentioned
-              above. I agree to comply with all rules and regulations during my pilgrimage.
-            </BodyText>
-          </TouchableOpacity>
-        </View>
-
-        {/* Continue Button */}
-        <TouchableOpacity
-          style={[
-            styles.continueButton,
-            !agreedToTerms && styles.continueButtonDisabled,
-          ]}
-          onPress={handleContinue}
-          disabled={!agreedToTerms}
-          activeOpacity={0.8}
-        >
-          <BodyText
-            style={styles.continueButtonText}
-            color={COLORS.white}
-            size="md"
-            weight="bold"
-          >
-            Continue to Generate Card
-          </BodyText>
-          <Ionicons name="arrow-forward" size={20} color={COLORS.white} />
-        </TouchableOpacity>
-
-        <View style={styles.bottomSpacing} />
       </ScrollView>
     </View>
   );
@@ -224,95 +131,72 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  heroSection: {
+  contentContainer: {
     alignItems: 'center',
-    paddingVertical: 32,
+    paddingVertical: 40,
     paddingHorizontal: 20,
-    backgroundColor: COLORS.background.secondary,
   },
   iconContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     backgroundColor: COLORS.background.appColor + '20',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: 24,
   },
-  heroTitle: {
+  title: {
     fontFamily: FONTS.gilroy.bold,
     fontSize: FONT_SIZES.xl,
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
   },
-  heroSubtitle: {
+  subtitle: {
     fontFamily: FONTS.gilroy.medium,
     fontSize: FONT_SIZES.md,
     textAlign: 'center',
+    marginBottom: 40,
   },
-  section: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border.light,
+  actionButtonsContainer: {
+    width: '100%',
+    gap: 16,
   },
-  sectionHeader: {
+  actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
-    gap: 8,
-  },
-  sectionTitle: {
-    fontFamily: FONTS.gilroy.bold,
-    fontSize: FONT_SIZES.md,
-  },
-  sectionText: {
-    fontFamily: FONTS.gilroy.regular,
-    fontSize: FONT_SIZES.sm,
-    lineHeight: 22,
-  },
-  warningSection: {
-    backgroundColor: COLORS.warning + '10',
-  },
-  agreementContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
     paddingVertical: 20,
-    backgroundColor: COLORS.background.secondary,
-    marginHorizontal: 20,
-    marginTop: 20,
+    paddingHorizontal: 20,
     borderRadius: 12,
-    gap: 12,
+    gap: 16,
   },
-  checkbox: {
-    marginTop: 2,
-  },
-  agreementTextContainer: {
-    flex: 1,
-  },
-  agreementText: {
-    fontFamily: FONTS.gilroy.regular,
-    fontSize: FONT_SIZES.sm,
-    lineHeight: 20,
-  },
-  continueButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+  primaryButton: {
     backgroundColor: COLORS.background.appColor,
-    marginHorizontal: 20,
-    marginTop: 24,
-    paddingVertical: 16,
-    borderRadius: 12,
-    gap: 8,
   },
-  continueButtonDisabled: {
-    backgroundColor: COLORS.text.tertiary,
-    opacity: 0.5,
+  secondaryButton: {
+    backgroundColor: COLORS.background.secondary,
+    borderWidth: 2,
+    borderColor: COLORS.background.appColor,
   },
-  continueButtonText: {
+  buttonTextContainer: {
+    flex: 1,
+    gap: 4,
+  },
+  actionButtonText: {
     fontFamily: FONTS.gilroy.bold,
-    fontSize: FONT_SIZES.md,
+    fontSize: FONT_SIZES.lg,
+  },
+  actionButtonSubtext: {
+    fontFamily: FONTS.gilroy.regular,
+    fontSize: FONT_SIZES.sm,
+    opacity: 0.9,
+  },
+  secondaryButtonText: {
+    fontFamily: FONTS.gilroy.bold,
+    fontSize: FONT_SIZES.lg,
+  },
+  secondaryButtonSubtext: {
+    fontFamily: FONTS.gilroy.regular,
+    fontSize: FONT_SIZES.sm,
   },
   bottomSpacing: {
     height: 20,

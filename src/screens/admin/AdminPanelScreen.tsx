@@ -63,26 +63,30 @@ const AdminPanelScreen = () => {
     setIsRefreshing(false);
   };
 
-  const handleViewApplications = () => {
+  const handleStallApplications = () => {
     navigation.navigate('AdminApplications');
   };
 
-  const handleViewPendingApplications = () => {
-    Alert.alert(
-      'Pending Applications',
-      `There are ${stats.pending} applications pending review. Feature coming soon!`,
-      [{ text: 'OK' }]
-    );
+  const handleTirthMitraApplications = () => {
+    navigation.navigate('AdminTirthMitraApplications');
   };
 
   const adminOptions = [
     {
-      id: 'all-applications',
-      title: 'All Applications',
-      description: `View and manage all ${stats.total} applications`,
-      icon: 'document-text-outline',
+      id: 'stall-applications',
+      title: 'Stall Applications',
+      description: `View and manage stall applications`,
+      icon: 'storefront-outline',
       color: COLORS.primary,
-      onPress: handleViewApplications,
+      onPress: handleStallApplications,
+    },
+    {
+      id: 'tirth-mitra-applications',
+      title: 'Tirth Mitra Applications',
+      description: `View and manage Tirth Mitra applications`,
+      icon: 'people-outline',
+      color: COLORS.secondary,
+      onPress: handleTirthMitraApplications,
     },
     // {
     //   id: 'pending-applications',
@@ -194,7 +198,7 @@ const AdminPanelScreen = () => {
         }
       >
         {/* Stats Section */}
-        <View style={styles.statsSection}>
+        {/* <View style={styles.statsSection}>
           <H2 color={COLORS.text.primary} weight='semiBold' size='md' style={styles.sectionTitle}>
             Application Statistics
           </H2>
@@ -205,13 +209,13 @@ const AdminPanelScreen = () => {
             {renderStatsCard('Approved', stats.approved, COLORS.success, 'checkmark-circle-outline')}
             {renderStatsCard('Rejected', stats.rejected, COLORS.error, 'close-circle-outline')}
           </View>
-        </View>
+        </View> */}
 
         {/* Admin Options */}
         <View style={styles.optionsSection}>
-          <H2 color={COLORS.text.primary} weight='semiBold' size='md' style={styles.sectionTitle}>
+          {/* <H2 color={COLORS.text.primary} weight='semiBold' size='md' style={styles.sectionTitle}>
             Management Options
-          </H2>
+          </H2> */}
           
           {adminOptions.map(renderAdminOption)}
         </View>
@@ -219,7 +223,7 @@ const AdminPanelScreen = () => {
         {/* Footer Info */}
         <View style={styles.footerInfo}>
           <BodyText color={COLORS.text.tertiary} size='xs' style={styles.footerText}>
-            Admin panel for managing International Gita Mahotsav 2025 stall applications.
+            Admin panel for managing International Gita Mahotsav 2025 applications.
             All actions are logged and tracked.
           </BodyText>
         </View>

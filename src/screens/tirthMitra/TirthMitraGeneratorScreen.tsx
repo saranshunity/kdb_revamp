@@ -11,6 +11,7 @@ import {
   Alert,
   Modal,
   FlatList,
+  ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -22,6 +23,11 @@ import { H2, H3, BodyText } from '../../components/Text';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import tirthData from '../../../tirth.json';
+import { useAuth } from '../../contexts/AuthContext';
+import FileUpload from '../../components/FileUpload';
+import { FileData, uploadDocumentToFirebase } from '../../utils/documentUploader';
+import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
 
 type TirthMitraGeneratorScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -49,12 +55,15 @@ interface FormData {
   state: string;
   pincode: string;
   photoUri: string;
+  idCardUri: string;
+  idCardFile: FileData | null;
   selectedDistrict: string;
   selectedTirth: string;
   selectedTirthName: string;
 }
 
 const TirthMitraGeneratorScreen = () => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState<FormData>({
     fullName: '',
     fatherName: '',
@@ -67,6 +76,8 @@ const TirthMitraGeneratorScreen = () => {
     state: '',
     pincode: '',
     photoUri: '',
+    idCardUri: '',
+    idCardFile: null,
     selectedDistrict: '',
     selectedTirth: '',
     selectedTirthName: '',
@@ -76,9 +87,25 @@ const TirthMitraGeneratorScreen = () => {
   const [filteredTirthas, setFilteredTirthas] = useState<Tirth[]>([]);
   const [showDistrictPicker, setShowDistrictPicker] = useState(false);
   const [showTirthPicker, setShowTirthPicker] = useState(false);
+  const [useLoggedInPhone, setUseLoggedInPhone] = useState(true);
+  const [showOTPVerification, setShowOTPVerification] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [otpCode, setOtpCode] = useState('');
+  const [confirmation, setConfirmation] = useState<any>(null);
+  const [isVerifyingOTP, setIsVerifyingOTP] = useState(false);
+  const [isSendingOTP, setIsSendingOTP] = useState(false);
 
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<TirthMitraGeneratorScreenNavigationProp>();
+
+  // Set logged-in user's phone number on mount
+  React.useEffect(() => {
+    if (user?.phoneNumber) {
+      const phoneWithoutCountryCode = user.phoneNumber.replace(/^\+91/, '');
+      setFormData(prev => ({ ...prev, phone: phoneWithoutCountryCode }));
+    }
+  }, [user]);
 
   React.useEffect(() => {
     // Load unique districts
@@ -100,6 +127,26 @@ const TirthMitraGeneratorScreen = () => {
 
   const updateField = (field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleDateOfBirthChange = (text: string) => {
+    // Remove all non-digit characters
+    const digits = text.replace(/\D/g, '');
+    
+    // Limit to 8 digits (DDMMYYYY)
+    if (digits.length <= 8) {
+      let formatted = digits;
+      
+      // Add slashes
+      if (digits.length > 2) {
+        formatted = digits.substring(0, 2) + '/' + digits.substring(2);
+      }
+      if (digits.length > 4) {
+        formatted = digits.substring(0, 2) + '/' + digits.substring(2, 4) + '/' + digits.substring(4);
+      }
+      
+      updateField('dateOfBirth', formatted);
+    }
   };
 
   const handleDistrictSelect = (district: string) => {
@@ -185,6 +232,14 @@ const TirthMitraGeneratorScreen = () => {
       Alert.alert('Required Field', 'Please enter your full name');
       return false;
     }
+    if (!formData.dateOfBirth.trim()) {
+      Alert.alert('Required Field', 'Please enter your date of birth');
+      return false;
+    }
+    if (!formData.gender.trim()) {
+      Alert.alert('Required Field', 'Please select your gender');
+      return false;
+    }
     if (!formData.phone.trim() || formData.phone.length !== 10) {
       Alert.alert('Invalid Phone', 'Please enter a valid 10-digit phone number');
       return false;
@@ -193,13 +248,164 @@ const TirthMitraGeneratorScreen = () => {
       Alert.alert('Invalid Email', 'Please enter a valid email address');
       return false;
     }
+    if (!formData.address.trim()) {
+      Alert.alert('Required Field', 'Please enter your address');
+      return false;
+    }
+    if (!formData.city.trim()) {
+      Alert.alert('Required Field', 'Please enter your city');
+      return false;
+    }
+    if (!formData.state.trim()) {
+      Alert.alert('Required Field', 'Please enter your state');
+      return false;
+    }
+    if (!formData.pincode.trim() || formData.pincode.length !== 6) {
+      Alert.alert('Invalid Pincode', 'Please enter a valid 6-digit pincode');
+      return false;
+    }
+    if (!formData.idCardFile) {
+      Alert.alert('Required Field', 'Please upload your Aadhar card or government ID/Document');
+      return false;
+    }
     return true;
   };
 
-  const handleGenerateCard = () => {
-    if (validateForm()) {
-      // Navigate to card preview screen
-      navigation.navigate('TirthMitraCard', { cardData: formData });
+  const sendOTPVerification = async () => {
+    try {
+      setIsSendingOTP(true);
+      const phoneWithCountryCode = `+91${formData.phone}`;
+      const confirmation = await auth().signInWithPhoneNumber(phoneWithCountryCode);
+      setConfirmation(confirmation);
+      setShowOTPVerification(true);
+      Alert.alert('OTP Sent', 'Please check your phone for the verification code.');
+    } catch (error: any) {
+      console.error('Error sending OTP:', error);
+      Alert.alert('Error', 'Failed to send OTP. Please try again.');
+    } finally {
+      setIsSendingOTP(false);
+    }
+  };
+
+  const verifyOTP = async () => {
+    if (!otpCode || otpCode.length !== 6) {
+      Alert.alert('Invalid OTP', 'Please enter a valid 6-digit OTP code.');
+      return;
+    }
+
+    try {
+      setIsVerifyingOTP(true);
+      await confirmation.confirm(otpCode);
+      setShowOTPVerification(false);
+      Alert.alert('Success', 'Phone number verified successfully!', [
+        {
+          text: 'OK',
+          onPress: () => handleUploadAndSubmit(),
+        },
+      ]);
+    } catch (error: any) {
+      console.error('Error verifying OTP:', error);
+      Alert.alert('Invalid OTP', 'The OTP code entered is incorrect. Please try again.');
+    } finally {
+      setIsVerifyingOTP(false);
+    }
+  };
+
+  const handleGenerateCard = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
+    // Check if using different phone number - need OTP verification
+    if (!useLoggedInPhone && user?.phoneNumber) {
+      const userPhone = user.phoneNumber.replace(/^\+91/, '');
+      if (formData.phone !== userPhone) {
+        // Send OTP for verification
+        await sendOTPVerification();
+        return;
+      }
+    }
+
+    // If using logged-in phone or OTP verified, proceed with upload
+    await handleUploadAndSubmit();
+  };
+
+  const handleUploadAndSubmit = async () => {
+    try {
+      setIsUploading(true);
+      setUploadProgress(0);
+
+      // Upload photo to Firebase
+      let photoUrl = formData.photoUri;
+      if (formData.photoUri) {
+        // Convert photo URI to FileData format
+        const photoFile: FileData = {
+          uri: formData.photoUri,
+          name: `photo_${Date.now()}.jpg`,
+          type: 'image/jpeg',
+          size: 0,
+        };
+        
+        const photoUploadResult = await uploadDocumentToFirebase(
+          photoFile,
+          'tirthMitra/photos',
+          (progress) => setUploadProgress(progress * 0.5) // 50% for photo
+        );
+        photoUrl = photoUploadResult.url;
+      }
+
+      // Upload ID card document to Firebase
+      let idCardUrl = '';
+      if (formData.idCardFile) {
+        const idCardUploadResult = await uploadDocumentToFirebase(
+          formData.idCardFile,
+          'tirthMitra/documents',
+          (progress) => setUploadProgress(50 + progress * 0.5) // 50-100% for document
+        );
+        idCardUrl = idCardUploadResult.url;
+      }
+
+      // Update form data with Firebase URLs
+      const updatedFormData = {
+        ...formData,
+        photoUri: photoUrl,
+        idCardUri: idCardUrl,
+      };
+
+      // Save application data to Firestore
+      const initialData = {
+        ...updatedFormData,
+        userId: user?.id || '',
+        mobileNumber: `+91${formData.phone}`,
+        status: 'pending',
+        submittedAt: firestore.FieldValue.serverTimestamp(),
+        createdAt: firestore.FieldValue.serverTimestamp(),
+      };
+
+      // Save to Firestore
+      const docRef = await firestore()
+        .collection('tirthMitraApplications')
+        .add(initialData);
+
+      // Get application ID and update with it
+      const applicationId = docRef.id;
+      await docRef.update({ applicationId: applicationId });
+
+      const applicationData = {
+        ...initialData,
+        applicationId: applicationId,
+      };
+
+      // Navigate to review screen
+      navigation.navigate('TirthMitraReview', {
+        applicationData: applicationData,
+      });
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      Alert.alert('Upload Failed', error.message || 'Failed to upload files. Please try again.');
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -213,7 +419,7 @@ const TirthMitraGeneratorScreen = () => {
           <Ionicons name="arrow-back" size={24} color={COLORS.text.primary} />
         </TouchableOpacity>
         <View style={styles.headerContent}>
-          <H2 style={styles.headerTitle} color={COLORS.text.primary} weight="bold" size="lg">
+          <H2 style={styles.headerTitle} color={COLORS.text.primary} weight="semiBold" size="lg">
             Generate Tirth Mitra Card
           </H2>
         </View>
@@ -222,20 +428,20 @@ const TirthMitraGeneratorScreen = () => {
 
       <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
         {/* Progress Indicator */}
-        <View style={styles.progressContainer}>
+        {/* <View style={styles.progressContainer}>
           <View style={styles.progressBar}>
             <View style={styles.progressFill} />
           </View>
           <BodyText style={styles.progressText} color={COLORS.text.secondary} size="xs">
             Step 2 of 3
           </BodyText>
-        </View>
+        </View> */}
 
         {/* Photo Upload Section */}
         <View style={styles.section}>
-          <H3 style={styles.sectionTitle} color={COLORS.text.primary} weight="bold" size="md">
-            Upload Photo
-          </H3>
+        <BodyText color={COLORS.text.primary} size='sm' weight='medium' style={styles.label}>
+        Upload Photo
+          </BodyText>
           <TouchableOpacity style={styles.photoContainer} onPress={handleSelectPhoto}>
             {formData.photoUri ? (
               <Image source={{ uri: formData.photoUri }} style={styles.photoPreview} />
@@ -253,9 +459,31 @@ const TirthMitraGeneratorScreen = () => {
           </TouchableOpacity>
         </View>
 
+        {/* ID Card/Document Upload Section */}
+        <View style={styles.section}>
+          <FileUpload
+            label="Upload ID Card/Document"
+            fileName={formData.idCardFile?.name}
+            fileSize={formData.idCardFile?.size}
+            onFileSelect={(file) => {
+              setFormData(prev => ({ ...prev, idCardFile: file }));
+              if (file) {
+                // Also set idCardUri for backwards compatibility
+                setFormData(prev => ({ ...prev, idCardUri: file.uri }));
+              }
+            }}
+            error=""
+            required
+            maxSize={10}
+            allowedTypes={['application/pdf', 'image/jpeg', 'image/png', 'image/jpg']}
+            showPreview={true}
+            isUploading={false}
+          />
+        </View>
+
         {/* Pilgrimage Information */}
         <View style={styles.section}>
-          <H3 style={styles.sectionTitle} color={COLORS.text.primary} weight="bold" size="md">
+          <H3 style={styles.sectionTitle} color={COLORS.text.primary} weight="semiBold" size="md">
             Pilgrimage Information
           </H3>
 
@@ -309,7 +537,7 @@ const TirthMitraGeneratorScreen = () => {
 
         {/* Personal Information */}
         <View style={styles.section}>
-          <H3 style={styles.sectionTitle} color={COLORS.text.primary} weight="bold" size="md">
+          <H3 style={styles.sectionTitle} color={COLORS.text.primary} weight="semiBold" size="md">
             Personal Information
           </H3>
 
@@ -342,20 +570,22 @@ const TirthMitraGeneratorScreen = () => {
           <View style={styles.row}>
             <View style={[styles.inputGroup, styles.halfWidth]}>
               <BodyText style={styles.label} color={COLORS.text.secondary} size="sm">
-                Date of Birth
+                Date of Birth <Text style={styles.required}>*</Text>
               </BodyText>
               <TextInput
                 style={styles.input}
                 placeholder="DD/MM/YYYY"
                 placeholderTextColor={COLORS.text.tertiary}
                 value={formData.dateOfBirth}
-                onChangeText={text => updateField('dateOfBirth', text)}
+                onChangeText={handleDateOfBirthChange}
+                keyboardType="number-pad"
+                maxLength={10}
               />
             </View>
 
             <View style={[styles.inputGroup, styles.halfWidth]}>
               <BodyText style={styles.label} color={COLORS.text.secondary} size="sm">
-                Gender
+                Gender <Text style={styles.required}>*</Text>
               </BodyText>
               <View style={styles.genderContainer}>
                 {['Male', 'Female', 'Other'].map(gender => (
@@ -385,23 +615,55 @@ const TirthMitraGeneratorScreen = () => {
 
         {/* Contact Information */}
         <View style={styles.section}>
-          <H3 style={styles.sectionTitle} color={COLORS.text.primary} weight="bold" size="md">
+          <H3 style={styles.sectionTitle} color={COLORS.text.primary} weight="semiBold" size="md">
             Contact Information
           </H3>
 
           <View style={styles.inputGroup}>
-            <BodyText style={styles.label} color={COLORS.text.secondary} size="sm">
-              Phone Number <Text style={styles.required}>*</Text>
-            </BodyText>
+            <View style={styles.labelRow}>
+              <BodyText style={styles.label} color={COLORS.text.secondary} size="sm">
+                Phone Number <Text style={styles.required}>*</Text>
+              </BodyText>
+              {user?.phoneNumber && (
+                <TouchableOpacity
+                  onPress={() => {
+                    if (useLoggedInPhone) {
+                      // Switch to different number - clear the field
+                      setFormData(prev => ({ ...prev, phone: '' }));
+                    } else {
+                      // Switch back to logged-in number
+                      const phoneWithoutCountryCode = user?.phoneNumber?.replace(/^\+91/, '') || '';
+                      setFormData(prev => ({ ...prev, phone: phoneWithoutCountryCode }));
+                    }
+                    setUseLoggedInPhone(!useLoggedInPhone);
+                  }}
+                  style={styles.switchPhoneButton}
+                >
+                  <BodyText style={styles.switchPhoneText} color={COLORS.background.appColor} size="xs">
+                    {useLoggedInPhone ? 'Use Different Number' : 'Use My Number'}
+                  </BodyText>
+                </TouchableOpacity>
+              )}
+            </View>
             <TextInput
-              style={styles.input}
-              placeholder="10-digit mobile number"
+              style={[styles.input, !useLoggedInPhone && user?.phoneNumber && styles.disabledInput]}
+              placeholder={useLoggedInPhone ? "10-digit mobile number" : "Enter new phone number"}
               placeholderTextColor={COLORS.text.tertiary}
               value={formData.phone}
-              onChangeText={text => updateField('phone', text)}
+              onChangeText={text => {
+                if (!useLoggedInPhone) {
+                  updateField('phone', text);
+                }
+              }}
               keyboardType="phone-pad"
               maxLength={10}
+              editable={!useLoggedInPhone}
             />
+            {!useLoggedInPhone && user?.phoneNumber && (
+              <BodyText style={styles.hintText} color={COLORS.text.secondary} size="xs">
+                OTP verification will be required for this number
+              </BodyText>
+            )}
           </View>
 
           <View style={styles.inputGroup}>
@@ -422,13 +684,13 @@ const TirthMitraGeneratorScreen = () => {
 
         {/* Address Information */}
         <View style={styles.section}>
-          <H3 style={styles.sectionTitle} color={COLORS.text.primary} weight="bold" size="md">
+          <H3 style={styles.sectionTitle} color={COLORS.text.primary} weight="semiBold" size="md">
             Address Information
           </H3>
 
           <View style={styles.inputGroup}>
             <BodyText style={styles.label} color={COLORS.text.secondary} size="sm">
-              Address
+              Address <Text style={styles.required}>*</Text>
             </BodyText>
             <TextInput
               style={[styles.input, styles.textArea]}
@@ -444,7 +706,7 @@ const TirthMitraGeneratorScreen = () => {
           <View style={styles.row}>
             <View style={[styles.inputGroup, styles.halfWidth]}>
               <BodyText style={styles.label} color={COLORS.text.secondary} size="sm">
-                City
+                City <Text style={styles.required}>*</Text>
               </BodyText>
               <TextInput
                 style={styles.input}
@@ -457,7 +719,7 @@ const TirthMitraGeneratorScreen = () => {
 
             <View style={[styles.inputGroup, styles.halfWidth]}>
               <BodyText style={styles.label} color={COLORS.text.secondary} size="sm">
-                State
+                State <Text style={styles.required}>*</Text>
               </BodyText>
               <TextInput
                 style={styles.input}
@@ -471,7 +733,7 @@ const TirthMitraGeneratorScreen = () => {
 
           <View style={styles.inputGroup}>
             <BodyText style={styles.label} color={COLORS.text.secondary} size="sm">
-              Pincode
+              Pincode <Text style={styles.required}>*</Text>
             </BodyText>
             <TextInput
               style={styles.input}
@@ -485,16 +747,47 @@ const TirthMitraGeneratorScreen = () => {
           </View>
         </View>
 
+        {/* Upload Progress */}
+        {isUploading && (
+          <View style={styles.uploadProgressContainer}>
+            <BodyText style={styles.uploadProgressText} color={COLORS.text.secondary} size="sm">
+              Submitting request... {Math.round(uploadProgress)}%
+            </BodyText>
+            <View style={styles.uploadProgressBar}>
+              <View style={[styles.uploadProgressFill, { width: `${uploadProgress}%` }]} />
+            </View>
+          </View>
+        )}
+
         {/* Generate Button */}
         <TouchableOpacity
-          style={styles.generateButton}
+          style={[styles.generateButton, (isUploading || isSendingOTP) && styles.generateButtonDisabled]}
           onPress={handleGenerateCard}
+          disabled={isUploading || isSendingOTP}
           activeOpacity={0.8}
         >
-          <BodyText style={styles.generateButtonText} color={COLORS.white} size="md" weight="bold">
-            Generate Card
-          </BodyText>
-          <Ionicons name="arrow-forward" size={20} color={COLORS.white} />
+          {isUploading ? (
+            <>
+              <ActivityIndicator size="small" color={COLORS.white} />
+              <BodyText style={styles.generateButtonText} color={COLORS.white} size="md" weight="semiBold">
+                Submitting...
+              </BodyText>
+            </>
+          ) : isSendingOTP ? (
+            <>
+              <ActivityIndicator size="small" color={COLORS.white} />
+              <BodyText style={styles.generateButtonText} color={COLORS.white} size="md" weight="semiBold">
+                Sending OTP...
+              </BodyText>
+            </>
+          ) : (
+            <>
+              <BodyText style={styles.generateButtonText} color={COLORS.white} size="md" weight="semiBold">
+                Generate Card
+              </BodyText>
+              <Ionicons name="arrow-forward" size={20} color={COLORS.white} />
+            </>
+          )}
         </TouchableOpacity>
 
         <View style={styles.bottomSpacing} />
@@ -608,6 +901,77 @@ const TirthMitraGeneratorScreen = () => {
                 </TouchableOpacity>
               )}
             />
+          </View>
+        </View>
+      </Modal>
+
+      {/* OTP Verification Modal */}
+      <Modal
+        visible={showOTPVerification}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowOTPVerification(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.otpModalContent}>
+            <View style={styles.modalHeader}>
+              <H3 style={styles.modalTitle} color={COLORS.text.primary} weight="bold" size="md">
+                Verify Phone Number
+              </H3>
+              <TouchableOpacity onPress={() => setShowOTPVerification(false)}>
+                <Ionicons name="close" size={24} color={COLORS.text.primary} />
+              </TouchableOpacity>
+            </View>
+            
+            <BodyText style={styles.otpDescription} color={COLORS.text.secondary} size="sm">
+              We've sent a 6-digit verification code to{'\n'}
+              <Text style={styles.otpPhoneNumber}>+91 {formData.phone}</Text>
+            </BodyText>
+
+            <View style={styles.otpInputContainer}>
+              <BodyText style={styles.label} color={COLORS.text.secondary} size="sm">
+                Enter OTP Code
+              </BodyText>
+              <TextInput
+                style={styles.otpInput}
+                placeholder="Enter 6-digit code"
+                placeholderTextColor={COLORS.text.tertiary}
+                value={otpCode}
+                onChangeText={setOtpCode}
+                keyboardType="number-pad"
+                maxLength={6}
+                autoFocus
+              />
+            </View>
+
+            <TouchableOpacity
+              style={[styles.verifyButton, isVerifyingOTP && styles.verifyButtonDisabled]}
+              onPress={verifyOTP}
+              disabled={isVerifyingOTP}
+            >
+              {isVerifyingOTP ? (
+                <>
+                  <ActivityIndicator size="small" color={COLORS.white} />
+                  <BodyText style={styles.verifyButtonText} color={COLORS.white} size="md" weight="semiBold">
+                    Verifying...
+                  </BodyText>
+                </>
+              ) : (
+                <BodyText style={styles.verifyButtonText} color={COLORS.white} size="md" weight="semiBold">
+                  Verify & Continue
+                </BodyText>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.resendButton}
+              onPress={sendOTPVerification}
+              disabled={isSendingOTP}
+            >
+              <BodyText style={styles.resendButtonText} color={COLORS.primary} size="sm" weight="medium">
+                {isSendingOTP ? 'Sending...' : 'Resend OTP'}
+              </BodyText>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -769,9 +1133,36 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     gap: 8,
   },
+  generateButtonDisabled: {
+    opacity: 0.6,
+  },
   generateButtonText: {
     fontFamily: FONTS.gilroy.bold,
     fontSize: FONT_SIZES.md,
+  },
+  uploadProgressContainer: {
+    marginHorizontal: 20,
+    marginTop: 24,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: COLORS.background.secondary,
+    borderRadius: 8,
+    gap: 8,
+  },
+  uploadProgressText: {
+    fontFamily: FONTS.gilroy.medium,
+    fontSize: FONT_SIZES.sm,
+    textAlign: 'center',
+  },
+  uploadProgressBar: {
+    height: 4,
+    backgroundColor: COLORS.border.light,
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  uploadProgressFill: {
+    height: '100%',
+    backgroundColor: COLORS.background.appColor,
   },
   bottomSpacing: {
     height: 20,
@@ -854,6 +1245,86 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.gilroy.regular,
     fontSize: FONT_SIZES.xs,
     marginTop: 2,
+  },
+  labelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  switchPhoneButton: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+  },
+  switchPhoneText: {
+    fontFamily: FONTS.gilroy.semiBold,
+  },
+  disabledInput: {
+    backgroundColor: COLORS.background.secondary,
+  },
+  hintText: {
+    marginTop: 6,
+    fontStyle: 'italic',
+  },
+  otpModalContent: {
+    backgroundColor: COLORS.white,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: 40,
+  },
+  otpDescription: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  otpPhoneNumber: {
+    fontFamily: FONTS.gilroy.bold,
+    color: COLORS.text.primary,
+  },
+  otpInputContainer: {
+    paddingHorizontal: 20,
+    marginTop: 8,
+  },
+  otpInput: {
+    borderWidth: 1,
+    borderColor: COLORS.border.light,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: FONT_SIZES.lg,
+    fontFamily: FONTS.gilroy.bold,
+    color: COLORS.text.primary,
+    backgroundColor: COLORS.white,
+    textAlign: 'center',
+    letterSpacing: 8,
+  },
+  verifyButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.background.appColor,
+    marginHorizontal: 20,
+    marginTop: 24,
+    paddingVertical: 16,
+    borderRadius: 12,
+    gap: 8,
+  },
+  verifyButtonDisabled: {
+    opacity: 0.6,
+  },
+  verifyButtonText: {
+    fontFamily: FONTS.gilroy.bold,
+    fontSize: FONT_SIZES.md,
+  },
+  resendButton: {
+    alignItems: 'center',
+    marginTop: 16,
+    paddingVertical: 8,
+  },
+  resendButtonText: {
+    fontFamily: FONTS.gilroy.semiBold,
+    fontSize: FONT_SIZES.sm,
   },
 });
 

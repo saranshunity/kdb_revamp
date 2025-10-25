@@ -31,11 +31,15 @@ import TirthDetailScreen from '../screens/tirths/TirthDetailScreen';
 import TirthMitraIntroScreen from '../screens/tirthMitra/TirthMitraIntroScreen';
 import TirthMitraGeneratorScreen from '../screens/tirthMitra/TirthMitraGeneratorScreen';
 import TirthMitraCardScreen from '../screens/tirthMitra/TirthMitraCardScreen';
+import TirthMitraApplicationScreen from '../screens/tirthMitra/TirthMitraApplicationScreen';
+import TirthMitraReviewScreen from '../screens/tirthMitra/TirthMitraReviewScreen';
+import TirthMitraStatusScreen from '../screens/tirthMitra/TirthMitraStatusScreen';
 import MenuScreen from '../screens/main/MenuScreen';
 import AboutKDBScreen from '../screens/main/AboutKDBScreen';
 import AdministrationScreen from '../screens/main/AdministrationScreen';
 import AdminPanelScreen from '../screens/admin/AdminPanelScreen';
 import AdminApplicationsScreen from '../screens/admin/AdminApplicationsScreen';
+import AdminTirthMitraApplicationsScreen from '../screens/admin/AdminTirthMitraApplicationsScreen';
 import SriKrishnaMuseumScreen from '../screens/main/SriKrishnaMuseumScreen';
 import JyotisarScreen from '../screens/main/JyotisarScreen';
 import PermissionsScreen from '../screens/main/PermissionsScreen';
@@ -124,11 +128,21 @@ export type RootStackParamList = {
   TirthMitraIntro: undefined;
   TirthMitraGenerator: undefined;
   TirthMitraCard: { cardData: TirthMitraFormData };
+  TirthMitraApplication: undefined;
+  TirthMitraReview: {
+    applicationData: any;
+  };
+  TirthMitraStatus: {
+    applicationId?: string;
+    applicationData?: any;
+    status?: 'pending' | 'approved' | 'rejected';
+  };
   Menu: undefined;
   AboutKDB: undefined;
   Administration: undefined;
   AdminPanel: undefined;
   AdminApplications: undefined;
+  AdminTirthMitraApplications: undefined;
   SriKrishnaMuseum: undefined;
   Jyotisar: undefined;
   Permissions: undefined;
@@ -306,11 +320,15 @@ function AppNavigator() {
         <Stack.Screen name='TirthMitraIntro' component={TirthMitraIntroScreen} />
         <Stack.Screen name='TirthMitraGenerator' component={TirthMitraGeneratorScreen} />
         <Stack.Screen name='TirthMitraCard' component={TirthMitraCardScreen} />
+        <Stack.Screen name='TirthMitraApplication' component={TirthMitraApplicationScreen} />
+        <Stack.Screen name='TirthMitraReview' component={TirthMitraReviewScreen} />
+        <Stack.Screen name='TirthMitraStatus' component={TirthMitraStatusScreen} />
         <Stack.Screen name='Menu' component={MenuScreen} />
         <Stack.Screen name='AboutKDB' component={AboutKDBScreen} />
         <Stack.Screen name='Administration' component={AdministrationScreen} />
         <Stack.Screen name='AdminPanel' component={AdminPanelScreen} />
         <Stack.Screen name='AdminApplications' component={AdminApplicationsScreen} />
+        <Stack.Screen name='AdminTirthMitraApplications' component={AdminTirthMitraApplicationsScreen} />
         <Stack.Screen name='SriKrishnaMuseum' component={SriKrishnaMuseumScreen} />
         <Stack.Screen name='Jyotisar' component={JyotisarScreen} />
         <Stack.Screen name='Permissions' component={PermissionsScreen} />
