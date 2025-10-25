@@ -8,6 +8,7 @@ import {
   Platform,
   ScrollView,
   StatusBar,
+  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -19,6 +20,7 @@ import {
   ErrorText,
 } from '../../components/Text';
 import { COLORS } from '../../constants/colors';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface LoginScreenProps {
   navigation: any;
@@ -26,6 +28,7 @@ interface LoginScreenProps {
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -52,15 +55,31 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (validateForm()) {
-      // TODO: Implement actual login logic
-      console.log('Login attempt:', { email, password });
-      // For now, navigate to main app
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Main' }],
-      });
+      try {
+        // Create user data for authentication
+        const userData = {
+          id: '1', // In real app, this would come from your backend
+          email: email,
+          name: email.split('@')[0], // Use email prefix as name for now
+          phoneNumber: '', // Add if available
+        };
+        
+        // Login using auth context
+        await login(userData);
+        
+        // Fallback navigation in case the auth listener doesn't work
+        setTimeout(() => {
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'Main' }],
+          });
+        }, 1000);
+      } catch (error) {
+        console.error('Login error:', error);
+        Alert.alert('Login Failed', 'Please try again');
+      }
     }
   };
 

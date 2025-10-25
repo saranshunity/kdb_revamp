@@ -23,6 +23,7 @@ import {
 import { COLORS } from '../../constants/colors';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { auth } from '../../firebaseConfig';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface OTPVerificationScreenProps {
   navigation: any;
@@ -36,6 +37,7 @@ interface OTPVerificationScreenProps {
 
 const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ navigation, route }) => {
   const insets = useSafeAreaInsets();
+  const { login } = useAuth();
   const { phoneNumber, confirmation } = route.params;
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [errors, setErrors] = useState<{ otp?: string }>({});
@@ -103,11 +105,24 @@ const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ navigatio
       
       console.log('OTP verified successfully:', result);
       
-      // Navigate to main app
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Main' }],
-      });
+      // Create user data for authentication
+      const userData = {
+        id: result.user.uid,
+        email: result.user.email || '',
+        name: result.user.displayName || phoneNumber,
+        phoneNumber: phoneNumber,
+      };
+      
+      // Login using auth context
+      await login(userData);
+      
+      // Fallback navigation in case the auth listener doesn't work
+      setTimeout(() => {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Main' }],
+        });
+      }, 1000);
     } catch (error: any) {
       console.error('Error verifying OTP:', error);
       

@@ -3,6 +3,7 @@ import { View, StyleSheet, Image, StatusBar } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { H1, BodyText } from '../components/Text';
 import { COLORS } from '../constants/colors';
+import { useAuth } from '../contexts/AuthContext';
 
 interface SplashScreenProps {
   navigation: any;
@@ -10,17 +11,24 @@ interface SplashScreenProps {
 
 const SplashScreen: React.FC<SplashScreenProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
+  const { isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
-    // Simulate loading time
-    const timer = setTimeout(() => {
-      // For now, navigate to onboarding
-      // In a real app, you'd check authentication state here
-      navigation.replace('Onboarding');
-    }, 3000);
+    // Wait for auth state to be determined
+    if (!isLoading) {
+      const timer = setTimeout(() => {
+        if (isAuthenticated) {
+          // User is logged in, go to main app
+          navigation.replace('Main');
+        } else {
+          // User is not logged in, go to onboarding
+          navigation.replace('Onboarding');
+        }
+      }, 2000); // Reduced time since we're already checking auth
 
-    return () => clearTimeout(timer);
-  }, [navigation]);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, isAuthenticated, navigation]);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>

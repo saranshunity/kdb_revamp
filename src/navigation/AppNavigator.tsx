@@ -41,6 +41,7 @@ import ItemDetailScreen from '../screens/main/ItemDetailScreen';
 import { COLORS } from '../constants/colors';
 import { FONTS, FONT_SIZES } from '../constants/fonts';
 import { PermissionProvider } from '../contexts/PermissionContext';
+import AuthNavigationListener from '../components/AuthNavigationListener';
 
 // Tirth type for navigation
 interface Tirth {
@@ -267,6 +268,7 @@ function AppNavigator() {
   return (
     <PermissionProvider>
       <NavigationContainer>
+        <AuthNavigationListener />
         <Stack.Navigator
           initialRouteName='Splash'
           screenOptions={{

@@ -14,6 +14,7 @@ import { H2, H3, BodyText } from '../../components/Text';
 import { COLORS } from '../../constants/colors';
 import { FONTS, FONT_SIZES } from '../../constants/fonts';
 import Ionicons from "react-native-vector-icons/Ionicons";
+import { useAuth } from '../../contexts/AuthContext';
 
 type MenuScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Menu'>;
 
@@ -24,6 +25,7 @@ interface MenuScreenProps {
 const MenuScreen: React.FC<MenuScreenProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const stackNavigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { logout } = useAuth();
 
   const menuItems = [
     {
@@ -83,9 +85,13 @@ const MenuScreen: React.FC<MenuScreenProps> = ({ navigation }) => {
       id: 'logout',
       title: 'Logout',
       icon: 'log-out-outline',
-      onPress: () => {
-        // Handle logout logic here
-        console.log('Logout pressed');
+      onPress: async () => {
+        try {
+          await logout();
+          // Navigation will be handled by the auth state change
+        } catch (error) {
+          console.error('Logout error:', error);
+        }
       },
       textColor: COLORS.error,
     },

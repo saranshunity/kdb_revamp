@@ -9,6 +9,7 @@ import React, { useEffect } from 'react';
 import { Alert, StatusBar } from 'react-native';
 import AppNavigator from './src/navigation/AppNavigator';
 import { firebase } from './src/firebaseConfig';
+import { AuthProvider } from './src/contexts/AuthContext';
 
 function App(): React.JSX.Element {
   useEffect(() => {
@@ -20,10 +21,10 @@ function App(): React.JSX.Element {
     }
   }, []);
   return (
-    <>
+    <AuthProvider>
       <StatusBar barStyle='dark-content' backgroundColor='#ffffff' />
       <AppNavigator />
-    </>
+    </AuthProvider>
   );
 }
 
