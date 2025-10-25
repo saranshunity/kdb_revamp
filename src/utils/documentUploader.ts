@@ -1,8 +1,9 @@
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import storage from '@react-native-firebase/storage';
 import firestore from '@react-native-firebase/firestore';
-import {Alert, Platform} from 'react-native';
+import { NativeModules} from 'react-native';
 import {launchImageLibrary} from 'react-native-image-picker';
+import '../types/nativeModules';
 
 export interface DocumentUploadResult {
   name: string;
@@ -56,38 +57,31 @@ export const pickDocument = async (): Promise<FileData | null> => {
 };
 
 /**
- * Alternative: Pick using file system (PDF, DOC, etc.)
+ * Alternative: Pick using native DocumentPicker module
  */
 export const pickDocumentFromFileSystem = async (): Promise<FileData | null> => {
   try {
-    // Use react-native-image-picker with mixed media type for better file support
-    const result = await launchImageLibrary({
-      mediaType: 'mixed', // Allows images, videos, and files
-      selectionLimit: 1,
-      includeBase64: false,
-    });
-
-    if (result.didCancel) {
-      return null;
+    // Use native DocumentPicker module
+    const { DocumentPicker } = NativeModules;
+    
+    if (!DocumentPicker) {
+      throw new Error('DocumentPicker native module not found');
     }
 
-    if (result.errorCode) {
-      throw new Error(result.errorMessage || 'Failed to pick document');
-    }
+    const result = await DocumentPicker.pick();
 
-    const asset = result.assets?.[0];
-    if (!asset || !asset.uri) {
+    if (!result) {
       return null;
     }
 
     return {
-      uri: asset.uri,
-      name: asset.fileName || `document_${Date.now()}`,
-      type: asset.type || 'application/octet-stream',
-      size: asset.fileSize || 0,
+      uri: result.uri,
+      name: result.name || `document_${Date.now()}`,
+      type: result.type || 'application/octet-stream',
+      size: result.size || 0,
     };
   } catch (error: any) {
-    if (error.message === 'User canceled') {
+    if (error.message === 'User cancelled' || error.message === 'CANCELLED') {
       return null;
     }
     console.error('Error picking document:', error);
