@@ -16,6 +16,8 @@ import { COLORS } from '../../constants/colors';
 import { FONTS, FONT_SIZES } from '../../constants/fonts';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FirebaseService, { StallApplication } from '../../services/FirebaseService';
+import { testFirebaseConnection, testStallCategories } from '../../utils/firebaseTest';
+import { Alert } from 'react-native';
 
 type AdminPanelScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'AdminPanel'>;
 
@@ -62,46 +64,37 @@ const AdminPanelScreen = () => {
     setIsRefreshing(false);
   };
 
+  const handleTestFirebase = async () => {
+    try {
+      Alert.alert('Testing Firebase', 'Starting Firebase connection test...');
+      const success = await testFirebaseConnection();
+      if (success) {
+        Alert.alert('Success!', 'Firebase connection test passed! Check console for details.');
+      } else {
+        Alert.alert('Error', 'Firebase connection test failed! Check console for details.');
+      }
+    } catch (error: any) {
+      console.error('Firebase test error:', error);
+      Alert.alert('Error', 'Firebase test failed: ' + (error.message || 'Unknown error'));
+    }
+  };
+
   const adminOptions = [
     {
-      id: 'applications',
-      title: 'Stall Applications',
-      description: 'Review and manage stall applications',
-      icon: 'document-text-outline',
+      id: 'test-firebase',
+      title: 'Test Firebase Connection',
+      description: 'Test Firestore and Storage connection',
+      icon: 'flask-outline',
       color: COLORS.primary,
-      onPress: () => navigation.navigate('AdminApplications'),
+      onPress: handleTestFirebase,
     },
     {
-      id: 'categories',
-      title: 'Applications by Category',
-      description: 'View applications grouped by category',
-      icon: 'grid-outline',
+      id: 'view-stats',
+      title: 'View Statistics',
+      description: `Total: ${stats.total}, Pending: ${stats.pending}, Approved: ${stats.approved}`,
+      icon: 'bar-chart-outline',
       color: COLORS.secondary,
-      onPress: () => navigation.navigate('AdminCategories'),
-    },
-    {
-      id: 'pending',
-      title: 'Pending Applications',
-      description: `${stats.pending} applications awaiting review`,
-      icon: 'time-outline',
-      color: COLORS.warning,
-      onPress: () => navigation.navigate('AdminPending'),
-    },
-    {
-      id: 'approved',
-      title: 'Approved Applications',
-      description: `${stats.approved} applications approved`,
-      icon: 'checkmark-circle-outline',
-      color: COLORS.success,
-      onPress: () => navigation.navigate('AdminApproved'),
-    },
-    {
-      id: 'rejected',
-      title: 'Rejected Applications',
-      description: `${stats.rejected} applications rejected`,
-      icon: 'close-circle-outline',
-      color: COLORS.error,
-      onPress: () => navigation.navigate('AdminRejected'),
+      onPress: () => Alert.alert('Statistics', `Total Applications: ${stats.total}\nPending: ${stats.pending}\nApproved: ${stats.approved}\nRejected: ${stats.rejected}`),
     },
   ];
 

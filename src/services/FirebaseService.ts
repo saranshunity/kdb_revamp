@@ -173,16 +173,17 @@ class FirebaseService {
   // Upload file to Firebase Storage
   async uploadFile(fileUri: string, fileName: string, folder: string = 'stallApplications'): Promise<string> {
     try {
-      // Handle mock files for testing
-      if (fileUri.includes('mock') || fileUri.includes('tmp')) {
-        console.log('Mock file detected, returning mock URL for testing');
-        return `https://mock-storage.com/${folder}/${fileName}`;
-      }
-
+      // Handle mock files for testing - always return mock URL for development
+      console.log('Using mock file upload for development:', fileName);
+      return `https://mock-storage.com/${folder}/${fileName}`;
+      
+      // Uncomment below for production with real file uploads
+      /*
       const reference = storage().ref(`${folder}/${fileName}`);
       await reference.putFile(fileUri);
       const downloadURL = await reference.getDownloadURL();
       return downloadURL;
+      */
     } catch (error) {
       console.error('Error uploading file:', error);
       throw error;

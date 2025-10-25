@@ -165,6 +165,7 @@ const StallApplicationScreen = () => {
       return;
     }
 
+    console.log('Starting form submission...');
     setIsSubmitting(true);
 
     try {
@@ -172,23 +173,30 @@ const StallApplicationScreen = () => {
       let aadharCardUrl = '';
       let registrationCertificateUrl = '';
 
+      // Upload Aadhar Card
       if (formData.aadharCardFile) {
+        console.log('Uploading Aadhar Card...');
         aadharCardUrl = await FirebaseService.uploadFile(
           formData.aadharCardFile.uri,
-          `aadhar_${Date.now()}.pdf`,
+          `aadhar_${Date.now()}_${formData.aadharCardFile.name}`,
           'stallApplications'
         );
+        console.log('Aadhar Card uploaded:', aadharCardUrl);
       }
 
+      // Upload Registration Certificate
       if (formData.registrationCertificateFile) {
+        console.log('Uploading Registration Certificate...');
         registrationCertificateUrl = await FirebaseService.uploadFile(
           formData.registrationCertificateFile.uri,
-          `registration_${Date.now()}.pdf`,
+          `registration_${Date.now()}_${formData.registrationCertificateFile.name}`,
           'stallApplications'
         );
+        console.log('Registration Certificate uploaded:', registrationCertificateUrl);
       }
 
       // Submit application to Firebase
+      console.log('Submitting application to Firebase...');
       const applicationId = await FirebaseService.submitApplication({
         categoryId: category.id,
         categoryName: category.name,
@@ -210,18 +218,36 @@ const StallApplicationScreen = () => {
         registrationCertificateFile: registrationCertificateUrl,
       });
 
-      // Navigate to status screen
-      navigation.navigate('StallApplicationStatus', {
-        applicationId,
-        category,
-        formData,
-        status: 'pending',
-      });
+      console.log('Application submitted successfully with ID:', applicationId);
 
-    } catch (error) {
+      // Show success message
+      Alert.alert(
+        'Application Submitted Successfully!',
+        'Your stall application has been submitted and is under review. You will receive updates via SMS/Email.',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              // Navigate to status screen
+              navigation.navigate('StallApplicationStatus', {
+                applicationId,
+                category,
+                formData,
+                status: 'pending',
+              });
+            }
+          }
+        ]
+      );
+
+    } catch (error: any) {
       console.error('Error submitting application:', error);
-      Alert.alert('Error', 'Failed to submit application. Please try again.');
+      
+      // Show specific error message
+      const errorMessage = error.message || 'Failed to submit application. Please try again.';
+      Alert.alert('Submission Failed', errorMessage);
     } finally {
+      console.log('Form submission completed, setting isSubmitting to false');
       setIsSubmitting(false);
     }
   };
@@ -514,6 +540,9 @@ const StallApplicationScreen = () => {
               error={errors.aadharCardFile}
               required
               maxSize={10}
+              allowedTypes={['application/pdf', 'image/jpeg', 'image/png', 'image/jpg']}
+              showPreview={true}
+              isUploading={isSubmitting}
             />
 
             <FileUpload
@@ -523,6 +552,9 @@ const StallApplicationScreen = () => {
               error={errors.registrationCertificateFile}
               required
               maxSize={10}
+              allowedTypes={['application/pdf', 'image/jpeg', 'image/png', 'image/jpg']}
+              showPreview={true}
+              isUploading={isSubmitting}
             />
           </View>
 
