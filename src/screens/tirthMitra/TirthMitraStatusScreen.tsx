@@ -20,7 +20,7 @@ import { COLORS } from '../../constants/colors';
 import { FONTS, FONT_SIZES } from '../../constants/fonts';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import firestore from '@react-native-firebase/firestore';
-import RNHTMLtoPDF from 'react-native-html-to-pdf';
+import * as RNHTMLtoPDF from 'react-native-html-to-pdf';
 
 type TirthMitraStatusScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'TirthMitraStatus'>;
 type TirthMitraStatusScreenRouteProp = RouteProp<RootStackParamList, 'TirthMitraStatus'>;
@@ -338,7 +338,7 @@ const TirthMitraStatusScreen = () => {
 
       const options = {
         html: htmlContent,
-        fileName: `TirthMitra_${foundApplication.applicationId}`,
+      fileName: `TirthMitra_${foundApplication.applicationId}`,
         directory: 'Documents',
       };
 
@@ -691,21 +691,21 @@ const TirthMitraStatusScreen = () => {
             )}
 
             {foundApplication.status === 'approved' && (
-              <TouchableOpacity
-                style={styles.downloadButton}
-                onPress={generatePDF}
-                disabled={isGeneratingPDF}
-              >
-                <Ionicons
-                  name={isGeneratingPDF ? 'hourglass-outline' : 'download-outline'}
-                  size={20}
-                  color={COLORS.white}
-                  style={styles.buttonIcon}
-                />
-                <ButtonTextPrimary size='md'>
-                  {isGeneratingPDF ? 'Generating...' : 'Download Card'}
-                </ButtonTextPrimary>
-              </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.downloadButton}
+                  onPress={generatePDF}
+                  disabled={isGeneratingPDF}
+                >
+                  <Ionicons
+                    name={isGeneratingPDF ? 'hourglass-outline' : 'download-outline'}
+                    size={20}
+                    color={COLORS.white}
+                    style={styles.buttonIcon}
+                  />
+                  <ButtonTextPrimary size='md'>
+                    {isGeneratingPDF ? 'Generating...' : 'Download Card'}
+                  </ButtonTextPrimary>
+                </TouchableOpacity>
             )}
 
             <TouchableOpacity
