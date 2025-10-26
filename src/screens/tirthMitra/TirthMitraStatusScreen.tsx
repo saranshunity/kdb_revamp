@@ -11,6 +11,7 @@ import {
   Animated,
   Easing,
   Platform,
+  Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -23,6 +24,8 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import firestore from '@react-native-firebase/firestore';
 import { generatePDF } from 'react-native-html-to-pdf';
 import BlobUtil from 'react-native-blob-util';
+import { kdblogobase64 } from '../../constants/base64/kdblogobase64';
+import { hrlogobase64 } from '../../constants/base64/hrlogobase64';
 
 type TirthMitraStatusScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'TirthMitraStatus'>;
 type TirthMitraStatusScreenRouteProp = RouteProp<RootStackParamList, 'TirthMitraStatus'>;
@@ -42,11 +45,14 @@ interface TirthMitraApplication {
   city: string;
   state: string;
   pincode: string;
-  photoUri: string;
-  idCardUri: string;
-  selectedDistrict: string;
-  selectedTirth: string;
-  selectedTirthName: string;
+  photoUri?: string;
+  profileImage?: string;
+  idCardUri?: string;
+  identityDocument?: string;
+  district?: string;
+  selectedDistrict?: string;
+  selectedTirth?: string;
+  selectedTirthName?: string;
   status: ApplicationStatus;
   submittedAt: any;
   reviewedAt?: any;
@@ -229,8 +235,198 @@ const TirthMitraStatusScreen = () => {
   
     try {
       setIsGeneratingPDF(true);
+
+      // Use base64 logos from constants
+      const kdbLogoBase64 = kdblogobase64;
+      const hrLogoBase64 = hrlogobase64;
   
-      const htmlContent = `<html><body><h1>Hello World</h1></body></html>`; // your HTML
+      const submittedDate = foundApplication.submittedAt?.toDate?.()?.toLocaleDateString('en-US', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+      }) || 'N/A';
+
+            const htmlContent = `
+                <!DOCTYPE html>
+ <html>
+ <head>
+   <meta charset="UTF-8">
+   <style>
+     @font-face {
+       font-family: 'Gilroy';
+       font-weight: 400;
+       src: url('data:font/truetype;charset=utf-8;base64,') format('truetype');
+     }
+     body {
+       margin: 0;
+       padding: 20px;
+       background: #f7f7f7;
+       display: flex;
+       justify-content: center;
+       align-items: center;
+       min-height: 100vh;
+     }
+     .idcard-container {
+       width: 340px;
+       height: 540px;
+       background: #fff;
+       border-radius: 18px;
+       box-shadow: 0 6px 30px rgba(44,62,100,0.10);
+       border: 1.5px solid #e4e7ef;
+       overflow: hidden;
+       font-family: 'Gilroy', 'Arial', sans-serif;
+       display: flex;
+       flex-direction: row;
+       margin: 20px;
+     }
+     .idcard-left {
+       background: linear-gradient(120deg, #febd2f 85%, #fec84d 100%);
+       width: 90px;
+       display: flex;
+       flex-direction: column;
+       align-items: center;
+       justify-content: center;
+       color: #fff;
+       padding: 0 8px;
+       position: relative;
+     }
+     .vertical-title {
+       font-size: 1.35em;
+       font-weight: 700;
+       letter-spacing: 0.1em;
+       writing-mode: vertical-rl;
+       text-orientation: mixed;
+       text-align: center;
+       margin-top: 8px;
+       margin-bottom: 8px;
+       white-space: nowrap;
+       transform: rotate(180deg);
+     }
+     .idcard-right {
+       flex: 1;
+       display: flex;
+       flex-direction: column;
+       padding: 32px 22px 16px 18px;
+     }
+     .idcard-header {
+       display: flex;
+       flex-direction: row;
+       align-items: center;
+       margin-bottom: 10px;
+       margin-top: 4px;
+     }
+     .univ-logo {
+       width: 32px;
+       height: 32px;
+       object-fit: contain;
+       margin-right: 12px;
+     }
+     .univ-name {
+       font-size: 1.08em;
+       font-weight: 700;
+       color: #febd2f;
+       line-height: 1.15em;
+     }
+     .profile-photo {
+       width: 94px;
+       height: 110px;
+       border: 2px solid #febd2f;
+       border-radius: 7px;
+       object-fit: cover;
+       display: block;
+       align-self: center;
+       margin: 18px 0 18px 0;
+       background: #f4f4f4;
+     }
+     .info-list {
+       margin-top: 6px;
+       font-size: 15px;
+     }
+     .info-list div {
+       margin: 8px 0 0 0;
+       display: flex;
+     }
+     .info-label {
+       min-width: 98px;
+       font-weight: 600;
+       color: #febd2f;
+       text-transform: uppercase;
+     }
+     .info-value {
+       color: #18191a;
+       font-weight: 400;
+       margin-left: 7px;
+       flex: 1;
+       word-break: break-word;
+       text-transform: uppercase;
+     }
+     .valid-until-row {
+       margin-top: 18px;
+       font-size: 12px;
+       color: #1d2234;
+     }
+     .authority-section {
+       margin-top: 16px;
+       padding-top: 12px;
+       border-top: 1px solid #e0e0e0;
+       display: flex;
+       align-items: center;
+       justify-content: space-between;
+     }
+     .authority-logo {
+       width: 40px;
+       height: 40px;
+       object-fit: contain;
+     }
+     .authority-text {
+       font-size: 11px;
+       color: #555;
+       text-align: right;
+     }
+     .authority-label {
+       font-weight: bold;
+       margin-bottom: 2px;
+     }
+   </style>
+ </head>
+ <body>
+      <div class="idcard-container">
+     <div class="idcard-left">
+       <span class="vertical-title">KURUKSHETRA DEVELOPMENT BOARD<br/>KURUKSHETRA</span>
+     </div>
+     <div class="idcard-right">
+               <div class="idcard-header">
+         <img src="${kdbLogoBase64}" alt="KDB Logo" class="univ-logo"/>
+         <span class="univ-name">TIRTH MITRA</span>
+       </div>
+       ${(foundApplication.profileImage || foundApplication.photoUri) 
+         ? `<img src="${foundApplication.profileImage || foundApplication.photoUri}" alt="Profile Photo" class="profile-photo"/>`
+         : `<div class="profile-photo" style="display: flex; align-items: center; justify-content: center; color: #999; font-size: 12px; text-align: center;">No Photo</div>`
+       }
+                <div class="info-list">
+           <div><span class="info-label">Name:</span><span class="info-value">${foundApplication.fullName.toUpperCase()}</span></div>
+           <div><span class="info-label">Mobile:</span><span class="info-value">${(foundApplication.mobileNumber || foundApplication.phone || 'N/A').toUpperCase()}</span></div>
+           <div><span class="info-label">DOB:</span><span class="info-value">${(foundApplication.dateOfBirth || 'N/A').toUpperCase()}</span></div>
+           ${foundApplication.selectedDistrict || foundApplication.district ? `<div><span class="info-label">District:</span><span class="info-value">${((foundApplication.selectedDistrict || foundApplication.district) || '').toUpperCase()}</span></div>` : ''}
+           ${foundApplication.selectedTirthName ? `<div><span class="info-label">Tirth:</span><span class="info-value">${foundApplication.selectedTirthName.toUpperCase()}</span></div>` : ''}
+         </div>
+         <div class="valid-until-row">
+           <strong>Issued Date:</strong> ${submittedDate}
+         </div>
+                 <div class="authority-section">
+           <img src="${hrLogoBase64}" alt="HR Logo" class="authority-logo"/>
+           <div class="authority-text">
+             <div class="authority-label">AUTHORIZED BY</div>
+             <div>Govt. of Haryana</div>
+           </div>
+         </div>
+     </div>
+   </div>
+ </body>
+ </html>
+
+      `;
+  
       const fileName = `TirthMitra_${foundApplication.applicationId || Date.now()}.pdf`;
   
       const options = {
