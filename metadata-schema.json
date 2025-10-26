@@ -1,0 +1,74 @@
+{
+  "version": {
+    "_comment": "Minimum app version required to use the app",
+    "type": "string",
+    "example": "1.0.0"
+  },
+  "updateRequired": {
+    "_comment": "Whether app update is mandatory",
+    "type": "boolean",
+    "default": false
+  },
+  "updateMessage": {
+    "_comment": "Message shown when update is available",
+    "type": "string",
+    "example": "A new version is available with bug fixes and new features. Please update now."
+  },
+  "updateTitle": {
+    "_comment": "Title for update dialog",
+    "type": "string",
+    "example": "Update Available"
+  },
+  "maintenanceMode": {
+    "_comment": "Enable maintenance mode to block app access",
+    "type": "boolean",
+    "default": false
+  },
+  "maintenanceMessage": {
+    "_comment": "Message shown during maintenance",
+    "type": "string",
+    "example": "We're performing scheduled maintenance. We'll be back shortly."
+  },
+  "features": {
+    "_comment": "Feature flags to enable/disable features remotely",
+    "tirthMitra": {
+      "enabled": true,
+      "version": "1.0.0"
+    },
+    "stalls": {
+      "enabled": true,
+      "version": "1.0.0"
+    },
+    "events": {
+      "enabled": true,
+      "version": "1.0.0"
+    },
+    "locateMembers": {
+      "enabled": true,
+      "version": "1.0.0"
+    }
+  },
+  "announcements": {
+    "_comment": "Array of announcements to show to users",
+    "_type": "array",
+    "_items": {
+      "id": "unique-announcement-id",
+      "title": "Announcement Title",
+      "message": "Detailed message content",
+      "type": "info|warning|success|error",
+      "priority": 5,
+      "actionButton": {
+        "text": "Learn More",
+        "action": "navigate_url_or_action"
+      },
+      "startDate": "2024-01-01T00:00:00Z",
+      "endDate": "2024-12-31T23:59:59Z",
+      "targetAudience": "all|tirthMitra|stallOwner|eventManager"
+    }
+  },
+  "lastUpdated": {
+    "_comment": "ISO timestamp of last update",
+    "type": "string",
+    "example": "2024-01-01T12:00:00Z"
+  }
+}

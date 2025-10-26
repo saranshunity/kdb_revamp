@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -15,6 +15,7 @@ import { COLORS } from '../../constants/colors';
 import { FONTS, FONT_SIZES } from '../../constants/fonts';
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useAuth } from '../../contexts/AuthContext';
+import { useFeatureFlags } from '../../hooks/useFeatureFlags';
 
 type MenuScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Menu'>;
 
@@ -26,76 +27,87 @@ const MenuScreen: React.FC<MenuScreenProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const stackNavigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { logout } = useAuth();
+  const { isFeatureEnabled } = useFeatureFlags();
 
-  const menuItems = [
-    {
-      id: 'about',
-      title: 'About KDB',
-      icon: 'information-circle-outline',
-      onPress: () => stackNavigation.navigate('AboutKDB'),
-    },
-    {
-      id: 'administration',
-      title: 'Administration',
-      icon: 'people-outline',
-      onPress: () => stackNavigation.navigate('Administration'),
-    },
-    {
-      id: 'admin',
-      title: 'Admin Panel',
-      icon: 'shield-checkmark-outline',
-      onPress: () => stackNavigation.navigate('AdminPanel'),
-    },
-    // {
-    //   id: 'divider1',
-    //   type: 'divider',
-    // },
-    {
-      id: 'museum',
-      title: 'Sri Krishna Museum',
-      icon: 'library-outline',
-      onPress: () => stackNavigation.navigate('SriKrishnaMuseum'),
-    },
-    {
-      id: 'jyotisar',
-      title: 'Jyotisar',
-      icon: 'location-outline',
-      onPress: () => stackNavigation.navigate('Jyotisar'),
-    },
-    // {
-    //   id: 'divider2',
-    //   type: 'divider',
-    // },
-    {
-      id: 'permissions',
-      title: 'Permissions',
-      icon: 'shield-outline',
-      onPress: () => stackNavigation.navigate('Permissions'),
-    },
-    {
-      id: 'settings',
-      title: 'Settings',
-      icon: 'settings-outline',
-      onPress: () => {
-        // Navigate to settings - you can implement this later
-        console.log('Settings pressed');
+  const menuItems = useMemo(() => {
+    const allItems = [
+      {
+        id: 'about',
+        title: 'About KDB',
+        icon: 'information-circle-outline',
+        onPress: () => stackNavigation.navigate('AboutKDB'),
       },
-    },
-    {
-      id: 'logout',
-      title: 'Logout',
-      icon: 'log-out-outline',
-      onPress: async () => {
-        try {
-          await logout();
-          // Navigation will be handled by the auth state change
-        } catch (error) {
-          console.error('Logout error:', error);
-        }
+      {
+        id: 'administration',
+        title: 'Administration',
+        icon: 'people-outline',
+        onPress: () => stackNavigation.navigate('Administration'),
       },
-      textColor: COLORS.error,
-    },
-  ];
+      {
+        id: 'admin',
+        title: 'Admin Panel',
+        icon: 'shield-checkmark-outline',
+        onPress: () => stackNavigation.navigate('AdminPanel'),
+        featureFlag: 'adminPanel',
+      },
+      {
+        id: 'apply-stalls',
+        title: 'Apply for Stalls/Shops',
+        icon: 'storefront-outline',
+        onPress: () => stackNavigation.navigate('Stalls'),
+        featureFlag: 'applyStallsShops',
+      },
+      {
+        id: 'museum',
+        title: 'Sri Krishna Museum',
+        icon: 'library-outline',
+        onPress: () => stackNavigation.navigate('SriKrishnaMuseum'),
+      },
+      {
+        id: 'jyotisar',
+        title: 'Jyotisar',
+        icon: 'location-outline',
+        onPress: () => stackNavigation.navigate('Jyotisar'),
+      },
+      {
+        id: 'permissions',
+        title: 'Permissions',
+        icon: 'shield-outline',
+        onPress: () => stackNavigation.navigate('Permissions'),
+      },
+      {
+        id: 'settings',
+        title: 'Settings',
+        icon: 'settings-outline',
+        onPress: () => {
+          // Navigate to settings - you can implement this later
+          console.log('Settings pressed');
+        },
+      },
+      {
+        id: 'logout',
+        title: 'Logout',
+        icon: 'log-out-outline',
+        onPress: async () => {
+          try {
+            await logout();
+            // Navigation will be handled by the auth state change
+          } catch (error) {
+            console.error('Logout error:', error);
+          }
+        },
+        textColor: COLORS.error,
+      },
+    ];
+
+    // Filter items based on feature flags
+    return allItems.filter(item => {
+      if (item.featureFlag) {
+        return isFeatureEnabled(item.featureFlag as any);
+      }
+      return true;
+    });
+  }, [isFeatureEnabled, stackNavigation, logout]);
 
   const renderMenuItem = (item: any) => {
     if (item.type === 'divider') {
