@@ -10,6 +10,7 @@ import {
   Share,
   Animated,
   Easing,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -20,7 +21,8 @@ import { COLORS } from '../../constants/colors';
 import { FONTS, FONT_SIZES } from '../../constants/fonts';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import firestore from '@react-native-firebase/firestore';
-import * as RNHTMLtoPDF from 'react-native-html-to-pdf';
+import { generatePDF } from 'react-native-html-to-pdf';
+import BlobUtil from 'react-native-blob-util';
 
 type TirthMitraStatusScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'TirthMitraStatus'>;
 type TirthMitraStatusScreenRouteProp = RouteProp<RootStackParamList, 'TirthMitraStatus'>;
@@ -152,6 +154,14 @@ const TirthMitraStatusScreen = () => {
       if (searchType === 'phone') {
         // Search by phone number (try with and without country code)
         const phoneToSearch = searchValue.replace(/^\+91/, '');
+        console.log(`Searching for phone: ${phoneToSearch}`);
+        
+        allApplications.docs.forEach(doc => {
+          const data = doc.data() as TirthMitraApplication;
+          const appPhone = (data.mobileNumber || data.phone || '').replace(/^\+91/, '');
+          console.log(`Comparing: ${appPhone} === ${phoneToSearch}`);
+        });
+        
         application = allApplications.docs.find(doc => {
           const data = doc.data() as TirthMitraApplication;
           const appPhone = (data.mobileNumber || data.phone || '').replace(/^\+91/, '');
@@ -159,6 +169,13 @@ const TirthMitraStatusScreen = () => {
         })?.data() as TirthMitraApplication;
       } else {
         // Search by application ID
+        console.log(`Searching for application ID: ${searchValue}`);
+        
+        allApplications.docs.forEach(doc => {
+          const data = doc.data() as TirthMitraApplication;
+          console.log(`Comparing: ${data.applicationId} === ${searchValue}`);
+        });
+        
         application = allApplications.docs.find(doc => {
           const data = doc.data() as TirthMitraApplication;
           return data.applicationId === searchValue;
@@ -166,10 +183,12 @@ const TirthMitraStatusScreen = () => {
       }
 
       if (application) {
+        console.log('Found application:', application);
         setFoundApplication(application);
         startAnimations();
         startTimer();
       } else {
+        console.log('No application found with the provided details');
         Alert.alert('Not Found', 'No application found with the provided details.');
       }
     } catch (error: any) {
@@ -205,166 +224,73 @@ const TirthMitraStatusScreen = () => {
     }
   };
 
-  const generatePDF = async () => {
+  const generatePDFApplicationCard = async () => {
     if (!foundApplication) return;
-
+  
     try {
       setIsGeneratingPDF(true);
-
-      const htmlContent = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <title>Tirth Mitra Card</title>
-          <style>
-            body {
-              font-family: Arial, sans-serif;
-              margin: 0;
-              padding: 20px;
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-              color: #333;
-            }
-            .card {
-              background: white;
-              border-radius: 15px;
-              padding: 30px;
-              box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-              max-width: 400px;
-              margin: 0 auto;
-            }
-            .header {
-              text-align: center;
-              border-bottom: 2px solid #667eea;
-              padding-bottom: 20px;
-              margin-bottom: 20px;
-            }
-            .title {
-              font-size: 24px;
-              font-weight: bold;
-              color: #667eea;
-              margin: 0;
-            }
-            .subtitle {
-              font-size: 14px;
-              color: #666;
-              margin: 5px 0 0 0;
-            }
-            .content {
-              margin-bottom: 20px;
-            }
-            .field {
-              margin-bottom: 10px;
-              display: flex;
-              justify-content: space-between;
-            }
-            .label {
-              font-weight: bold;
-              color: #555;
-              flex: 1;
-            }
-            .value {
-              color: #333;
-              flex: 2;
-              text-align: right;
-            }
-            .status {
-              text-align: center;
-              padding: 10px;
-              border-radius: 8px;
-              font-weight: bold;
-              margin-top: 20px;
-            }
-            .status.approved {
-              background: #d4edda;
-              color: #155724;
-              border: 1px solid #c3e6cb;
-            }
-            .footer {
-              text-align: center;
-              margin-top: 20px;
-              font-size: 12px;
-              color: #666;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="card">
-            <div class="header">
-              <h1 class="title">Tirth Mitra Card</h1>
-              <p class="subtitle">International Gita Mahotsav 2025</p>
-            </div>
-            <div class="content">
-              <div class="field">
-                <span class="label">Name:</span>
-                <span class="value">${foundApplication.fullName}</span>
-              </div>
-              <div class="field">
-                <span class="label">Father's Name:</span>
-                <span class="value">${foundApplication.fatherName || 'N/A'}</span>
-              </div>
-              <div class="field">
-                <span class="label">Mobile:</span>
-                <span class="value">${foundApplication.mobileNumber || foundApplication.phone}</span>
-              </div>
-              <div class="field">
-                <span class="label">Email:</span>
-                <span class="value">${foundApplication.email}</span>
-              </div>
-              <div class="field">
-                <span class="label">District:</span>
-                <span class="value">${foundApplication.selectedDistrict || 'N/A'}</span>
-              </div>
-              <div class="field">
-                <span class="label">Tirth:</span>
-                <span class="value">${foundApplication.selectedTirthName || 'N/A'}</span>
-              </div>
-              <div class="field">
-                <span class="label">Application ID:</span>
-                <span class="value">${foundApplication.applicationId}</span>
-              </div>
-            </div>
-            <div class="status ${foundApplication.status}">
-              Status: ${foundApplication.status.toUpperCase()}
-            </div>
-            <div class="footer">
-              <p>This card is valid for International Gita Mahotsav 2025</p>
-              <p>Generated on: ${new Date().toLocaleDateString()}</p>
-            </div>
-          </div>
-        </body>
-        </html>
-      `;
-
+  
+      const htmlContent = `<html><body><h1>Hello World</h1></body></html>`; // your HTML
+      const fileName = `TirthMitra_${foundApplication.applicationId || Date.now()}.pdf`;
+  
       const options = {
         html: htmlContent,
-      fileName: `TirthMitra_${foundApplication.applicationId}`,
-        directory: 'Documents',
+        fileName,
+        directory: Platform.OS === 'ios' ? 'Documents' : 'Downloads',
+        width: 595,
+        height: 842,
+        base64: false,
       };
-
-      const pdf = await RNHTMLtoPDF.convert(options);
-      
-      Alert.alert(
-        'PDF Generated Successfully!',
-        `PDF saved to: ${pdf.filePath}`,
-        [
-          {
-            text: 'Share',
-            onPress: () => sharePDF(pdf.filePath),
-          },
-          {
-            text: 'OK',
-            style: 'default',
-          },
-        ]
-      );
+  
+      const pdf = await generatePDF(options);
+  
+      let publicPath = pdf.filePath; // Default for iOS
+  
+      if (Platform.OS === 'android') {
+        // Move to public Download folder and notify Download Manager
+        const destPath = `${BlobUtil.fs.dirs.DownloadDir}/${fileName}`;
+        await BlobUtil.fs.cp(pdf.filePath, destPath);
+        await BlobUtil.android.addCompleteDownload({
+          title: fileName,
+          description: 'Tirth Mitra Card PDF',
+          mime: 'application/pdf',
+          path: destPath,
+          showNotification: true,   // show in notification tray
+          mediaScannable: true,
+        });
+        publicPath = destPath;
+      }
+  
+      if (publicPath) {
+        console.log('PDF successfully saved to:', publicPath);
+        Alert.alert(
+          'PDF Generated Successfully!',
+          `PDF saved to: ${publicPath}\nYou can find it in Downloads or from the notification tray.`,
+          [
+            // {
+            //   text: 'Share PDF',
+            //   onPress: () => sharePDF(publicPath),
+            // },
+            {
+              text: 'OK',
+              style: 'default',
+            },
+          ]
+        );
+      } else {
+        throw new Error('PDF generation failed - no file path returned');
+      }
     } catch (error: any) {
       console.error('Error generating PDF:', error);
-      Alert.alert('Error', 'Failed to generate PDF. Please try again.');
+      Alert.alert(
+        'Error',
+        `Failed to generate PDF: ${error?.message || 'Unknown error'}`
+      );
     } finally {
       setIsGeneratingPDF(false);
     }
   };
+  
 
   const sharePDF = async (filePath: string) => {
     try {
@@ -693,7 +619,7 @@ const TirthMitraStatusScreen = () => {
             {foundApplication.status === 'approved' && (
                 <TouchableOpacity
                   style={styles.downloadButton}
-                  onPress={generatePDF}
+                  onPress={generatePDFApplicationCard}
                   disabled={isGeneratingPDF}
                 >
                   <Ionicons
