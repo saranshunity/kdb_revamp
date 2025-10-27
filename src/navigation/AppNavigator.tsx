@@ -23,6 +23,7 @@ import CheckApplicationStatusScreen from '../screens/stalls/CheckApplicationStat
 import StallApplicationScreen from '../screens/stalls/StallApplicationScreen';
 import StallApplicationStatusScreen from '../screens/stalls/StallApplicationStatusScreen';
 import PaymentScreen from '../screens/stalls/PaymentScreen';
+import PaymentWebViewScreen from '../screens/stalls/PaymentWebViewScreen';
 import FamilyMembersScreen from '../screens/family/FamilyMembersScreen';
 import AddFamilyMemberScreen from '../screens/family/AddFamilyMemberScreen';
 import LocationMapScreen from '../screens/family/LocationMapScreen';
@@ -120,6 +121,7 @@ export type RootStackParamList = {
     category: any;
     formData: any;
   };
+  PaymentWebView: undefined;
   FamilyMembers: undefined;
   AddFamilyMember: undefined;
   LocationMap: undefined;
@@ -312,6 +314,7 @@ function AppNavigator() {
         <Stack.Screen name='StallApplication' component={StallApplicationScreen} />
         <Stack.Screen name='StallApplicationStatus' component={StallApplicationStatusScreen} />
         <Stack.Screen name='Payment' component={PaymentScreen} />
+        <Stack.Screen name='PaymentWebView' component={PaymentWebViewScreen} />
         <Stack.Screen name='FamilyMembers' component={FamilyMembersScreen} />
         <Stack.Screen name='AddFamilyMember' component={AddFamilyMemberScreen} />
         <Stack.Screen name='LocationMap' component={LocationMapScreen} />

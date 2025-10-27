@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StatusBar,
   Alert,
+  Linking,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -72,37 +73,62 @@ const PaymentScreen = () => {
     setSelectedPaymentMethod(methodId);
   };
 
-  const handleProceedToPayment = () => {
+  const handleProceedToPayment = async () => {
     if (!selectedPaymentMethod) {
       Alert.alert('Select Payment Method', 'Please select a payment method to continue.');
       return;
     }
 
+    // Show options for payment method
     Alert.alert(
-      'Payment Processing',
-      `This is a demo. In production, you would be redirected to ${paymentMethods.find(m => m.id === selectedPaymentMethod)?.name} gateway.`,
+      'Choose Payment Method',
+      'How would you like to proceed with the payment?',
       [
-        { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Proceed',
+          text: 'In-App Payment',
           onPress: () => {
-            setIsProcessing(true);
-            // Simulate payment processing
-            setTimeout(() => {
-              setIsProcessing(false);
-              Alert.alert(
-                'Payment Successful!',
-                'Your payment has been processed successfully. You will receive a confirmation email shortly.',
-                [
-                  {
-                    text: 'OK',
-                    onPress: () => navigation.navigate('Main'),
-                  },
-                ]
-              );
-            }, 2000);
+            // Navigate to WebView payment screen (stays in app)
+            navigation.navigate('PaymentWebView' as any);
           },
         },
+        {
+          text: 'External Browser',
+          onPress: async () => {
+            // Open in external browser
+            const paymentUrl = 'https://thanesarinfo.com/payment';
+            
+            setIsProcessing(true);
+            
+            try {
+              const canOpen = await Linking.canOpenURL(paymentUrl);
+              
+              if (canOpen) {
+                await Linking.openURL(paymentUrl);
+                
+                Alert.alert(
+                  'Payment Gateway Opened',
+                  'Complete your payment in the browser. After successful payment, you will receive a confirmation.',
+                  [
+                    {
+                      text: 'OK',
+                      onPress: () => {
+                        setIsProcessing(false);
+                        navigation.goBack();
+                      },
+                    },
+                  ]
+                );
+              } else {
+                throw new Error('Cannot open payment gateway URL');
+              }
+            } catch (error) {
+              console.error('Error opening payment gateway:', error);
+              Alert.alert('Error', 'Unable to open payment gateway. Please try again later.');
+              setIsProcessing(false);
+            }
+          },
+        },
+        { text: 'Cancel', style: 'cancel' },
       ]
     );
   };
