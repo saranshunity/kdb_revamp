@@ -4,7 +4,7 @@ import DeviceInfo from 'react-native-device-info';
 import { AppMetadata } from '../types/metadata';
 
 const METADATA_CACHE_KEY = 'app_metadata_cache';
-const METADATA_CACHE_EXPIRY = 1 * 60 * 60 * 1000; // 1 hour in milliseconds
+const METADATA_CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes in milliseconds - reduced for more frequent updates
 
 // Firebase Storage URL for metadata.json (public access)
 const METADATA_STORAGE_URL = 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/metadata.json?alt=media';
@@ -20,16 +20,19 @@ class MetadataService {
 
   /**
    * Fetch metadata from Firebase Storage with caching
+   * @param forceRefresh - Force fetch from server, ignoring cache
    */
-  async fetchMetadata(): Promise<AppMetadata | null> {
+  async fetchMetadata(forceRefresh: boolean = false): Promise<AppMetadata | null> {
     try {
-      // Check cache first
-      const cachedData = await this.getCachedMetadata();
-      if (cachedData && !this.isCacheExpired(cachedData.timestamp)) {
-        console.log('Using cached metadata');
-        this.metadata = cachedData.data;
-        this.lastFetchTime = cachedData.timestamp;
-        return cachedData.data;
+      // Check cache first (unless forcing refresh)
+      if (!forceRefresh) {
+        const cachedData = await this.getCachedMetadata();
+        if (cachedData && !this.isCacheExpired(cachedData.timestamp)) {
+          console.log('📦 Using cached metadata (expires in:', Math.round((METADATA_CACHE_EXPIRY - (Date.now() - cachedData.timestamp)) / 1000 / 60), 'minutes)');
+          this.metadata = cachedData.data;
+          this.lastFetchTime = cachedData.timestamp;
+          return cachedData.data;
+        }
       }
 
       // Fetch from Firebase Storage
@@ -166,7 +169,7 @@ class MetadataService {
    * Compare two version strings
    * Returns: -1 if v1 < v2, 0 if equal, 1 if v1 > v2
    */
-  private compareVersions(v1: string, v2: string): number {
+  compareVersions(v1: string, v2: string): number {
     const v1Parts = v1.split('.').map(Number);
     const v2Parts = v2.split('.').map(Number);
 

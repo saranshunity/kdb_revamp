@@ -9,6 +9,9 @@ import {
   Animated,
   Easing,
   Image,
+  Linking,
+  Platform,
+  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { H1, H2, BodyText, ButtonTextPrimary, H5 } from '../components/Text';
@@ -18,6 +21,8 @@ import { IGMIllustration, KosIllustration, TirthMitraIllustration } from '../com
 import PermissionBottomSheet from '../components/PermissionBottomSheet';
 import { usePermissionContext } from '../contexts/PermissionContext';
 import { FONT_SIZES } from '../constants/fonts';
+import MetadataService from '../services/MetadataService';
+import UpdateBottomSheet from '../components/UpdateBottomSheet';
 
 interface OnboardingScreenProps {
   navigation: any;
@@ -61,6 +66,14 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const autoScrollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const { allGranted, checkPermissions } = usePermissionContext();
+  
+  // Update check state
+  const [showUpdateSheet, setShowUpdateSheet] = useState(false);
+  const [updateData, setUpdateData] = useState<{
+    title: string;
+    message: string;
+    forceUpdate: boolean;
+  } | null>(null);
   
   // Animation values
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -178,6 +191,54 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
       spinAnim.stopAnimation();
     };
   }, []);
+
+  // Check for app updates on screen mount
+  useEffect(() => {
+    const checkForUpdates = async () => {
+      try {
+        // Fetch metadata
+        await MetadataService.fetchMetadata(true);
+        
+        // Check if update is required
+        const needsUpdate = await MetadataService.checkForUpdate();
+        const metadata = MetadataService.getMetadata();
+        
+        if (needsUpdate && metadata) {
+          console.log('🔔 Update available for new user');
+          setUpdateData({
+            title: metadata.updateTitle,
+            message: metadata.updateMessage,
+            forceUpdate: metadata.updateRequired,
+          });
+          setShowUpdateSheet(true);
+        }
+      } catch (error) {
+        console.error('Error checking for updates:', error);
+      }
+    };
+
+    checkForUpdates();
+  }, []);
+
+  const handleUpdatePress = () => {
+    // Open app store
+    if (Platform.OS === 'ios') {
+      Linking.openURL('https://apps.apple.com/app/your-app-id');
+    } else {
+      Linking.openURL('https://play.google.com/store/apps/details?id=com.yourapp');
+    }
+  };
+
+  const handleDismissUpdate = () => {
+    // Only allow dismiss if NOT a force update
+    if (!updateData?.forceUpdate) {
+      console.log('✅ Non-force update dismissed - continuing onboarding');
+      setShowUpdateSheet(false);
+    } else {
+      console.log('🚫 Force update - dismiss blocked');
+      // Don't allow dismiss on force update
+    }
+  };
 
   const currentSlide = onboardingData[currentIndex];
 
@@ -350,6 +411,18 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
         onPermissionsGranted={handlePermissionGranted}
         isOnboarding={true}
       />
+
+      {/* Update Bottom Sheet */}
+      {updateData && (
+        <UpdateBottomSheet
+          visible={showUpdateSheet}
+          forceUpdate={updateData.forceUpdate}
+          title={updateData.title}
+          message={updateData.message}
+          onUpdatePress={handleUpdatePress}
+          onDismiss={handleDismissUpdate}
+        />
+      )}
     </View>
   );
 };

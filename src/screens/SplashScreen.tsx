@@ -5,7 +5,6 @@ import { H1, BodyText } from '../components/Text';
 import { COLORS } from '../constants/colors';
 import { useAuth } from '../contexts/AuthContext';
 import MetadataService from '../services/MetadataService';
-import UpdateBottomSheet from '../components/UpdateBottomSheet';
 
 interface SplashScreenProps {
   navigation: any;
@@ -14,34 +13,13 @@ interface SplashScreenProps {
 const SplashScreen: React.FC<SplashScreenProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const { isAuthenticated, isLoading } = useAuth();
-  const [showUpdateSheet, setShowUpdateSheet] = useState(false);
-  const [updateData, setUpdateData] = useState<{
-    title: string;
-    message: string;
-    forceUpdate: boolean;
-  } | null>(null);
 
   useEffect(() => {
     const initializeApp = async () => {
-      // Fetch metadata
-      await MetadataService.fetchMetadata();
-      
-      // Check for updates
-      const needsUpdate = await MetadataService.checkForUpdate();
-      const metadata = MetadataService.getMetadata();
-      
-      if (needsUpdate && metadata) {
-        setUpdateData({
-          title: metadata.updateTitle,
-          message: metadata.updateMessage,
-          forceUpdate: metadata.updateRequired,
-        });
-        setShowUpdateSheet(true);
-      }
-      
       // Check maintenance mode
       const isMaintenance = await MetadataService.isMaintenanceMode();
       if (isMaintenance) {
+        const metadata = MetadataService.getMetadata();
         // Handle maintenance mode
         Alert.alert(
           'Maintenance',
@@ -50,14 +28,9 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ navigation }) => {
         return;
       }
       
-      // Continue normal flow
+      // Continue normal flow - let OnboardingScreen/HomeScreen handle update checks
       if (!isLoading) {
         const timer = setTimeout(() => {
-          if (needsUpdate && metadata?.updateRequired) {
-            // Don't navigate if update is forced
-            return;
-          }
-          
           if (isAuthenticated) {
             navigation.replace('Main');
           } else {
@@ -72,24 +45,6 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ navigation }) => {
     initializeApp();
   }, [isLoading, isAuthenticated, navigation]);
 
-  const handleUpdatePress = () => {
-    // Open app store
-    if (Platform.OS === 'ios') {
-      Linking.openURL('https://apps.apple.com/app/your-app-id');
-    } else {
-      Linking.openURL('https://play.google.com/store/apps/details?id=com.yourapp');
-    }
-  };
-
-  const handleDismissUpdate = () => {
-    setShowUpdateSheet(false);
-    // Navigate to app after dismissing non-force update
-    if (isAuthenticated) {
-      navigation.replace('Main');
-    } else {
-      navigation.replace('Onboarding');
-    }
-  };
 
   return (
     <>
@@ -131,17 +86,6 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ navigation }) => {
           </View> */}
         </View>
       </View>
-
-      {updateData && (
-        <UpdateBottomSheet
-          visible={showUpdateSheet}
-          forceUpdate={updateData.forceUpdate}
-          title={updateData.title}
-          message={updateData.message}
-          onUpdatePress={handleUpdatePress}
-          onDismiss={updateData.forceUpdate ? undefined : handleDismissUpdate}
-        />
-      )}
     </>
   );
 };

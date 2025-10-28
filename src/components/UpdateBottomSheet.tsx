@@ -78,16 +78,20 @@ const UpdateBottomSheet: React.FC<UpdateBottomSheetProps> = ({
       statusBarTranslucent
       onRequestClose={forceUpdate ? undefined : handleDismiss}
     >
-      <TouchableOpacity
-        style={styles.overlay}
-        activeOpacity={1}
-        onPress={forceUpdate ? undefined : handleDismiss}
-      >
+      <View style={styles.overlayContainer}>
+        <TouchableOpacity
+          style={styles.overlay}
+          activeOpacity={1}
+          onPress={forceUpdate ? undefined : handleDismiss}
+        />
         <TouchableOpacity activeOpacity={1} onPress={undefined}>
           <Animated.View
             style={[
               styles.bottomSheet,
-              { paddingBottom: insets.bottom + 20 },
+              { 
+                paddingBottom: insets.bottom + 20,
+                maxHeight: '100%',
+              },
               { transform: [{ translateY: slideAnim }] },
             ]}
           >
@@ -132,16 +136,19 @@ const UpdateBottomSheet: React.FC<UpdateBottomSheetProps> = ({
             )}
           </Animated.View>
         </TouchableOpacity>
-      </TouchableOpacity>
+      </View>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: {
+  overlayContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   bottomSheet: {
     backgroundColor: COLORS.background.primary,
@@ -150,7 +157,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 12,
     alignItems: 'center',
-    maxHeight: '90%',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: -4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 10,
   },
   handle: {
     width: 40,

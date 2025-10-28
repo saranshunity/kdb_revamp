@@ -7,6 +7,8 @@ import {
   StatusBar,
   Animated,
   Easing,
+  Linking,
+  Platform,
 } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -25,6 +27,8 @@ import TodaysEvents from '../events/components/TodaysEvents';
 import PermissionBottomSheet from '../../components/PermissionBottomSheet';
 import { usePermissionContext } from '../../contexts/PermissionContext';
 import Ionicons from "react-native-vector-icons/Ionicons";
+import MetadataService from '../../services/MetadataService';
+import UpdateBottomSheet from '../../components/UpdateBottomSheet';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
 
@@ -48,6 +52,14 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
   // Date-based visibility for Apply for Stalls section
   const [showApplyStalls, setShowApplyStalls] = useState(false);
+  
+  // Update check state
+  const [showUpdateSheet, setShowUpdateSheet] = useState(false);
+  const [updateData, setUpdateData] = useState<{
+    title: string;
+    message: string;
+    forceUpdate: boolean;
+  } | null>(null);
   
 
   // Check if Apply for Stalls section should be visible (until November 7th)
@@ -88,6 +100,54 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       return () => clearTimeout(timer);
     }
   }, [allGranted, hasShownPermissionPrompt, setHasShownPermissionPrompt]);
+
+  // Check for app updates on screen mount
+  useEffect(() => {
+    const checkForUpdates = async () => {
+      try {
+        // Fetch metadata
+        await MetadataService.fetchMetadata(true);
+        
+        // Check if update is required
+        const needsUpdate = await MetadataService.checkForUpdate();
+        const metadata = MetadataService.getMetadata();
+        
+        if (needsUpdate && metadata) {
+          console.log('🔔 Update available for existing user');
+          setUpdateData({
+            title: metadata.updateTitle,
+            message: metadata.updateMessage,
+            forceUpdate: metadata.updateRequired,
+          });
+          setShowUpdateSheet(true);
+        }
+      } catch (error) {
+        console.error('Error checking for updates:', error);
+      }
+    };
+
+    checkForUpdates();
+  }, []);
+
+  const handleUpdatePress = () => {
+    // Open app store
+    if (Platform.OS === 'ios') {
+      Linking.openURL('https://apps.apple.com/app/your-app-id');
+    } else {
+      Linking.openURL('https://play.google.com/store/apps/details?id=com.yourapp');
+    }
+  };
+
+  const handleDismissUpdate = () => {
+    // Only allow dismiss if NOT a force update
+    if (!updateData?.forceUpdate) {
+      console.log('✅ Non-force update dismissed - continuing');
+      setShowUpdateSheet(false);
+    } else {
+      console.log('🚫 Force update - dismiss blocked');
+      // Don't allow dismiss on force update
+    }
+  };
 
   // Animation effects for family illustration
   useEffect(() => {
@@ -860,6 +920,18 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         onPermissionsGranted={handlePermissionGranted}
         isOnboarding={false}
       />
+
+      {/* Update Bottom Sheet */}
+      {updateData && (
+        <UpdateBottomSheet
+          visible={showUpdateSheet}
+          forceUpdate={updateData.forceUpdate}
+          title={updateData.title}
+          message={updateData.message}
+          onUpdatePress={handleUpdatePress}
+          onDismiss={handleDismissUpdate}
+        />
+      )}
     </View>
   );
 };
