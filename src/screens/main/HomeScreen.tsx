@@ -9,7 +9,9 @@ import {
   Easing,
   Linking,
   Platform,
+  Alert,
 } from 'react-native';
+import Geolocation from '@react-native-community/geolocation';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -40,7 +42,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const stackNavigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [showPermissionSheet, setShowPermissionSheet] = useState(false);
-  const { allGranted, hasShownPermissionPrompt, setHasShownPermissionPrompt } = usePermissionContext();
+  const { allGranted, hasShownPermissionPrompt, setHasShownPermissionPrompt, permissions } = usePermissionContext();
 
   // Animation values for family illustration
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -52,6 +54,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
   // Date-based visibility for Apply for Stalls section
   const [showApplyStalls, setShowApplyStalls] = useState(false);
+  
+  // User address state
+  const [userAddress, setUserAddress] = useState('Kurukshetra, Haryana, India');
   
   // Update check state
   const [showUpdateSheet, setShowUpdateSheet] = useState(false);
@@ -88,7 +93,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     // }
   }, []);
 
-  // Check permissions on screen focus
+  // Check permissions on screen focus - only show if not all granted
   useEffect(() => {
     if (!allGranted && !hasShownPermissionPrompt) {
       // Show permission sheet after a short delay to let the screen load
@@ -99,7 +104,60 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       
       return () => clearTimeout(timer);
     }
+    
+    // If all permissions are granted, don't show permission sheet
+    if (allGranted) {
+      setShowPermissionSheet(false);
+    }
   }, [allGranted, hasShownPermissionPrompt, setHasShownPermissionPrompt]);
+
+  // Get user's current location and address
+  useEffect(() => {
+    const getCurrentAddress = async () => {
+      try {
+        // Check if location permission is granted
+        if (permissions.location === 'granted') {
+          Geolocation.getCurrentPosition(
+            async (position) => {
+              const { latitude, longitude } = position.coords;
+              Alert.alert('Location:', `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`);
+              // For now, just use a simplified address format
+              // You can enhance this to use reverse geocoding if needed
+              setUserAddress(`Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`);
+            },
+            (error) => {
+              console.error('Error getting location:', error);
+              // Handle different error types
+              if (error.code === 1) {
+                Alert.alert('Permission Denied', 'Location permission was denied. Please enable location access in settings.');
+              } else if (error.code === 2) {
+                Alert.alert('Location Unavailable', 'Unable to get your current location. Please check your GPS settings.');
+              } else if (error.code === 3) {
+                Alert.alert('Timeout', 'Location request timed out. Please try again.');
+              } else {
+                Alert.alert('Location Error', 'Unable to get your location. Using default address.');
+              }
+              // Keep default address on error
+              setUserAddress('Kurukshetra, Haryana, India');
+            },
+            { 
+              enableHighAccuracy: true, 
+              timeout: 15000, 
+              maximumAge: 300000 
+            }
+          );
+        } else {
+          // If permission not granted, show default address
+          setUserAddress('Kurukshetra, Haryana, India');
+        }
+      } catch (error) {
+        console.error('Error in getCurrentAddress:', error);
+        setUserAddress('Kurukshetra, Haryana, India');
+      }
+    };
+
+    getCurrentAddress();
+  }, [permissions.location]);
 
   // Check for app updates on screen mount
   useEffect(() => {
@@ -146,6 +204,29 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     } else {
       console.log('🚫 Force update - dismiss blocked');
       // Don't allow dismiss on force update
+    }
+  };
+
+  const refreshLocation = () => {
+    if (permissions.location === 'granted') {
+      Geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          Alert.alert('Location Updated:', `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`);
+          setUserAddress(`Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`);
+        },
+        (error) => {
+          console.error('Error refreshing location:', error);
+          Alert.alert('Location Error', 'Unable to refresh location. Please check your GPS settings.');
+        },
+        { 
+          enableHighAccuracy: true, 
+          timeout: 15000, 
+          maximumAge: 0 // Force fresh location
+        }
+      );
+    } else {
+      Alert.alert('Permission Required', 'Location permission is required to get your current address.');
     }
   };
 
@@ -509,11 +590,22 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
             <View style={styles.headerLeft}>
               <View style={styles.greetingContainer}>
                 <BodyText style={styles.namasteIcon} size='xl'>🙏</BodyText>
-                <H5 style={styles.greetingText} weight="semiBold">Saransh Bansal</H5>
+                <H5 style={styles.greetingText} weight="semiBold">Namastey</H5>
               </View>
-              <BodyText style={styles.addressText} color={COLORS.text.primary} size='sm'>
-                Kurukshetra, Haryana, India
-              </BodyText>
+              <View style={styles.addressContainer}>
+                <BodyText style={styles.addressText} color={COLORS.text.primary} size='sm'>
+                  {userAddress}
+                </BodyText>
+                {permissions.location === 'granted' && (
+                  <TouchableOpacity 
+                    style={styles.refreshLocationButton}
+                    onPress={refreshLocation}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="refresh" size={16} color={COLORS.appColor} />
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
             <View style={styles.headerRight}>
               <TouchableOpacity 
@@ -971,6 +1063,18 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.gilroy.regular,
     fontSize: FONT_SIZES.sm,
     opacity: 0.9,
+    flex: 1,
+  },
+  addressContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  refreshLocationButton: {
+    marginLeft: 8,
+    padding: 4,
+    borderRadius: 12,
+    backgroundColor: COLORS.appColor + '20',
   },
   menuButton: {
     padding: 8,

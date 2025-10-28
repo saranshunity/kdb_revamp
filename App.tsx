@@ -18,7 +18,8 @@ function App(): React.JSX.Element {
   useEffect(() => {
     try {
       const app = firebase.app();
-        Alert.alert('Firebase initialized', app.name);// Should log [DEFAULT]
+      console.log('Firebase initialized', app.name);// Should log [DEFAULT]
+        // Alert.alert('Firebase initialized', app.name);// Should log [DEFAULT]
     } catch (error) {
       Alert.alert('❌ Firebase initialization error:', (error as Error).message);
     }
