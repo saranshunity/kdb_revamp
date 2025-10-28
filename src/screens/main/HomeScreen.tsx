@@ -541,7 +541,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           label="Events" 
           onPress={() => stackNavigation.navigate('Events')}
         />
-      <QuickLinkItem 
+      {/* <QuickLinkItem 
         key="stalls" 
         icon="cart-outline" 
         label="Stalls Directory" 
@@ -552,7 +552,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         icon="bed-outline" 
         label="Live Shows" 
         onPress={() => console.log('Hotels pressed')}
-      />
+      /> */}
       <QuickLinkItem 
         key="quiz" 
         icon="school-outline" 
@@ -597,10 +597,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
         
         <View style={{marginTop: 26}}/>
-        <MahotsavHulchal listData={mahotsavHulchal} type="mahotsav" />
+        {/* <MahotsavHulchal listData={mahotsavHulchal} type="mahotsav" />
         <TodaysEvents listData={todaysEventsDataArray} type="events" />
-      <View style={styles.familyLocationCard}>
-          {/* Google Maps Background */}
+       */}
+      {/* <View style={styles.familyLocationCard}>
           <MapView
             provider={PROVIDER_GOOGLE}
             style={styles.mapView}
@@ -625,7 +625,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           />
           <View style={styles.mapOverlayLarge} />
           
-          {/* Content Overlay */}
           <View style={styles.contentOverlay}>
             <View style={styles.textContent}>
               <H5 color={COLORS.white} weight='semiBold' size='lg'>
@@ -646,10 +645,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               </TouchableOpacity>
             </View>
             
-            {/* Animated Markers on Right */}
             <View style={styles.markersContainer}>
               <View style={styles.familyIllustration}>
-                {/* Location Pin */}
                 <Animated.View 
                   style={[
                     styles.locationPin,
@@ -661,7 +658,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                   <Ionicons name="location" size={14} color={COLORS.white} />
                 </Animated.View>
                 
-                {/* Family Members */}
                 <View style={styles.familyMembers}>
                   <Animated.View 
                     style={[
@@ -733,7 +729,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                   />
                 </View>
                 
-                {/* Connection Lines */}
                 <View style={styles.connectionLines}>
                   <Animated.View 
                     style={[
@@ -790,7 +785,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               </View>
             </View>
           </View>
-        </View>
+        </View> */}
         <TirthsList listData={tirthsList} />
       </View>
      
