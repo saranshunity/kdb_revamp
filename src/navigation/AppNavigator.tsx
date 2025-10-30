@@ -45,6 +45,7 @@ import JyotisarScreen from '../screens/main/JyotisarScreen';
 import PermissionsScreen from '../screens/main/PermissionsScreen';
 import ListScreen from '../screens/main/ListScreen';
 import ItemDetailScreen from '../screens/main/ItemDetailScreen';
+import RemindersScreen from '../screens/main/RemindersScreen';
 import { COLORS } from '../constants/colors';
 import { FONTS, FONT_SIZES } from '../constants/fonts';
 import { PermissionProvider } from '../contexts/PermissionContext';
@@ -167,6 +168,7 @@ export type RootStackParamList = {
     contactInfo?: string;
     additionalInfo?: string;
   };
+  Reminders: undefined;
 };
 
 export type AuthStackParamList = {
@@ -334,6 +336,7 @@ function AppNavigator() {
         <Stack.Screen name='Permissions' component={PermissionsScreen} />
         <Stack.Screen name='ListScreen' component={ListScreen} />
         <Stack.Screen name='ItemDetailScreen' component={ItemDetailScreen} />
+        <Stack.Screen name='Reminders' component={RemindersScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </PermissionProvider>

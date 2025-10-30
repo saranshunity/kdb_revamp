@@ -17,14 +17,52 @@ import { FONTS, FONT_SIZES } from '../../constants/fonts';
 import Ionicons from "react-native-vector-icons/Ionicons";
 import EventCard from "./components/EventCard"; // reuse previous EventCard
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import ReminderService from '../../services/ReminderService';
+import { useAuth } from '../../contexts/AuthContext';
+import { Alert } from 'react-native';
 
 type EventDetailScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'EventDetail'>;
 
 const EventDetailScreen = () => {
   const [isFavorite, setFavorite] = useState(false);
+  const [isScheduling, setIsScheduling] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<EventDetailScreenNavigationProp>();
+  const { user } = useAuth();
+
+  const handleSetReminder = async () => {
+    try {
+      if (!user?.id) {
+        Alert.alert('Sign in required', 'Please sign in to set a reminder.');
+        return;
+      }
+      setIsScheduling(true);
+      // Demo values from mock UI
+      const title = 'Premium Staycation Package at Pan Pacific';
+      const location = 'Manzi Art Space and Cafe';
+      // Schedule notification ~1 minute from now for quick testing
+      const now = new Date();
+      const eventStart = new Date(now.getTime() + 2 * 60 * 1000); // event starts in 2 mins
+      const eventStartAtUTC = eventStart.toISOString();
+      const leadMinutes = 1; // notify 1 minute before -> fires in ~1 minute
+
+      const id = await ReminderService.createReminder({
+        userId: user.id,
+        eventId: 'demo-event-1',
+        title,
+        location,
+        eventStartAtUTC,
+        leadMinutes,
+      });
+
+      Alert.alert('Reminder', 'Reminder saved. We will notify you before the event starts.');
+    } catch (e) {
+      Alert.alert('Failed', 'Could not set reminder. Please try again.');
+    } finally {
+      setIsScheduling(false);
+    }
+  };
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -88,10 +126,10 @@ const EventDetailScreen = () => {
           </View>
 
           {/* Reminder */}
-          <TouchableOpacity style={styles.row}>
+          <TouchableOpacity style={styles.row} onPress={handleSetReminder} disabled={isScheduling}>
             <Ionicons name="notifications-outline" size={18} color="#444" />
             <Text style={[styles.rowTextSingle, { color: "#007AFF" }]}>
-              Reminder
+              {isScheduling ? 'Scheduling…' : 'Set Reminder'}
             </Text>
           </TouchableOpacity>
 

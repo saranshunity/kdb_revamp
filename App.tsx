@@ -13,6 +13,7 @@ import { firebase } from './src/firebaseConfig';
 import { AuthProvider } from './src/contexts/AuthContext';
 import { NoInternetProvider } from './src/contexts/NoInternetContext';
 import GlobalNoInternetBottomSheet from './src/components/GlobalNoInternetBottomSheet';
+import NotificationService from './src/services/NotificationService';
 
 function App(): React.JSX.Element {
   useEffect(() => {
@@ -23,6 +24,10 @@ function App(): React.JSX.Element {
     } catch (error) {
       Alert.alert('❌ Firebase initialization error:', (error as Error).message);
     }
+  }, []);
+  useEffect(() => {
+    // Ensure notification system is ready (channels, permissions)
+    NotificationService.init();
   }, []);
   return (
     <SafeAreaProvider>

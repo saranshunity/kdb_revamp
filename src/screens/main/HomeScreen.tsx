@@ -33,6 +33,7 @@ import MetadataService from '../../services/MetadataService';
 import UpdateBottomSheet from '../../components/UpdateBottomSheet';
 import { useAuth } from '../../contexts/AuthContext';
 import firestore from '@react-native-firebase/firestore';
+import ReminderService, { UserReminder } from '../../services/ReminderService';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
 
@@ -69,6 +70,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     forceUpdate: boolean;
   } | null>(null);
   const [firstName, setFirstName] = useState<string | null>(null);
+  const [reminders, setReminders] = useState<UserReminder[]>([]);
   
 
   // Check if Apply for Stalls section should be visible (until November 7th)
@@ -212,6 +214,18 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       }
     };
     fetchUserName();
+  }, [user?.id]);
+
+  // Subscribe to user's reminders for list on Home
+  useEffect(() => {
+    if (!user?.id) {
+      setReminders([]);
+      return;
+    }
+    const unsubscribe = ReminderService.subscribeToReminders(user.id, (list) => {
+      setReminders(list.filter(r => r.status === 'scheduled'));
+    });
+    return () => unsubscribe();
   }, [user?.id]);
 
   const handleUpdatePress = () => {
@@ -680,6 +694,56 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       />
         </ScrollView>
         
+        {/* Reminders List */}
+        {reminders.length > 0 && (
+          <View style={{ paddingHorizontal: 20, marginTop: 10 }}>
+            <H5 color={COLORS.primary} weight='semiBold' size='lg'>Your Reminders</H5>
+            {(reminders.slice(0, 2)).map((r) => (
+              <View key={r.id} style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                backgroundColor: COLORS.background.primary,
+                borderRadius: 12,
+                paddingVertical: 10,
+                paddingHorizontal: 12,
+                marginTop: 8,
+                borderWidth: 1,
+                borderColor: COLORS.border.light
+              }}>
+                <View style={{ flex: 1, paddingRight: 10 }}>
+                  <BodyText color={COLORS.text.primary} size='sm' weight='medium'>
+                    {r.title}
+                  </BodyText>
+                  <BodyText color={COLORS.text.secondary} size='xs'>
+                    {new Date(r.notifyAtUTC).toLocaleString()}
+                  </BodyText>
+                </View>
+                <TouchableOpacity
+                  onPress={() => user?.id && ReminderService.cancelReminder(user.id, r.id).catch(() => {})}
+                  style={{
+                    paddingVertical: 6,
+                    paddingHorizontal: 10,
+                    borderRadius: 8,
+                    borderWidth: 1,
+                    borderColor: COLORS.error
+                  }}
+                >
+                  <BodyText color={COLORS.error} size='xs' weight='semiBold'>Cancel</BodyText>
+                </TouchableOpacity>
+              </View>
+            ))}
+            {reminders.length > 2 && (
+              <TouchableOpacity
+                onPress={() => stackNavigation.navigate('Reminders' as any)}
+                style={{ alignSelf: 'flex-end', marginTop: 8 }}
+              >
+                <BodyText color={COLORS.background.appColor} size='xs' weight='semiBold'>View All →</BodyText>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
+
         {/* Apply for Stalls - Attention Grabbing Section (Visible until November 7th) */}
         {showApplyStalls && (
           <TouchableOpacity 
