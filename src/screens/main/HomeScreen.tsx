@@ -31,6 +31,8 @@ import { usePermissionContext } from '../../contexts/PermissionContext';
 import Ionicons from "react-native-vector-icons/Ionicons";
 import MetadataService from '../../services/MetadataService';
 import UpdateBottomSheet from '../../components/UpdateBottomSheet';
+import { useAuth } from '../../contexts/AuthContext';
+import firestore from '@react-native-firebase/firestore';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
 
@@ -41,6 +43,7 @@ interface HomeScreenProps {
 const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const stackNavigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { user } = useAuth();
   const [showPermissionSheet, setShowPermissionSheet] = useState(false);
   const { allGranted, hasShownPermissionPrompt, setHasShownPermissionPrompt, permissions } = usePermissionContext();
 
@@ -65,6 +68,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     message: string;
     forceUpdate: boolean;
   } | null>(null);
+  const [firstName, setFirstName] = useState<string | null>(null);
   
 
   // Check if Apply for Stalls section should be visible (until November 7th)
@@ -186,6 +190,29 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
     checkForUpdates();
   }, []);
+
+  // Fetch current user's name from Firestore
+  useEffect(() => {
+    const fetchUserName = async () => {
+      try {
+        if (!user?.id) {
+          setFirstName(null);
+          return;
+        }
+        const doc = await firestore().collection('users').doc(user.id).get();
+        if (doc.exists) {
+          const data = doc.data() as any;
+          const name = (data?.firstName as string) || '';
+          setFirstName(name ? name : null);
+        } else {
+          setFirstName(null);
+        }
+      } catch (e) {
+        setFirstName(null);
+      }
+    };
+    fetchUserName();
+  }, [user?.id]);
 
   const handleUpdatePress = () => {
     // Open app store
@@ -590,7 +617,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
             <View style={styles.headerLeft}>
               <View style={styles.greetingContainer}>
                 <BodyText style={styles.namasteIcon} size='xl'>🙏</BodyText>
-                <H5 style={styles.greetingText} weight="semiBold">Namastey</H5>
+                <H5 style={styles.greetingText} weight="semiBold">{`Namastey${firstName ? ", " + firstName : ''}`}</H5>
               </View>
               <View style={styles.addressContainer}>
                 <BodyText style={styles.addressText} color={COLORS.text.primary} size='sm'>
