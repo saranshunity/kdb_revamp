@@ -24,6 +24,7 @@ import { COLORS } from '../../constants/colors';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { auth } from '../../firebaseConfig';
 import { useAuth } from '../../contexts/AuthContext';
+import firestore from '@react-native-firebase/firestore';
 
 interface OTPVerificationScreenProps {
   navigation: any;
@@ -31,6 +32,11 @@ interface OTPVerificationScreenProps {
     params: {
       phoneNumber: string;
       confirmation: any;
+      profile?: {
+        firstName?: string;
+        lastName?: string;
+        email?: string;
+      };
     };
   };
 }
@@ -38,7 +44,7 @@ interface OTPVerificationScreenProps {
 const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ navigation, route }) => {
   const insets = useSafeAreaInsets();
   const { login } = useAuth();
-  const { phoneNumber, confirmation } = route.params;
+  const { phoneNumber, confirmation, profile } = route.params;
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [errors, setErrors] = useState<{ otp?: string }>({});
   const [isResending, setIsResending] = useState(false);
@@ -105,9 +111,24 @@ const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ navigatio
       
       console.log('OTP verified successfully:', result);
       
+      // Ensure a user profile exists in Firestore
+      const uid = result.user.uid;
+      const userRef = firestore().collection('users').doc(uid);
+      const snap = await userRef.get();
+      const baseDoc = snap.exists ? snap.data() || {} : {};
+      await userRef.set({
+        uid,
+        phone: phoneNumber,
+        email: (profile?.email || result.user.email) || (baseDoc.email || ''),
+        firstName: profile?.firstName ?? baseDoc.firstName ?? '',
+        lastName: profile?.lastName ?? baseDoc.lastName ?? '',
+        reminders: baseDoc.reminders || [],
+        createdAt: baseDoc.createdAt || firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+
       // Create user data for authentication
       const userData = {
-        id: result.user.uid,
+        id: uid,
         email: result.user.email || '',
         name: result.user.displayName || phoneNumber,
         phoneNumber: phoneNumber,
@@ -228,7 +249,7 @@ const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ navigatio
               size='md'
               style={styles.description}
             >
-              Enter the 6-digit code sent to{'\n'}+91 {maskedPhoneNumber}
+              Enter the 6-digit code sent to{'\n'} {maskedPhoneNumber}
             </BodyText>
           </View>
 

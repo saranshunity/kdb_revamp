@@ -10,7 +10,6 @@ import OnboardingScreen from '../screens/OnboardingScreen';
 import LoginScreen from '../screens/auth/LoginScreen';
 import RegisterScreen from '../screens/auth/RegisterScreen';
 import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
-import PhoneAuthScreen from '../screens/auth/PhoneAuthScreen';
 import OTPVerificationScreen from '../screens/auth/OTPVerificationScreen';
 import HomeScreen from '../screens/main/HomeScreen';
 import ProfileScreen from '../screens/main/ProfileScreen';
@@ -171,7 +170,6 @@ export type RootStackParamList = {
 };
 
 export type AuthStackParamList = {
-  PhoneAuth: undefined;
   OTPVerification: { phoneNumber: string; confirmation: any };
   Login: undefined;
   Register: undefined;
@@ -237,13 +235,12 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
 function AuthNavigator() {
   return (
     <AuthStack.Navigator
-      initialRouteName='PhoneAuth'
+      initialRouteName='Login'
       screenOptions={{
         headerShown: false,
         gestureEnabled: true,
       }}
     >
-      <AuthStack.Screen name='PhoneAuth' component={PhoneAuthScreen} />
       <AuthStack.Screen name='OTPVerification' component={OTPVerificationScreen} />
       <AuthStack.Screen name='Login' component={LoginScreen} />
       <AuthStack.Screen name='Register' component={RegisterScreen} />

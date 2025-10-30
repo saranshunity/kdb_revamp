@@ -17,13 +17,13 @@ const AuthNavigationListener: React.FC = () => {
           routes: [{ name: 'Main' }],
         });
       } else {
-        // User is not logged in, navigate to onboarding
+        // User is not logged in, navigate to Auth (Login)
         // Only navigate if we're not already in auth flow
         const currentRoute = navigation.getState()?.routes[navigation.getState()?.index || 0];
-        if (currentRoute?.name !== 'Onboarding' && currentRoute?.name !== 'Auth') {
+        if (currentRoute?.name !== 'Auth') {
           navigation.reset({
             index: 0,
-            routes: [{ name: 'Onboarding' }],
+            routes: [{ name: 'Auth' }],
           });
         }
       }

@@ -19,12 +19,17 @@ import {
   ErrorText,
 } from '../../components/Text';
 import { COLORS } from '../../constants/colors';
+import { Image, Alert } from 'react-native';
+import { auth } from '../../firebaseConfig';
+import firestore from '@react-native-firebase/firestore';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface RegisterScreenProps {
   navigation: any;
+  route?: any;
 }
 
-const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
+const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation, route }) => {
   const insets = useSafeAreaInsets();
   const [formData, setFormData] = useState({
     firstName: '',
@@ -37,6 +42,15 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { login } = useAuth();
+  // Prefill phone if passed from Login
+  React.useEffect(() => {
+    const prefill = route?.params?.prefillPhone as string | undefined;
+    if (prefill && /^\d{10}$/.test(prefill)) {
+      setFormData(prev => ({ ...prev, phone: prefill }));
+    }
+  }, [route]);
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
@@ -61,31 +75,42 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
       newErrors.phone = 'Please enter a valid 10-digit phone number';
     }
 
-    if (!formData.password.trim()) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
-    }
-
-    if (!formData.confirmPassword.trim()) {
-      newErrors.confirmPassword = 'Please confirm your password';
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
+    // No password checks in phone-OTP registration
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleRegister = () => {
-    if (validateForm()) {
-      // TODO: Implement actual registration logic
-      console.log('Registration attempt:', formData);
-      // For now, navigate to main app
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Main' }],
-      });
+  const handleRegister = async () => {
+    if (!validateForm()) return;
+
+    try {
+      setIsSubmitting(true);
+      const phoneDigits = formData.phone.replace(/\D/g, '');
+      const fullPhone = `+91${phoneDigits}`;
+
+      // Send OTP using Firebase phone auth
+      const confirmation = await auth().signInWithPhoneNumber(fullPhone);
+
+      // Navigate to OTP screen with profile info to merge on success
+      navigation.navigate('OTPVerification', {
+        phoneNumber: fullPhone,
+        confirmation,
+        profile: {
+          firstName: formData.firstName.trim(),
+          lastName: formData.lastName.trim(),
+          email: formData.email.trim(),
+        },
+      } as any);
+    } catch (error: any) {
+      console.error('Registration OTP error:', error);
+      let message = 'Failed to send OTP. Please try again.';
+      if (error.code === 'auth/invalid-phone-number') message = 'Invalid phone number format.';
+      if (error.code === 'auth/too-many-requests') message = 'Too many requests. Try later.';
+      if (error.code === 'auth/network-request-failed') message = 'Network error. Check connection.';
+      Alert.alert('Error', message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -114,7 +139,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps='handled'
       >
-        {/* Header */}
+        {/* Header with Back + Compact Logo + Subtitle */}
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
@@ -122,30 +147,25 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
           >
             <BodyText size='lg'>←</BodyText>
           </TouchableOpacity>
+          <View style={styles.headerCenter}>
+            <Image
+              source={require('../../assets/images/appLogo.png')}
+              style={styles.headerLogo}
+              resizeMode="contain"
+            />
+            <BodyText color={COLORS.text.primary} size='sm' weight='semiBold'>
+              Create Account
+            </BodyText>
+          </View>
+          <View style={{ width: 24 }} />
         </View>
 
         {/* Content */}
         <View style={styles.content}>
           {/* Logo/Title */}
           <View style={styles.logoContainer}>
-            <H1 color={COLORS.primary} weight='bold' size='3xl'>
-              KDB
-            </H1>
-            <H2
-              color={COLORS.secondary}
-              weight='medium'
-              size='xl'
-              style={styles.subtitle}
-            >
-              Create Account
-            </H2>
-            <BodyText
-              color={COLORS.tertiary}
-              size='md'
-              style={styles.description}
-            >
-              Join KDB and start your financial journey
-            </BodyText>
+           
+            
           </View>
 
           {/* Form */}
@@ -242,90 +262,15 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
               {errors.phone && <ErrorText size='sm'>{errors.phone}</ErrorText>}
             </View>
 
-            {/* Password Input */}
-            <View style={styles.inputContainer}>
-              <BodyText
-                color={COLORS.primary}
-                weight='medium'
-                size='sm'
-                style={styles.label}
-              >
-                Password
-              </BodyText>
-              <View style={styles.passwordContainer}>
-                <TextInput
-                  style={[
-                    styles.input,
-                    styles.passwordInput,
-                    errors.password && styles.inputError,
-                  ]}
-                  placeholder='Create a strong password'
-                  placeholderTextColor={COLORS.tertiary}
-                  value={formData.password}
-                  onChangeText={value => updateFormData('password', value)}
-                  secureTextEntry={!showPassword}
-                  autoCapitalize='none'
-                />
-                <TouchableOpacity
-                  style={styles.eyeButton}
-                  onPress={() => setShowPassword(!showPassword)}
-                >
-                  <BodyText color={COLORS.tertiary} size='md'>
-                    {showPassword ? '👁️' : '👁️‍🗨️'}
-                  </BodyText>
-                </TouchableOpacity>
-              </View>
-              {errors.password && (
-                <ErrorText size='sm'>{errors.password}</ErrorText>
-              )}
-            </View>
-
-            {/* Confirm Password Input */}
-            <View style={styles.inputContainer}>
-              <BodyText
-                color={COLORS.primary}
-                weight='medium'
-                size='sm'
-                style={styles.label}
-              >
-                Confirm Password
-              </BodyText>
-              <View style={styles.passwordContainer}>
-                <TextInput
-                  style={[
-                    styles.input,
-                    styles.passwordInput,
-                    errors.confirmPassword && styles.inputError,
-                  ]}
-                  placeholder='Confirm your password'
-                  placeholderTextColor={COLORS.tertiary}
-                  value={formData.confirmPassword}
-                  onChangeText={value =>
-                    updateFormData('confirmPassword', value)
-                  }
-                  secureTextEntry={!showConfirmPassword}
-                  autoCapitalize='none'
-                />
-                <TouchableOpacity
-                  style={styles.eyeButton}
-                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  <BodyText color={COLORS.tertiary} size='md'>
-                    {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
-                  </BodyText>
-                </TouchableOpacity>
-              </View>
-              {errors.confirmPassword && (
-                <ErrorText size='sm'>{errors.confirmPassword}</ErrorText>
-              )}
-            </View>
+            {/* Password fields removed for phone-OTP registration */}
 
             {/* Register Button */}
             <TouchableOpacity
               style={styles.registerButton}
               onPress={handleRegister}
+              disabled={isSubmitting}
             >
-              <ButtonTextPrimary size='lg'>Create Account</ButtonTextPrimary>
+              <ButtonTextPrimary size='lg'>{isSubmitting ? 'Creating...' : 'Create Account'}</ButtonTextPrimary>
             </TouchableOpacity>
 
             {/* Divider */}
@@ -373,6 +318,18 @@ const styles = StyleSheet.create({
   },
   backButton: {
     padding: 8,
+  },
+  headerCenter: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  headerLogo: {
+    width: 24,
+    height: 24,
+    marginRight: 8,
   },
   content: {
     flex: 1,

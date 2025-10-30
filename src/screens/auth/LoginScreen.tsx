@@ -21,6 +21,9 @@ import {
 } from '../../components/Text';
 import { COLORS } from '../../constants/colors';
 import { useAuth } from '../../contexts/AuthContext';
+import { Image } from 'react-native';
+import { auth } from '../../firebaseConfig';
+import firestore from '@react-native-firebase/firestore';
 
 interface LoginScreenProps {
   navigation: any;
@@ -29,20 +32,24 @@ interface LoginScreenProps {
 const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const { login } = useAuth();
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
+  const [errors, setErrors] = useState<{ phone?: string; password?: string }>(
     {},
   );
+  const [isSigningIn, setIsSigningIn] = useState(false);
+  const [showOtpSection, setShowOtpSection] = useState(false);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
 
   const validateForm = () => {
-    const newErrors: { email?: string; password?: string } = {};
+    const newErrors: { phone?: string; password?: string } = {};
 
-    if (!email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Please enter a valid email';
+    const digits = phone.replace(/\D/g, '');
+    if (!digits) {
+      newErrors.phone = 'Phone number is required';
+    } else if (!/^\d{10}$/.test(digits)) {
+      newErrors.phone = 'Please enter a valid 10-digit phone number';
     }
 
     if (!password.trim()) {
@@ -56,30 +63,40 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   };
 
   const handleLogin = async () => {
-    if (validateForm()) {
-      try {
-        // Create user data for authentication
-        const userData = {
-          id: '1', // In real app, this would come from your backend
-          email: email,
-          name: email.split('@')[0], // Use email prefix as name for now
-          phoneNumber: '', // Add if available
-        };
-        
-        // Login using auth context
-        await login(userData);
-        
-        // Fallback navigation in case the auth listener doesn't work
-        setTimeout(() => {
-          navigation.reset({
-            index: 0,
-            routes: [{ name: 'Main' }],
-          });
-        }, 1000);
-      } catch (error) {
-        console.error('Login error:', error);
-        Alert.alert('Login Failed', 'Please try again');
+    if (!validateForm()) return;
+    try {
+      setIsSigningIn(true);
+      const digits = phone.replace(/\D/g, '');
+      const syntheticEmail = `${digits}@kdb.app`;
+      const cred = await auth().signInWithEmailAndPassword(syntheticEmail, password);
+
+      // Fetch profile
+      const doc = await firestore().collection('users').doc(cred.user.uid).get();
+      if (!doc.exists) {
+        // No profile found; sign out and redirect to Register
+        await auth().signOut();
+        Alert.alert('Complete Registration', 'We could not find your profile. Please register to continue.');
+        navigation.navigate('Register', { prefillPhone: digits } as any);
+        return;
       }
+      const data = doc.data() || {} as any;
+
+      await login({
+        id: cred.user.uid,
+        email: (data.email as string) || '',
+        name: `${(data.firstName as string) || ''} ${(data.lastName as string) || ''}`.trim() || digits,
+        phoneNumber: (data.phone as string) || `+91${digits}`,
+      });
+
+      navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
+    } catch (error: any) {
+      console.error('Login error:', error);
+      let message = 'Incorrect phone or password.';
+      if (error.code === 'auth/user-not-found') message = 'Account not found. Please register.';
+      if (error.code === 'auth/wrong-password') message = 'Incorrect password.';
+      Alert.alert('Sign In Failed', message);
+    } finally {
+      setIsSigningIn(false);
     }
   };
 
@@ -89,6 +106,48 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
   const handleForgotPassword = () => {
     navigation.navigate('ForgotPassword');
+  };
+
+  const validatePhoneForOtp = () => {
+    const digits = phone.replace(/\D/g, '');
+    if (!/^\d{10}$/.test(digits)) {
+      setErrors(prev => ({ ...prev, phone: 'Please enter a valid 10-digit phone number' }));
+      return null;
+    }
+    return `+91${digits}`;
+  };
+
+  const handleSendOtp = async () => {
+    const fullPhone = validatePhoneForOtp();
+    if (!fullPhone) return;
+    try {
+      setIsSendingOtp(true);
+      // Check Firestore for existing user with this phone before sending OTP
+      const existing = await firestore()
+        .collection('users')
+        .where('phone', '==', fullPhone)
+        .limit(1)
+        .get();
+
+      if (existing.empty) {
+        Alert.alert('Not Registered', 'Please register to continue.');
+        const digits = phone.replace(/\D/g, '');
+        navigation.navigate('Register', { prefillPhone: digits } as any);
+        return;
+      }
+
+      const confirmation = await auth().signInWithPhoneNumber(fullPhone);
+      navigation.navigate('OTPVerification', { phoneNumber: fullPhone, confirmation });
+    } catch (error: any) {
+      console.error('Error sending OTP:', error);
+      let errorMessage = 'Failed to send OTP. Please try again.';
+      if (error.code === 'auth/invalid-phone-number') errorMessage = 'Invalid phone number format.';
+      if (error.code === 'auth/too-many-requests') errorMessage = 'Too many requests. Try later.';
+      if (error.code === 'auth/network-request-failed') errorMessage = 'Network error. Check connection.';
+      Alert.alert('Error', errorMessage);
+    } finally {
+      setIsSendingOtp(false);
+    }
   };
 
   return (
@@ -104,7 +163,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps='handled'
       >
-        {/* Header */}
+        {/* Header with Back + Compact Logo + Subtitle */}
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
@@ -112,132 +171,65 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           >
             <BodyText size='lg'>←</BodyText>
           </TouchableOpacity>
+          <View style={styles.headerCenter}>
+            <Image
+              source={require('../../assets/images/appLogo.png')}
+              style={styles.headerLogo}
+              resizeMode="contain"
+            />
+            <BodyText color={COLORS.text.primary} size='sm' weight='semiBold'>
+              Sign in to your account
+            </BodyText>
+          </View>
+          <View style={{ width: 24 }} />
         </View>
 
         {/* Content */}
         <View style={styles.content}>
-          {/* Logo/Title */}
-          <View style={styles.logoContainer}>
-            <H1 color={COLORS.primary} weight='bold' size='3xl'>
-              KDB
-            </H1>
-            <H2
-              color={COLORS.secondary}
-              weight='medium'
-              size='xl'
-              style={styles.subtitle}
-            >
-              Welcome Back
-            </H2>
-            <BodyText
-              color={COLORS.tertiary}
-              size='md'
-              style={styles.description}
-            >
-              Sign in to your account
-            </BodyText>
-          </View>
-
-          {/* Form */}
+       
           <View style={styles.form}>
-            {/* Email Input */}
-            <View style={styles.inputContainer}>
-              <BodyText
-                color={COLORS.primary}
-                weight='medium'
-                size='sm'
-                style={styles.label}
-              >
-                Email Address
-              </BodyText>
-              <TextInput
-                style={[styles.input, errors.email && styles.inputError]}
-                placeholder='Enter your email'
-                placeholderTextColor={COLORS.tertiary}
-                value={email}
-                onChangeText={setEmail}
-                keyboardType='email-address'
-                autoCapitalize='none'
-                autoCorrect={false}
-              />
-              {errors.email && <ErrorText size='sm'>{errors.email}</ErrorText>}
-            </View>
-
-            {/* Password Input */}
-            <View style={styles.inputContainer}>
-              <BodyText
-                color={COLORS.primary}
-                weight='medium'
-                size='sm'
-                style={styles.label}
-              >
-                Password
-              </BodyText>
-              <View style={styles.passwordContainer}>
-                <TextInput
-                  style={[
-                    styles.input,
-                    styles.passwordInput,
-                    errors.password && styles.inputError,
-                  ]}
-                  placeholder='Enter your password'
-                  placeholderTextColor={COLORS.tertiary}
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry={!showPassword}
-                  autoCapitalize='none'
-                />
-                <TouchableOpacity
-                  style={styles.eyeButton}
-                  onPress={() => setShowPassword(!showPassword)}
-                >
-                  <BodyText color={COLORS.tertiary} size='md'>
-                    {showPassword ? '👁️' : '👁️‍🗨️'}
+         
+          
+              <View>
+                <View style={styles.inputContainer}>
+                  <BodyText
+                    color={COLORS.primary}
+                    weight='medium'
+                    size='sm'
+                    style={styles.label}
+                  >
+                    Enter Phone Number
                   </BodyText>
+                  <TextInput
+                    style={[styles.input, errors.phone && styles.inputError]}
+                    placeholder='Enter your phone number'
+                    placeholderTextColor={COLORS.tertiary}
+                    value={phone}
+                    onChangeText={setPhone}
+                    keyboardType='phone-pad'
+                    autoCapitalize='none'
+                    autoCorrect={false}
+                  />
+                  {errors.phone && <ErrorText size='sm'>{errors.phone}</ErrorText>}
+                </View>
+                <TouchableOpacity style={styles.loginButton} onPress={handleSendOtp} disabled={isSendingOtp}>
+                  <ButtonTextPrimary size='lg'>{isSendingOtp ? 'Sending OTP...' : 'Send OTP'}</ButtonTextPrimary>
                 </TouchableOpacity>
+                <View style={styles.inlineRegisterRow}>
+                  <BodyText color={COLORS.tertiary} size='sm'>
+                    Don't have an account?{' '}
+                  </BodyText>
+                  <TouchableOpacity onPress={handleRegister}>
+                    <BodyText color={COLORS.primary} weight='semiBold' size='sm'>
+                      Register
+                    </BodyText>
+                  </TouchableOpacity>
+                </View>
+             
               </View>
-              {errors.password && (
-                <ErrorText size='sm'>{errors.password}</ErrorText>
-              )}
-            </View>
+       
 
-            {/* Forgot Password */}
-            <TouchableOpacity
-              style={styles.forgotPasswordButton}
-              onPress={handleForgotPassword}
-            >
-              <BodyText color={COLORS.primary} size='sm' weight='medium'>
-                Forgot Password?
-              </BodyText>
-            </TouchableOpacity>
-
-            {/* Login Button */}
-            <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-              <ButtonTextPrimary size='lg'>Sign In</ButtonTextPrimary>
-            </TouchableOpacity>
-
-            {/* Divider */}
-            <View style={styles.divider}>
-              <View style={styles.dividerLine} />
-              <BodyText
-                color={COLORS.tertiary}
-                size='sm'
-                style={styles.dividerText}
-              >
-                OR
-              </BodyText>
-              <View style={styles.dividerLine} />
-            </View>
-
-            {/* Register Button */}
-            <TouchableOpacity
-              style={styles.registerButton}
-              onPress={handleRegister}
-            >
-              <ButtonTextSecondary size='lg'>
-                Create New Account
-              </ButtonTextSecondary>
-            </TouchableOpacity>
+         
           </View>
         </View>
       </ScrollView>
@@ -265,14 +257,26 @@ const styles = StyleSheet.create({
   backButton: {
     padding: 8,
   },
+  headerCenter: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  headerLogo: {
+    width: 24,
+    height: 24,
+    marginRight: 8,
+  },
   content: {
     flex: 1,
     paddingHorizontal: 32,
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 48,
-    marginTop: 32,
+    marginBottom: 24,
+    marginTop: 16,
   },
   subtitle: {
     marginTop: 8,
@@ -353,6 +357,12 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
+  },
+  inlineRegisterRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 8,
   },
 });
 
