@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, StatusBar, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../navigation/AppNavigator';
 import { COLORS } from '../../constants/colors';
 import { H2, BodyText } from '../../components/Text';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -14,7 +16,7 @@ import messaging from '@react-native-firebase/messaging';
 const RemindersScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [reminders, setReminders] = useState<UserReminder[]>([]);
 
   useEffect(() => {
@@ -199,7 +201,12 @@ const RemindersScreen: React.FC = () => {
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.listContainer}>
           {reminders.map((r) => (
-            <View key={r.id} style={styles.item}>
+            <TouchableOpacity
+              key={r.id}
+              onPress={() => navigation.navigate('EventDetail', { eventId: r.eventId })}
+              activeOpacity={0.7}
+              style={styles.item}
+            >
               <View style={{ flex: 1, paddingRight: 10 }}>
                 <BodyText color={COLORS.text.primary} size='sm' weight='medium'>
                   {r.title}
@@ -208,16 +215,21 @@ const RemindersScreen: React.FC = () => {
                   {new Date(r.notifyAtUTC).toLocaleString()} {r.status !== 'scheduled' ? `• ${r.status}` : ''}
                 </BodyText>
               </View>
-              {r.status === 'scheduled' && (
+              {r.status === 'scheduled' && !r.fcmSent && (
                 <TouchableOpacity
-                  onPress={() => user?.id && ReminderService.cancelReminder(user.id, r.id).catch(() => {})}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    if (user?.id) {
+                      ReminderService.cancelReminder(user.id, r.id).catch(() => {});
+                    }
+                  }}
                   style={styles.cancelBtn}
                 >
                   <Ionicons name='close' size={14} color={COLORS.error} />
                   <BodyText color={COLORS.error} size='xs' weight='semiBold'>Cancel</BodyText>
                 </TouchableOpacity>
               )}
-            </View>
+            </TouchableOpacity>
           ))}
           {reminders.length === 0 && (
             <BodyText color={COLORS.text.secondary} size='sm'>No reminders yet.</BodyText>

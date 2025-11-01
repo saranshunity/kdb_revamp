@@ -104,7 +104,7 @@ export type RootStackParamList = {
   Auth: undefined;
   Main: undefined;
   Events: undefined;
-  EventDetail: undefined;
+  EventDetail: { eventId?: string };
   Stalls: undefined;
   StallCategories: undefined;
   CheckApplicationStatus: undefined;

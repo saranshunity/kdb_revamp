@@ -699,18 +699,23 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           <View style={{ paddingHorizontal: 20, marginTop: 10 }}>
             <H5 color={COLORS.primary} weight='semiBold' size='lg'>Your Reminders</H5>
             {(reminders.slice(0, 2)).map((r) => (
-              <View key={r.id} style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                backgroundColor: COLORS.background.primary,
-                borderRadius: 12,
-                paddingVertical: 10,
-                paddingHorizontal: 12,
-                marginTop: 8,
-                borderWidth: 1,
-                borderColor: COLORS.border.light
-              }}>
+              <TouchableOpacity
+                key={r.id}
+                onPress={() => stackNavigation.navigate('EventDetail', { eventId: r.eventId })}
+                activeOpacity={0.7}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  backgroundColor: COLORS.background.primary,
+                  borderRadius: 12,
+                  paddingVertical: 10,
+                  paddingHorizontal: 12,
+                  marginTop: 8,
+                  borderWidth: 1,
+                  borderColor: COLORS.border.light
+                }}
+              >
                 <View style={{ flex: 1, paddingRight: 10 }}>
                   <BodyText color={COLORS.text.primary} size='sm' weight='medium'>
                     {r.title}
@@ -719,19 +724,26 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                     {new Date(r.notifyAtUTC).toLocaleString()}
                   </BodyText>
                 </View>
-                <TouchableOpacity
-                  onPress={() => user?.id && ReminderService.cancelReminder(user.id, r.id).catch(() => {})}
-                  style={{
-                    paddingVertical: 6,
-                    paddingHorizontal: 10,
-                    borderRadius: 8,
-                    borderWidth: 1,
-                    borderColor: COLORS.error
-                  }}
-                >
-                  <BodyText color={COLORS.error} size='xs' weight='semiBold'>Cancel</BodyText>
-                </TouchableOpacity>
-              </View>
+                {r.status === 'scheduled' && !r.fcmSent && (
+                  <TouchableOpacity
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      if (user?.id) {
+                        ReminderService.cancelReminder(user.id, r.id).catch(() => {});
+                      }
+                    }}
+                    style={{
+                      paddingVertical: 6,
+                      paddingHorizontal: 10,
+                      borderRadius: 8,
+                      borderWidth: 1,
+                      borderColor: COLORS.error
+                    }}
+                  >
+                    <BodyText color={COLORS.error} size='xs' weight='semiBold'>Cancel</BodyText>
+                  </TouchableOpacity>
+                )}
+              </TouchableOpacity>
             ))}
             {reminders.length > 2 && (
               <TouchableOpacity
