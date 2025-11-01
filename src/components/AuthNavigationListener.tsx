@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
-import ReminderService from '../services/ReminderService';
+import FCMService from '../services/FCMService';
 
 const AuthNavigationListener: React.FC = () => {
   const navigation = useNavigation();
@@ -17,9 +17,9 @@ const AuthNavigationListener: React.FC = () => {
           index: 0,
           routes: [{ name: 'Main' }],
         });
-        // Hydrate reminders for this user
+        // Register FCM token for this user
         if (user?.id) {
-          ReminderService.hydrateFutureReminders(user.id).catch(() => {});
+          FCMService.registerToken(user.id).catch(() => {});
         }
       } else {
         // User is not logged in, navigate to Auth (Login)

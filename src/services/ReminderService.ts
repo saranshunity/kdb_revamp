@@ -1,5 +1,4 @@
 import firestore from '@react-native-firebase/firestore';
-import NotificationService from './NotificationService';
 
 export type ReminderStatus = 'scheduled' | 'cancelled';
 
@@ -12,8 +11,8 @@ export interface UserReminder {
   notifyAtUTC: string; // ISO
   status: ReminderStatus;
   createdAt: any;
-  notificationId?: string; // local notification id on device
-  channelId?: string; // android channel id
+  createdAtMs?: number;
+  fcmSent?: boolean; // whether FCM notification was sent
 }
 
 type CreateReminderParams = {
@@ -24,17 +23,6 @@ type CreateReminderParams = {
   leadMinutes: number; // minutes before event start
   location?: string;
 };
-
-// Note: local notification scheduling is intentionally abstracted; integrate your
-// preferred library (e.g., Notifee) inside `scheduleLocalNotification`/`cancelLocalNotification`.
-
-async function scheduleLocalNotification(params: { title: string; body: string; notifyAt: Date; androidChannelId?: string }): Promise<string> {
-  return NotificationService.scheduleLocalNotification(params);
-}
-
-async function cancelLocalNotification(notificationId?: string): Promise<void> {
-  return NotificationService.cancelLocalNotification(notificationId);
-}
 
 function toDateFromUTC(iso: string): Date {
   return new Date(iso);
@@ -56,6 +44,14 @@ class ReminderService {
     const notifyAt = new Date(eventStart.getTime() - leadMinutes * 60 * 1000);
     const notifyAtUTC = toISOStringUTC(notifyAt);
 
+    console.log('ReminderService.createReminder', {
+      eventStartAtUTC,
+      eventStartLocal: new Date(eventStartAtUTC).toLocaleString(),
+      leadMinutes,
+      notifyAtUTC,
+      notifyAtLocal: new Date(notifyAtUTC).toLocaleString(),
+    });
+
     // Prevent duplicates: if a scheduled reminder for this event already exists, return existing id
     const existingSnap = await this.remindersCol(userId)
       .where('eventId', '==', eventId)
@@ -67,14 +63,7 @@ class ReminderService {
       return existing.id;
     }
 
-    const body = location ? `${location} • Starts soon` : 'Starts soon';
-    const notificationId = await scheduleLocalNotification({
-      title,
-      body,
-      notifyAt,
-      androidChannelId: 'reminders',
-    });
-
+    // Store reminder in Firestore - Cloud Function will send FCM notification at notifyAtUTC
     const docRef = await this.remindersCol(userId).add({
       eventId,
       title,
@@ -83,8 +72,8 @@ class ReminderService {
       notifyAtUTC,
       status: 'scheduled',
       createdAt: firestore.FieldValue.serverTimestamp(),
-      notificationId,
-      channelId: 'reminders',
+      createdAtMs: Date.now(),
+      fcmSent: false,
     });
 
     return docRef.id;
@@ -94,32 +83,8 @@ class ReminderService {
     const docRef = this.remindersCol(userId).doc(reminderId);
     const snap = await docRef.get();
     if (!snap.exists) return;
-    const data = snap.data() as Partial<UserReminder>;
-    await cancelLocalNotification(data.notificationId);
+    // Just update status - Cloud Function won't send FCM for cancelled reminders
     await docRef.update({ status: 'cancelled' });
-  }
-
-  async hydrateFutureReminders(userId: string): Promise<void> {
-    const nowIso = new Date().toISOString();
-    const qs = await this.remindersCol(userId)
-      .where('status', '==', 'scheduled')
-      .where('notifyAtUTC', '>=', nowIso)
-      .get();
-
-    for (const doc of qs.docs) {
-      const r = doc.data() as UserReminder;
-      // If a local notification id is missing, schedule it now
-      if (!r.notificationId) {
-        const notifyAt = toDateFromUTC(r.notifyAtUTC);
-        const notificationId = await scheduleLocalNotification({
-          title: r.title,
-          body: r.location ? `${r.location} • Starts soon` : 'Starts soon',
-          notifyAt,
-          androidChannelId: r.channelId || 'reminders',
-        });
-        await doc.ref.update({ notificationId });
-      }
-    }
   }
 
   subscribeToReminders(
@@ -127,7 +92,7 @@ class ReminderService {
     onChange: (reminders: UserReminder[]) => void,
   ): () => void {
     return this.remindersCol(userId)
-      .orderBy('notifyAtUTC', 'asc')
+      .orderBy('createdAtMs', 'desc')
       .onSnapshot((snapshot) => {
         const list: UserReminder[] = snapshot.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
         onChange(list);

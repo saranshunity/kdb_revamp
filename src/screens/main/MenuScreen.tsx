@@ -76,6 +76,12 @@ const MenuScreen: React.FC<MenuScreenProps> = ({ navigation }) => {
         onPress: () => stackNavigation.navigate('Permissions'),
       },
       {
+        id: 'reminders',
+        title: 'Reminders',
+        icon: 'notifications-outline',
+        onPress: () => stackNavigation.navigate('Reminders' as any),
+      },
+      {
         id: 'settings',
         title: 'Settings',
         icon: 'settings-outline',

@@ -13,7 +13,9 @@ import { firebase } from './src/firebaseConfig';
 import { AuthProvider } from './src/contexts/AuthContext';
 import { NoInternetProvider } from './src/contexts/NoInternetContext';
 import GlobalNoInternetBottomSheet from './src/components/GlobalNoInternetBottomSheet';
+import FCMService from './src/services/FCMService';
 import NotificationService from './src/services/NotificationService';
+import messaging from '@react-native-firebase/messaging';
 
 function App(): React.JSX.Element {
   useEffect(() => {
@@ -26,8 +28,41 @@ function App(): React.JSX.Element {
     }
   }, []);
   useEffect(() => {
-    // Ensure notification system is ready (channels, permissions)
+    // Initialize notification service FIRST (creates Android channel)
     NotificationService.init();
+    console.log('✅ NotificationService initialized - channel created');
+    
+    // Setup FCM foreground handler
+    const unsubscribe = FCMService.setupForegroundHandler((remoteMessage: any) => {
+      console.log('🔔 FCM foreground message received!', JSON.stringify(remoteMessage, null, 2));
+      Alert.alert('FCM Received', `Title: ${remoteMessage.notification?.title}\nBody: ${remoteMessage.notification?.body}`);
+      
+      if (remoteMessage.notification) {
+        // Display notification using local notification service (for Android foreground)
+        NotificationService.pingNow(
+          remoteMessage.notification.title || 'Reminder',
+          remoteMessage.notification.body || ''
+        ).catch((e) => {
+          console.error('Error showing notification:', e);
+        });
+      }
+    });
+
+    // Handle notification tap when app is opened from background
+    messaging().onNotificationOpenedApp((remoteMessage: any) => {
+      console.log('Notification opened app:', remoteMessage);
+    });
+
+    // Handle notification tap when app is opened from quit state
+    messaging()
+      .getInitialNotification()
+      .then((remoteMessage: any) => {
+        if (remoteMessage) {
+          console.log('Notification opened from quit:', remoteMessage);
+        }
+      });
+
+    return () => unsubscribe();
   }, []);
   return (
     <SafeAreaProvider>

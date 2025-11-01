@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { View, StatusBar, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, StatusBar, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { COLORS } from '../../constants/colors';
 import { H2, BodyText } from '../../components/Text';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import ReminderService, { UserReminder } from '../../services/ReminderService';
-import NotificationService from '../../services/NotificationService';
+import FCMService from '../../services/FCMService';
 import { useAuth } from '../../contexts/AuthContext';
+import firestore from '@react-native-firebase/firestore';
+import messaging from '@react-native-firebase/messaging';
 
 const RemindersScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
@@ -24,15 +26,65 @@ const RemindersScreen: React.FC = () => {
   const addTestReminder = async () => {
     if (!user?.id) return;
     const now = new Date();
-    const eventStart = new Date(now.getTime() + 2 * 60 * 1000); // in 2 minutes
+    const eventStart = new Date(now.getTime() + 11 * 60 * 1000); // in 11 minutes
+    Alert.alert('Adding test reminder', JSON.stringify({
+      now: now.toISOString(),
+      eventStart: eventStart.toISOString(),
+      leadMinutes: 10,
+    }));
     await ReminderService.createReminder({
       userId: user.id,
       eventId: 'test-event',
       title: 'Test Reminder',
       location: 'Kurukshetra',
       eventStartAtUTC: eventStart.toISOString(),
-      leadMinutes: 1,
+      leadMinutes: 10,
     }).catch(() => {});
+  };
+
+  const showFCMToken = async () => {
+    if (!user?.id) return;
+    try {
+      // Check permission status
+      const authStatus = await messaging().hasPermission();
+      const hasPermission = authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+                            authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+      
+      // Get current token from device
+      const currentToken = await messaging().getToken();
+      
+      // Get FCM token from Firestore (already registered on login)
+      const userDoc = await firestore().collection('users').doc(user.id).get();
+      const fcmToken = userDoc.data()?.fcmToken;
+      
+      const statusMsg = `Permission: ${hasPermission ? '✅ Granted' : '❌ Denied'}\n` +
+                        `Current Token: ${currentToken ? currentToken.substring(0, 30) + '...' : 'null'}\n` +
+                        `Stored Token: ${fcmToken ? fcmToken.substring(0, 30) + '...' : 'null'}`;
+      
+      if (!hasPermission) {
+        Alert.alert('FCM Status', statusMsg + '\n\n⚠️ Permission denied. Please enable notifications in settings.');
+        return;
+      }
+      
+      if (!fcmToken || !currentToken) {
+        // Register token if not exists
+        const token = await FCMService.registerToken(user.id);
+        if (token) {
+          Alert.alert('FCM Token Registered', `Token: ${token.substring(0, 50)}...\n\nFull token saved in Firestore.`);
+        } else {
+          Alert.alert('Error', 'Failed to get FCM token. Check permissions.');
+        }
+      } else {
+        Alert.alert(
+          'FCM Token',
+          `${statusMsg}\n\nFull Token:\n${currentToken}\n\nCopy this to test in Firebase Console → Cloud Messaging`,
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (e: any) {
+      Alert.alert('Error', `Failed: ${e?.message || 'Unknown error'}`);
+      console.error('FCM token error:', e);
+    }
   };
 
   return (
@@ -50,9 +102,12 @@ const RemindersScreen: React.FC = () => {
       </View>
 
       <View style={{ paddingHorizontal: 20, marginBottom: 8 }}>
-        <TouchableOpacity onPress={() => NotificationService.pingNow().catch(() => {})}>
-          <BodyText color={COLORS.primary} size='xs' weight='semiBold'>Send Test Notification Now</BodyText>
+        <TouchableOpacity onPress={showFCMToken} style={{ marginBottom: 8 }}>
+          <BodyText color={COLORS.primary} size='xs' weight='semiBold'>Show FCM Token & Status</BodyText>
         </TouchableOpacity>
+        <BodyText color={COLORS.text.secondary} size='xxs'>
+          💡 Test: Send from Firebase Console → Cloud Messaging → Send test message
+        </BodyText>
       </View>
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
