@@ -24,22 +24,100 @@ const RemindersScreen: React.FC = () => {
   }, [user?.id]);
 
   const addTestReminder = async () => {
+    if (!user?.id) {
+      Alert.alert('Error', 'Please sign in first');
+      return;
+    }
+    
+    try {
+      const now = new Date();
+      // Create reminder that's already due (1 minute ago) for immediate testing
+      // This way, when Cloud Function runs, it will immediately send notification
+      const eventStart = new Date(now.getTime() + 5 * 60 * 1000); // event in 5 minutes
+      const leadMinutes = 6; // notify 6 minutes before = 1 minute ago (already due!)
+      
+      const reminderId = await ReminderService.createReminder({
+        userId: user.id,
+        eventId: `test-event-${Date.now()}`,
+        title: 'Test Reminder',
+        location: 'Kurukshetra',
+        eventStartAtUTC: eventStart.toISOString(),
+        leadMinutes,
+      });
+      
+      const notifyAt = new Date(eventStart.getTime() - leadMinutes * 60 * 1000);
+      Alert.alert(
+        '✅ Test Reminder Added',
+        `Notification time: ${notifyAt.toLocaleString()}\n` +
+        `(Already due - will trigger immediately)\n\n` +
+        `📱 Options:\n` +
+        `1. Wait ~5 min for scheduled run\n` +
+        `2. Trigger manually: Firebase Console → Functions → sendReminderNotifications → Run now`
+      );
+    } catch (error: any) {
+      Alert.alert('Error', `Failed to create reminder: ${error?.message || 'Unknown error'}`);
+    }
+  };
+
+  const checkReminderStatus = async () => {
     if (!user?.id) return;
-    const now = new Date();
-    const eventStart = new Date(now.getTime() + 11 * 60 * 1000); // in 11 minutes
-    Alert.alert('Adding test reminder', JSON.stringify({
-      now: now.toISOString(),
-      eventStart: eventStart.toISOString(),
-      leadMinutes: 10,
-    }));
-    await ReminderService.createReminder({
-      userId: user.id,
-      eventId: 'test-event',
-      title: 'Test Reminder',
-      location: 'Kurukshetra',
-      eventStartAtUTC: eventStart.toISOString(),
-      leadMinutes: 10,
-    }).catch(() => {});
+    try {
+      const nowISO = new Date().toISOString();
+      const remindersSnapshot = await firestore()
+        .collectionGroup('reminders')
+        .where('status', '==', 'scheduled')
+        .where('notifyAtUTC', '<=', nowISO)
+        .where('fcmSent', '==', false)
+        .limit(5)
+        .get();
+
+      const userReminders = remindersSnapshot.docs
+        .filter(doc => doc.ref.path.includes(`users/${user.id}/reminders`))
+        .map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+      if (userReminders.length === 0) {
+        Alert.alert(
+          'Reminder Status',
+          'No due reminders found.\n\n' +
+          'Possible reasons:\n' +
+          '1. Reminder already sent (fcmSent=true)\n' +
+          '2. Reminder not yet due\n' +
+          '3. Check Firebase Console → Functions → Logs for errors'
+        );
+      } else {
+        const statusMsg = userReminders.map((r: any) => 
+          `• ${r.title}\n  Due: ${new Date(r.notifyAtUTC).toLocaleString()}\n  Status: ${r.fcmSent ? 'Sent' : 'Pending'}`
+        ).join('\n\n');
+        
+        Alert.alert(
+          'Due Reminders Found',
+          `${userReminders.length} reminder(s) due:\n\n${statusMsg}\n\n` +
+          'Cloud Function should process these in the next run (~5 min)'
+        );
+      }
+    } catch (e: any) {
+      const errorMsg = e?.message || 'Unknown error';
+      let alertMsg = `Error: ${errorMsg}`;
+      
+      // Check if it's an index error
+      if (errorMsg.includes('index')) {
+        alertMsg += '\n\n⚠️ Index Issue:\n';
+        alertMsg += 'Required index:\n';
+        alertMsg += 'Collection: reminders (collection group)\n';
+        alertMsg += 'Fields:\n';
+        alertMsg += '1. status (Ascending)\n';
+        alertMsg += '2. fcmSent (Ascending)\n';
+        alertMsg += '3. notifyAtUTC (Ascending)\n\n';
+        alertMsg += 'Check Firebase Console → Firestore → Indexes\n';
+        alertMsg += 'Make sure the index shows "Enabled" (not "Building")';
+      }
+      
+      Alert.alert('Error', alertMsg);
+      console.error('Reminder status check error:', e);
+    }
   };
 
   const showFCMToken = async () => {
@@ -105,7 +183,15 @@ const RemindersScreen: React.FC = () => {
         <TouchableOpacity onPress={showFCMToken} style={{ marginBottom: 8 }}>
           <BodyText color={COLORS.primary} size='xs' weight='semiBold'>Show FCM Token & Status</BodyText>
         </TouchableOpacity>
-        <BodyText color={COLORS.text.secondary} size='xxs'>
+        <TouchableOpacity 
+          onPress={checkReminderStatus} 
+          style={{ marginBottom: 8, marginTop: 8 }}
+        >
+          <BodyText color={COLORS.primary} size='xs' weight='semiBold'>
+            🔍 Check Reminder Status
+          </BodyText>
+        </TouchableOpacity>
+        <BodyText color={COLORS.text.secondary} size='xs'>
           💡 Test: Send from Firebase Console → Cloud Messaging → Send test message
         </BodyText>
       </View>

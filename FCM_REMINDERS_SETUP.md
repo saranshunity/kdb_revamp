@@ -73,7 +73,22 @@ cd ..
 
 **Note**: These dependencies (`firebase-functions` and `firebase-admin`) go in `functions/package.json`, NOT in the main app `package.json`. When you run `firebase init functions`, it will create a separate `functions/package.json` file.
 
-#### D. Deploy
+#### D. Deploy Firestore Indexes (REQUIRED)
+
+The Cloud Function uses a `collectionGroup` query that requires a composite index:
+
+```bash
+firebase deploy --only firestore:indexes
+```
+
+**OR** create manually in Firebase Console:
+- Go to Firestore → Indexes → Create Index
+- Collection ID: `reminders` (collection group)
+- Fields: `status` (Asc), `notifyAtUTC` (Asc), `fcmSent` (Asc)
+
+Wait for index to build (usually 1-2 minutes).
+
+#### E. Deploy Cloud Function
 
 ```bash
 firebase deploy --only functions
