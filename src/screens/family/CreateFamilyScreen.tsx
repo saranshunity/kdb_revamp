@@ -9,9 +9,11 @@ import {
   TextInput,
   Alert,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { COLORS } from '../../constants/colors';
@@ -20,117 +22,89 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import FamilyService from '../../services/FamilyService';
 import { useAuth } from '../../contexts/AuthContext';
 
-type AddFamilyMemberScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'AddFamilyMember'>;
+type CreateFamilyScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'CreateFamily'>;
 
 const RELATION_OPTIONS = [
-  "Spouse", "Son", "Daughter", "Father", "Mother", 
+  "Father", "Mother", "Self", "Spouse", "Son", "Daughter", 
   "Brother", "Sister", "Grandfather", "Grandmother", 
   "Uncle", "Aunt", "Cousin", "Other"
 ];
 
-const AddFamilyMemberScreen = () => {
+const CreateFamilyScreen = () => {
   const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
+    familyName: "",
     relation: "",
     customRelation: "",
   });
   const [showRelationPicker, setShowRelationPicker] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation<AddFamilyMemberScreenNavigationProp>();
-  const route = useRoute();
+  const navigation = useNavigation<CreateFamilyScreenNavigationProp>();
   const { user } = useAuth();
-  
-  // Get familyId from route params or use default (for now, you might want to pass it)
-  const familyId = (route.params as any)?.familyId || null;
 
   const validateForm = () => {
     const newErrors: {[key: string]: string} = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
-    }
-
-    if (!formData.phone.trim()) {
-      newErrors.phone = "Phone number is required";
-    } else if (!/^\+?[\d\s-()]+$/.test(formData.phone)) {
-      newErrors.phone = "Please enter a valid phone number";
+    if (!formData.familyName.trim()) {
+      newErrors.familyName = "Family name is required";
     }
 
     if (!formData.relation) {
-      newErrors.relation = "Please select a relation";
+      newErrors.relation = "Please select your relation";
     }
 
     if (formData.relation === "Other" && !formData.customRelation.trim()) {
-      newErrors.customRelation = "Please specify the relation";
+      newErrors.customRelation = "Please specify your relation";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSave = async () => {
+  const handleCreate = async () => {
     if (!validateForm()) {
       return;
     }
 
-    if (!user?.id) {
-      Alert.alert('Error', 'Please log in to add family members');
+    if (!user?.id || !user?.phoneNumber) {
+      Alert.alert('Error', 'Please log in to create a family');
       return;
     }
 
-    if (!familyId) {
-      Alert.alert('Error', 'Family ID is missing. Please try again.');
-      return;
-    }
-
-    setIsSubmitting(true);
+    setIsCreating(true);
 
     try {
       const relation = formData.relation === 'Other' ? formData.customRelation : formData.relation;
       
-      const result = await FamilyService.addMember(
-        familyId,
-        formData.phone,
-        relation,
+      const familyId = await FamilyService.createFamily(
+        formData.familyName.trim(),
         user.id,
-        formData.name
+        relation,
+        user.phoneNumber
       );
 
-      if (result.success) {
-        let message = '';
-        if (result.status === 'added') {
-          message = `${formData.name} has been added to your family!`;
-        } else if (result.status === 'invited') {
-          message = `Invitation sent to ${formData.phone}. They will be added when they register.`;
-        }
+      // Get the created family to show code
+      const family = await FamilyService.getFamilyById(familyId);
 
-        Alert.alert(
-          'Success',
-          message,
-          [
-            {
-              text: 'OK',
-              onPress: () => navigation.goBack()
-            }
-          ]
-        );
-      } else {
-        Alert.alert(
-          'Error',
-          result.message || 'Failed to add family member. Please try again.'
-        );
-      }
+      Alert.alert(
+        'Family Created!',
+        `Your family "${formData.familyName.trim()}" has been created!\n\nFamily Code: ${family?.code}\n\nShare this code with family members so they can join.`,
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.replace('FamilyDashboard', { familyId } as any)
+          }
+        ]
+      );
     } catch (error: any) {
-      console.error('Error adding family member:', error);
+      console.error('Error creating family:', error);
       Alert.alert(
         'Error',
-        error.message || 'Failed to add family member. Please try again.'
+        error.message || 'Failed to create family. Please try again.'
       );
     } finally {
-      setIsSubmitting(false);
+      setIsCreating(false);
     }
   };
 
@@ -150,7 +124,10 @@ const AddFamilyMemberScreen = () => {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={[styles.container, { paddingTop: insets.top }]}
+    >
       <StatusBar barStyle='dark-content' backgroundColor={COLORS.background.primary} />
       
       {/* Header */}
@@ -161,61 +138,40 @@ const AddFamilyMemberScreen = () => {
         >
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.header}>Add Family Member</Text>
-        <TouchableOpacity onPress={handleSave} disabled={isSubmitting}>
-          {isSubmitting ? (
-            <ActivityIndicator size="small" color={COLORS.primary} />
-          ) : (
-            <Text style={styles.saveButton}>Save</Text>
-          )}
-        </TouchableOpacity>
+        <Text style={styles.header}>Create Your Family</Text>
+        <View style={styles.placeholder} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Photo Section */}
-        <View style={styles.photoSection}>
-          <View style={styles.photoContainer}>
-            <View style={styles.photoPlaceholder}>
-              <Ionicons name="camera" size={32} color={COLORS.text.tertiary} />
-            </View>
-            <TouchableOpacity style={styles.photoButton}>
-              <Text style={styles.photoButtonText}>Add Photo</Text>
-            </TouchableOpacity>
+        {/* Info Card */}
+        <View style={styles.infoCard}>
+          <Ionicons name="information-circle" size={20} color={COLORS.primary} />
+          <View style={styles.infoContent}>
+            <Text style={styles.infoTitle}>Create a Family Group</Text>
+            <Text style={styles.infoText}>
+              You'll receive a unique 6-digit code that you can share with family members. They can use this code to join your family group.
+            </Text>
           </View>
         </View>
 
         {/* Form Fields */}
         <View style={styles.formSection}>
-          {/* Name Field */}
+          {/* Family Name Field */}
           <View style={styles.fieldContainer}>
-            <Text style={styles.fieldLabel}>Full Name *</Text>
+            <Text style={styles.fieldLabel}>Family Name *</Text>
             <TextInput
-              style={[styles.textInput, errors.name && styles.errorInput]}
-              placeholder="Enter full name"
+              style={[styles.textInput, errors.familyName && styles.errorInput]}
+              placeholder="e.g., Sharma Family"
               placeholderTextColor={COLORS.text.tertiary}
-              value={formData.name}
-              onChangeText={(value) => handleInputChange('name', value)}
+              value={formData.familyName}
+              onChangeText={(value) => handleInputChange('familyName', value)}
             />
-            {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
-          </View>
-
-          {/* Phone Field */}
-          <View style={styles.fieldContainer}>
-            <Text style={styles.fieldLabel}>Phone Number *</Text>
-            <TextInput
-              style={[styles.textInput, errors.phone && styles.errorInput]}
-              placeholder="+91 98765 43210"
-              placeholderTextColor={COLORS.text.tertiary}
-              value={formData.phone}
-              onChangeText={(value) => handleInputChange('phone', value)}
-              keyboardType="phone-pad"
-            />
-            {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
+            {errors.familyName && <Text style={styles.errorText}>{errors.familyName}</Text>}
           </View>
 
           {/* Relation Field */}
           <View style={styles.fieldContainer}>
-            <Text style={styles.fieldLabel}>Relation *</Text>
+            <Text style={styles.fieldLabel}>Your Relation *</Text>
             <TouchableOpacity
               style={[styles.relationButton, errors.relation && styles.errorInput]}
               onPress={() => setShowRelationPicker(true)}
@@ -224,7 +180,7 @@ const AddFamilyMemberScreen = () => {
                 styles.relationButtonText,
                 !formData.relation && styles.placeholderText
               ]}>
-                {formData.relation || "Select relation"}
+                {formData.relation || "Select your relation"}
               </Text>
               <Ionicons name="chevron-down" size={20} color={COLORS.text.secondary} />
             </TouchableOpacity>
@@ -234,7 +190,7 @@ const AddFamilyMemberScreen = () => {
             {formData.relation === "Other" && (
               <TextInput
                 style={[styles.textInput, styles.customRelationInput, errors.customRelation && styles.errorInput]}
-                placeholder="Specify relation"
+                placeholder="Specify your relation"
                 placeholderTextColor={COLORS.text.tertiary}
                 value={formData.customRelation}
                 onChangeText={(value) => handleInputChange('customRelation', value)}
@@ -242,19 +198,26 @@ const AddFamilyMemberScreen = () => {
             )}
             {errors.customRelation && <Text style={styles.errorText}>{errors.customRelation}</Text>}
           </View>
-
-          {/* Location Sharing Info */}
-          <View style={styles.infoCard}>
-            <Ionicons name="information-circle" size={20} color={COLORS.primary} />
-            <View style={styles.infoContent}>
-              <Text style={styles.infoTitle}>Location Sharing</Text>
-              <Text style={styles.infoText}>
-                This member will be able to share their live location with you. 
-                They can control their privacy settings after being added.
-              </Text>
-            </View>
-          </View>
         </View>
+
+        {/* Create Button */}
+        <TouchableOpacity
+          style={[
+            styles.createButton,
+            (!formData.familyName.trim() || !formData.relation || isCreating) && styles.createButtonDisabled
+          ]}
+          onPress={handleCreate}
+          disabled={!formData.familyName.trim() || !formData.relation || isCreating}
+        >
+          {isCreating ? (
+            <ActivityIndicator size="small" color={COLORS.white} />
+          ) : (
+            <>
+              <Ionicons name="add-circle" size={20} color={COLORS.white} />
+              <Text style={styles.createButtonText}>Create Family</Text>
+            </>
+          )}
+        </TouchableOpacity>
       </ScrollView>
 
       {/* Relation Picker Modal */}
@@ -284,7 +247,7 @@ const AddFamilyMemberScreen = () => {
           </View>
         </View>
       )}
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -316,44 +279,39 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.gilroy.bold,
     color: COLORS.text.primary,
   },
-  saveButton: {
-    fontSize: FONT_SIZES.md,
-    fontFamily: FONTS.gilroy.semiBold,
-    color: COLORS.primary,
+  placeholder: {
+    width: 40,
   },
   content: {
     flex: 1,
     paddingHorizontal: 20,
   },
-  photoSection: {
-    alignItems: 'center',
-    paddingVertical: 24,
+  infoCard: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.background.appColor + '10',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 24,
+    marginBottom: 24,
   },
-  photoContainer: {
-    alignItems: 'center',
+  infoContent: {
+    flex: 1,
+    marginLeft: 12,
   },
-  photoPlaceholder: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: COLORS.background.tertiary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  photoButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: COLORS.background.appColor,
-    borderRadius: 20,
-  },
-  photoButtonText: {
+  infoTitle: {
     fontSize: FONT_SIZES.sm,
     fontFamily: FONTS.gilroy.semiBold,
-    color: COLORS.white,
+    color: COLORS.text.primary,
+    marginBottom: 4,
+  },
+  infoText: {
+    fontSize: FONT_SIZES.xs,
+    fontFamily: FONTS.gilroy.regular,
+    color: COLORS.text.secondary,
+    lineHeight: 18,
   },
   formSection: {
-    paddingBottom: 24,
+    marginBottom: 24,
   },
   fieldContainer: {
     marginBottom: 20,
@@ -406,28 +364,23 @@ const styles = StyleSheet.create({
   customRelationInput: {
     marginTop: 12,
   },
-  infoCard: {
+  createButton: {
     flexDirection: 'row',
-    backgroundColor: COLORS.background.appColor + '10',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.background.appColor,
     borderRadius: 12,
-    padding: 16,
-    marginTop: 8,
+    paddingVertical: 16,
+    marginBottom: 32,
+    gap: 8,
   },
-  infoContent: {
-    flex: 1,
-    marginLeft: 12,
+  createButtonDisabled: {
+    opacity: 0.5,
   },
-  infoTitle: {
-    fontSize: FONT_SIZES.sm,
-    fontFamily: FONTS.gilroy.semiBold,
-    color: COLORS.text.primary,
-    marginBottom: 4,
-  },
-  infoText: {
-    fontSize: FONT_SIZES.xs,
-    fontFamily: FONTS.gilroy.regular,
-    color: COLORS.text.secondary,
-    lineHeight: 18,
+  createButtonText: {
+    fontSize: FONT_SIZES.md,
+    fontFamily: FONTS.gilroy.bold,
+    color: COLORS.white,
   },
   modalOverlay: {
     position: 'absolute',
@@ -478,4 +431,5 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddFamilyMemberScreen;
+export default CreateFamilyScreen;
+

@@ -9,9 +9,11 @@ import {
   TextInput,
   Alert,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { COLORS } from '../../constants/colors';
@@ -20,117 +22,103 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import FamilyService from '../../services/FamilyService';
 import { useAuth } from '../../contexts/AuthContext';
 
-type AddFamilyMemberScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'AddFamilyMember'>;
+type JoinFamilyScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'JoinFamily'>;
 
 const RELATION_OPTIONS = [
-  "Spouse", "Son", "Daughter", "Father", "Mother", 
+  "Father", "Mother", "Son", "Daughter", 
   "Brother", "Sister", "Grandfather", "Grandmother", 
   "Uncle", "Aunt", "Cousin", "Other"
 ];
 
-const AddFamilyMemberScreen = () => {
+const JoinFamilyScreen = () => {
   const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
+    familyCode: "",
+    adminPhone: "",
     relation: "",
     customRelation: "",
   });
   const [showRelationPicker, setShowRelationPicker] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isJoining, setIsJoining] = useState(false);
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation<AddFamilyMemberScreenNavigationProp>();
-  const route = useRoute();
+  const navigation = useNavigation<JoinFamilyScreenNavigationProp>();
   const { user } = useAuth();
-  
-  // Get familyId from route params or use default (for now, you might want to pass it)
-  const familyId = (route.params as any)?.familyId || null;
 
   const validateForm = () => {
     const newErrors: {[key: string]: string} = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
+    if (!formData.familyCode.trim()) {
+      newErrors.familyCode = "Family code is required";
+    } else if (formData.familyCode.trim().length !== 6) {
+      newErrors.familyCode = "Family code must be 6 characters";
     }
 
-    if (!formData.phone.trim()) {
-      newErrors.phone = "Phone number is required";
-    } else if (!/^\+?[\d\s-()]+$/.test(formData.phone)) {
-      newErrors.phone = "Please enter a valid phone number";
+    if (!formData.adminPhone.trim()) {
+      newErrors.adminPhone = "Admin phone number is required";
+    } else if (!/^\+?[\d\s-()]+$/.test(formData.adminPhone)) {
+      newErrors.adminPhone = "Please enter a valid phone number";
     }
 
     if (!formData.relation) {
-      newErrors.relation = "Please select a relation";
+      newErrors.relation = "Please select your relation";
     }
 
     if (formData.relation === "Other" && !formData.customRelation.trim()) {
-      newErrors.customRelation = "Please specify the relation";
+      newErrors.customRelation = "Please specify your relation";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSave = async () => {
+  const handleJoin = async () => {
     if (!validateForm()) {
       return;
     }
 
-    if (!user?.id) {
-      Alert.alert('Error', 'Please log in to add family members');
+    if (!user?.id || !user?.phoneNumber) {
+      Alert.alert('Error', 'Please log in to join a family');
       return;
     }
 
-    if (!familyId) {
-      Alert.alert('Error', 'Family ID is missing. Please try again.');
-      return;
-    }
-
-    setIsSubmitting(true);
+    setIsJoining(true);
 
     try {
       const relation = formData.relation === 'Other' ? formData.customRelation : formData.relation;
       
-      const result = await FamilyService.addMember(
-        familyId,
-        formData.phone,
-        relation,
+      const result = await FamilyService.joinFamily(
+        formData.familyCode.trim().toUpperCase(),
+        formData.adminPhone.trim(),
         user.id,
-        formData.name
+        relation,
+        user.phoneNumber
       );
 
-      if (result.success) {
-        let message = '';
-        if (result.status === 'added') {
-          message = `${formData.name} has been added to your family!`;
-        } else if (result.status === 'invited') {
-          message = `Invitation sent to ${formData.phone}. They will be added when they register.`;
-        }
-
+      if (result.success && result.familyId) {
         Alert.alert(
-          'Success',
-          message,
+          'Success!',
+          'You have successfully joined the family!',
           [
             {
               text: 'OK',
-              onPress: () => navigation.goBack()
+              onPress: () => navigation.replace('FamilyDashboard', { familyId: result.familyId } as any)
             }
           ]
         );
       } else {
         Alert.alert(
           'Error',
-          result.message || 'Failed to add family member. Please try again.'
+          result.message || 'Failed to join family. Please check the code and admin phone number.'
         );
       }
     } catch (error: any) {
-      console.error('Error adding family member:', error);
+      console.error('Error joining family:', error);
       Alert.alert(
         'Error',
-        error.message || 'Failed to add family member. Please try again.'
+        error.message || 'Failed to join family. Please try again.'
       );
     } finally {
-      setIsSubmitting(false);
+      setIsJoining(false);
     }
   };
 
@@ -143,6 +131,11 @@ const AddFamilyMemberScreen = () => {
   };
 
   const handleInputChange = (field: string, value: string) => {
+    // Auto-uppercase family code
+    if (field === 'familyCode') {
+      value = value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+    }
+    
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: "" }));
@@ -150,7 +143,10 @@ const AddFamilyMemberScreen = () => {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={[styles.container, { paddingTop: insets.top }]}
+    >
       <StatusBar barStyle='dark-content' backgroundColor={COLORS.background.primary} />
       
       {/* Header */}
@@ -161,61 +157,59 @@ const AddFamilyMemberScreen = () => {
         >
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.header}>Add Family Member</Text>
-        <TouchableOpacity onPress={handleSave} disabled={isSubmitting}>
-          {isSubmitting ? (
-            <ActivityIndicator size="small" color={COLORS.primary} />
-          ) : (
-            <Text style={styles.saveButton}>Save</Text>
-          )}
-        </TouchableOpacity>
+        <Text style={styles.header}>Join Family</Text>
+        <View style={styles.placeholder} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Photo Section */}
-        <View style={styles.photoSection}>
-          <View style={styles.photoContainer}>
-            <View style={styles.photoPlaceholder}>
-              <Ionicons name="camera" size={32} color={COLORS.text.tertiary} />
-            </View>
-            <TouchableOpacity style={styles.photoButton}>
-              <Text style={styles.photoButtonText}>Add Photo</Text>
-            </TouchableOpacity>
+        {/* Info Card */}
+        <View style={styles.infoCard}>
+          <Ionicons name="information-circle" size={20} color={COLORS.primary} />
+          <View style={styles.infoContent}>
+            <Text style={styles.infoTitle}>Join an Existing Family</Text>
+            <Text style={styles.infoText}>
+              Ask the family admin for the 6-digit family code and their phone number. Enter both to join the family group.
+            </Text>
           </View>
         </View>
 
         {/* Form Fields */}
         <View style={styles.formSection}>
-          {/* Name Field */}
+          {/* Family Code Field */}
           <View style={styles.fieldContainer}>
-            <Text style={styles.fieldLabel}>Full Name *</Text>
+            <Text style={styles.fieldLabel}>Family Code *</Text>
             <TextInput
-              style={[styles.textInput, errors.name && styles.errorInput]}
-              placeholder="Enter full name"
+              style={[styles.textInput, styles.codeInput, errors.familyCode && styles.errorInput]}
+              placeholder="ABC123"
               placeholderTextColor={COLORS.text.tertiary}
-              value={formData.name}
-              onChangeText={(value) => handleInputChange('name', value)}
+              value={formData.familyCode}
+              onChangeText={(value) => handleInputChange('familyCode', value)}
+              maxLength={6}
+              autoCapitalize="characters"
+              autoCorrect={false}
             />
-            {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
+            {errors.familyCode && <Text style={styles.errorText}>{errors.familyCode}</Text>}
+            <Text style={styles.hintText}>Enter the 6-digit code shared by the family admin</Text>
           </View>
 
-          {/* Phone Field */}
+          {/* Admin Phone Field */}
           <View style={styles.fieldContainer}>
-            <Text style={styles.fieldLabel}>Phone Number *</Text>
+            <Text style={styles.fieldLabel}>Admin Phone Number *</Text>
             <TextInput
-              style={[styles.textInput, errors.phone && styles.errorInput]}
+              style={[styles.textInput, errors.adminPhone && styles.errorInput]}
               placeholder="+91 98765 43210"
               placeholderTextColor={COLORS.text.tertiary}
-              value={formData.phone}
-              onChangeText={(value) => handleInputChange('phone', value)}
+              value={formData.adminPhone}
+              onChangeText={(value) => handleInputChange('adminPhone', value)}
               keyboardType="phone-pad"
             />
-            {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
+            {errors.adminPhone && <Text style={styles.errorText}>{errors.adminPhone}</Text>}
+            <Text style={styles.hintText}>Enter the phone number of the family admin</Text>
           </View>
 
           {/* Relation Field */}
           <View style={styles.fieldContainer}>
-            <Text style={styles.fieldLabel}>Relation *</Text>
+            <Text style={styles.fieldLabel}>Your Relation *</Text>
             <TouchableOpacity
               style={[styles.relationButton, errors.relation && styles.errorInput]}
               onPress={() => setShowRelationPicker(true)}
@@ -224,7 +218,7 @@ const AddFamilyMemberScreen = () => {
                 styles.relationButtonText,
                 !formData.relation && styles.placeholderText
               ]}>
-                {formData.relation || "Select relation"}
+                {formData.relation || "Select your relation"}
               </Text>
               <Ionicons name="chevron-down" size={20} color={COLORS.text.secondary} />
             </TouchableOpacity>
@@ -234,7 +228,7 @@ const AddFamilyMemberScreen = () => {
             {formData.relation === "Other" && (
               <TextInput
                 style={[styles.textInput, styles.customRelationInput, errors.customRelation && styles.errorInput]}
-                placeholder="Specify relation"
+                placeholder="Specify your relation"
                 placeholderTextColor={COLORS.text.tertiary}
                 value={formData.customRelation}
                 onChangeText={(value) => handleInputChange('customRelation', value)}
@@ -242,19 +236,26 @@ const AddFamilyMemberScreen = () => {
             )}
             {errors.customRelation && <Text style={styles.errorText}>{errors.customRelation}</Text>}
           </View>
-
-          {/* Location Sharing Info */}
-          <View style={styles.infoCard}>
-            <Ionicons name="information-circle" size={20} color={COLORS.primary} />
-            <View style={styles.infoContent}>
-              <Text style={styles.infoTitle}>Location Sharing</Text>
-              <Text style={styles.infoText}>
-                This member will be able to share their live location with you. 
-                They can control their privacy settings after being added.
-              </Text>
-            </View>
-          </View>
         </View>
+
+        {/* Join Button */}
+        <TouchableOpacity
+          style={[
+            styles.joinButton,
+            (!formData.familyCode.trim() || !formData.adminPhone.trim() || !formData.relation || isJoining) && styles.joinButtonDisabled
+          ]}
+          onPress={handleJoin}
+          disabled={!formData.familyCode.trim() || !formData.adminPhone.trim() || !formData.relation || isJoining}
+        >
+          {isJoining ? (
+            <ActivityIndicator size="small" color={COLORS.white} />
+          ) : (
+            <>
+              <Ionicons name="people-circle" size={20} color={COLORS.white} />
+              <Text style={styles.joinButtonText}>Join Family</Text>
+            </>
+          )}
+        </TouchableOpacity>
       </ScrollView>
 
       {/* Relation Picker Modal */}
@@ -284,7 +285,7 @@ const AddFamilyMemberScreen = () => {
           </View>
         </View>
       )}
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -316,44 +317,39 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.gilroy.bold,
     color: COLORS.text.primary,
   },
-  saveButton: {
-    fontSize: FONT_SIZES.md,
-    fontFamily: FONTS.gilroy.semiBold,
-    color: COLORS.primary,
+  placeholder: {
+    width: 40,
   },
   content: {
     flex: 1,
     paddingHorizontal: 20,
   },
-  photoSection: {
-    alignItems: 'center',
-    paddingVertical: 24,
+  infoCard: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.background.appColor + '10',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 24,
+    marginBottom: 24,
   },
-  photoContainer: {
-    alignItems: 'center',
+  infoContent: {
+    flex: 1,
+    marginLeft: 12,
   },
-  photoPlaceholder: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: COLORS.background.tertiary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  photoButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: COLORS.background.appColor,
-    borderRadius: 20,
-  },
-  photoButtonText: {
+  infoTitle: {
     fontSize: FONT_SIZES.sm,
     fontFamily: FONTS.gilroy.semiBold,
-    color: COLORS.white,
+    color: COLORS.text.primary,
+    marginBottom: 4,
+  },
+  infoText: {
+    fontSize: FONT_SIZES.xs,
+    fontFamily: FONTS.gilroy.regular,
+    color: COLORS.text.secondary,
+    lineHeight: 18,
   },
   formSection: {
-    paddingBottom: 24,
+    marginBottom: 24,
   },
   fieldContainer: {
     marginBottom: 20,
@@ -375,6 +371,12 @@ const styles = StyleSheet.create({
     color: COLORS.text.primary,
     backgroundColor: COLORS.background.primary,
   },
+  codeInput: {
+    fontSize: FONT_SIZES.lg,
+    fontFamily: FONTS.gilroy.bold,
+    letterSpacing: 4,
+    textAlign: 'center',
+  },
   errorInput: {
     borderColor: COLORS.error,
   },
@@ -382,6 +384,12 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZES.xs,
     fontFamily: FONTS.gilroy.regular,
     color: COLORS.error,
+    marginTop: 4,
+  },
+  hintText: {
+    fontSize: FONT_SIZES.xs,
+    fontFamily: FONTS.gilroy.regular,
+    color: COLORS.text.tertiary,
     marginTop: 4,
   },
   relationButton: {
@@ -406,28 +414,23 @@ const styles = StyleSheet.create({
   customRelationInput: {
     marginTop: 12,
   },
-  infoCard: {
+  joinButton: {
     flexDirection: 'row',
-    backgroundColor: COLORS.background.appColor + '10',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.background.appColor,
     borderRadius: 12,
-    padding: 16,
-    marginTop: 8,
+    paddingVertical: 16,
+    marginBottom: 32,
+    gap: 8,
   },
-  infoContent: {
-    flex: 1,
-    marginLeft: 12,
+  joinButtonDisabled: {
+    opacity: 0.5,
   },
-  infoTitle: {
-    fontSize: FONT_SIZES.sm,
-    fontFamily: FONTS.gilroy.semiBold,
-    color: COLORS.text.primary,
-    marginBottom: 4,
-  },
-  infoText: {
-    fontSize: FONT_SIZES.xs,
-    fontFamily: FONTS.gilroy.regular,
-    color: COLORS.text.secondary,
-    lineHeight: 18,
+  joinButtonText: {
+    fontSize: FONT_SIZES.md,
+    fontFamily: FONTS.gilroy.bold,
+    color: COLORS.white,
   },
   modalOverlay: {
     position: 'absolute',
@@ -478,4 +481,5 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddFamilyMemberScreen;
+export default JoinFamilyScreen;
+

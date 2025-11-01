@@ -34,6 +34,7 @@ import UpdateBottomSheet from '../../components/UpdateBottomSheet';
 import { useAuth } from '../../contexts/AuthContext';
 import firestore from '@react-native-firebase/firestore';
 import ReminderService, { UserReminder } from '../../services/ReminderService';
+import FamilyService from '../../services/FamilyService';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
 
@@ -827,7 +828,24 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               </H5>
               <TouchableOpacity 
                 style={styles.overlayButton}
-                onPress={() => stackNavigation.navigate('FamilyMembers')}
+                onPress={async () => {
+                  // Check if user has a family, if yes go to dashboard, else launch screen
+                  if (user?.id) {
+                    try {
+                      const family = await FamilyService.getUserFamily(user.id);
+                      if (family) {
+                        stackNavigation.navigate('FamilyDashboard', { familyId: family.id });
+                      } else {
+                        stackNavigation.navigate('FamilyLaunch');
+                      }
+                    } catch (error) {
+                      console.error('Error checking family:', error);
+                      stackNavigation.navigate('FamilyLaunch');
+                    }
+                  } else {
+                    stackNavigation.navigate('FamilyLaunch');
+                  }
+                }}
               >
                 <BodyText 
                   color={COLORS.white} 
