@@ -795,7 +795,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         {/* <MahotsavHulchal listData={mahotsavHulchal} type="mahotsav" />
         <TodaysEvents listData={todaysEventsDataArray} type="events" />
        */}
-      {/* <View style={styles.familyLocationCard}>
+      <View style={styles.familyLocationCard}>
           <MapView
             provider={PROVIDER_GOOGLE}
             style={styles.mapView}
@@ -980,7 +980,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               </View>
             </View>
           </View>
-        </View> */}
+        </View>
         <TirthsList listData={tirthsList} />
       </View>
      
