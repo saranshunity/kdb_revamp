@@ -62,6 +62,56 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   
   // User address state
   const [userAddress, setUserAddress] = useState('Kurukshetra, Haryana, India');
+
+  // Reverse geocoding function to convert coordinates to address
+  const reverseGeocode = async (latitude: number, longitude: number): Promise<string> => {
+    try {
+      // Using OpenStreetMap Nominatim API (free, no API key required)
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`,
+        {
+          headers: {
+            'User-Agent': 'KDBRevampApp/1.0', // Required by Nominatim
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Geocoding failed');
+      }
+
+      const data = await response.json();
+      const address = data.address;
+
+      if (!address) {
+        return 'Location not found';
+      }
+
+      // Build address string: City, State, Country Code
+      const parts: string[] = [];
+      
+      if (address.city) {
+        parts.push(address.city);
+      } else if (address.town) {
+        parts.push(address.town);
+      } else if (address.village) {
+        parts.push(address.village);
+      }
+
+      if (address.state) {
+        parts.push(address.state);
+      }
+
+      if (address.country_code) {
+        parts.push(address.country_code.toUpperCase());
+      }
+
+      return parts.length > 0 ? parts.join(', ') : 'Location not found';
+    } catch (error) {
+      console.error('Reverse geocoding error:', error);
+      return 'Location not found';
+    }
+  };
   
   // Update check state
   const [showUpdateSheet, setShowUpdateSheet] = useState(false);
@@ -127,10 +177,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           Geolocation.getCurrentPosition(
             async (position) => {
               const { latitude, longitude } = position.coords;
-              Alert.alert('Location:', `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`);
-              // For now, just use a simplified address format
-              // You can enhance this to use reverse geocoding if needed
-              setUserAddress(`Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`);
+              // Use reverse geocoding to get address
+              const address = await reverseGeocode(latitude, longitude);
+              setUserAddress(address || 'Kurukshetra, Haryana, India');
             },
             (error) => {
               console.error('Error getting location:', error);
@@ -249,13 +298,15 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     }
   };
 
-  const refreshLocation = () => {
+  const refreshLocation = async () => {
     if (permissions.location === 'granted') {
       Geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
           const { latitude, longitude } = position.coords;
-          Alert.alert('Location Updated:', `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`);
-          setUserAddress(`Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`);
+          // Use reverse geocoding to get address
+          const address = await reverseGeocode(latitude, longitude);
+          setUserAddress(address || 'Kurukshetra, Haryana, India');
+          Alert.alert('Location Updated', `Address: ${address || 'Location not found'}`);
         },
         (error) => {
           console.error('Error refreshing location:', error);

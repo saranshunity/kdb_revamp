@@ -1,5 +1,7 @@
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
+import SharingPreferencesService from './SharingPreferencesService';
+import LocationService from './LocationService';
 
 export interface FamilyMember {
   userId: string;
@@ -148,6 +150,18 @@ class FamilyService {
         familyId,
       });
 
+      // Automatically enable location sharing for the creator
+      try {
+        await SharingPreferencesService.addSharingFamily(userId, familyId);
+        await LocationService.startTracking(userId, {
+          familyIds: [familyId],
+        });
+        console.log('Location sharing auto-enabled for family creator');
+      } catch (error) {
+        console.error('Error auto-enabling location sharing:', error);
+        // Don't fail family creation if location sharing fails
+      }
+
       console.log('Family created:', familyId, 'Code:', code);
       return familyId;
     } catch (error) {
@@ -261,6 +275,18 @@ class FamilyService {
       await firestore().collection('users').doc(userId).update({
         familyId,
       });
+
+      // Automatically enable location sharing for the new member
+      try {
+        await SharingPreferencesService.addSharingFamily(userId, familyId);
+        await LocationService.startTracking(userId, {
+          familyIds: [familyId],
+        });
+        console.log('Location sharing auto-enabled for new family member');
+      } catch (error) {
+        console.error('Error auto-enabling location sharing:', error);
+        // Don't fail family join if location sharing fails
+      }
 
       console.log('User joined family:', familyId);
       return {
@@ -461,6 +487,18 @@ class FamilyService {
         await firestore().collection('users').doc(userId).update({
           familyId,
         });
+
+        // Automatically enable location sharing for the added member
+        try {
+          await SharingPreferencesService.addSharingFamily(userId, familyId);
+          await LocationService.startTracking(userId, {
+            familyIds: [familyId],
+          });
+          console.log('Location sharing auto-enabled for added member');
+        } catch (error) {
+          console.error('Error auto-enabling location sharing:', error);
+          // Don't fail member addition if location sharing fails
+        }
 
         console.log('Member added to family:', userId);
         return {

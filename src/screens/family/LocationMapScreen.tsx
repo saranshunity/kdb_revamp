@@ -20,6 +20,8 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import FamilyService, { FamilyMember, LocationData } from '../../services/FamilyService';
 import { useAuth } from '../../contexts/AuthContext';
+import SharingPreferencesService from '../../services/SharingPreferencesService';
+import LocationService from '../../services/LocationService';
 
 type LocationMapScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'LocationMap'>;
 
@@ -37,6 +39,7 @@ const LocationMapScreen = () => {
   const [mapType, setMapType] = useState<'standard' | 'satellite'>('standard');
   const [isLoading, setIsLoading] = useState(true);
   const [familyId, setFamilyId] = useState<string | null>(null);
+  const [isCurrentUserSharing, setIsCurrentUserSharing] = useState(false);
   const mapRef = useRef<MapView>(null);
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<LocationMapScreenNavigationProp>();
@@ -96,16 +99,35 @@ const LocationMapScreen = () => {
     }
   }, [familyId]);
 
+  // Check if current user is sharing location
+  const checkCurrentUserSharing = useCallback(async () => {
+    if (!user?.id || !familyId) return;
+    try {
+      const isSharing = await SharingPreferencesService.isSharingWithFamily(user.id, familyId);
+      const isTracking = LocationService.isTrackingActive();
+      setIsCurrentUserSharing(isSharing && isTracking);
+    } catch (error) {
+      console.error('Error checking sharing status:', error);
+    }
+  }, [user?.id, familyId]);
+
   // Subscribe to real-time location updates using optimized liveLocations feed
   useEffect(() => {
-    if (!familyId) return;
+    if (!familyId || !user?.id) return;
+
+    // Check current user's sharing status
+    checkCurrentUserSharing();
 
     const unsubscribe = FamilyService.subscribeToMemberLocations(
       familyId,
-      (locations: Map<string, LocationData>) => {
+      async (locations: Map<string, LocationData>) => {
+        // Re-check sharing status for current user
+        await checkCurrentUserSharing();
+
         setFamilyMembers(prevMembers => {
           const updated = prevMembers.map(member => {
             const location = locations.get(member.userId);
+            const isCurrentUser = member.userId === user.id;
             
             if (location) {
               const now = new Date();
@@ -123,18 +145,35 @@ const LocationMapScreen = () => {
                 lastSeen = `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
               }
 
+              // For current user, prefer sharing state OR location.isActive
+              // For others, use location.isActive
+              const memberIsSharing = isCurrentUser 
+                ? (isCurrentUserSharing || location.isActive)
+                : location.isActive;
+
               return {
                 ...member,
                 location,
-                isLocationShared: location.isActive,
+                isLocationShared: memberIsSharing,
                 lastSeen,
               };
             } else {
-              return {
-                ...member,
-                isLocationShared: false,
-                lastSeen: member.lastSeen || 'Not sharing',
-              };
+              // No location data yet
+              if (isCurrentUser) {
+                // For current user, use sharing state - location might not be synced yet
+                return {
+                  ...member,
+                  isLocationShared: isCurrentUserSharing,
+                  lastSeen: isCurrentUserSharing ? 'Sharing...' : 'Not sharing',
+                };
+              } else {
+                // For other members, no location means not sharing
+                return {
+                  ...member,
+                  isLocationShared: false,
+                  lastSeen: member.lastSeen || 'Not sharing',
+                };
+              }
             }
           });
 
@@ -160,29 +199,26 @@ const LocationMapScreen = () => {
     return () => {
       unsubscribe();
     };
-  }, [familyId]);
+  }, [familyId, user?.id, isCurrentUserSharing, checkCurrentUserSharing]);
 
   // Load members when familyId changes
   useEffect(() => {
     loadMembers();
   }, [loadMembers]);
 
-  // Handle selected member from route params
+  // Handle selected member from route params - only focus map, don't show dialog
   useEffect(() => {
     const selectedMemberId = (route.params as any)?.selectedMemberId;
     if (selectedMemberId && familyMembers.length > 0) {
       const member = familyMembers.find(m => m.userId === selectedMemberId);
-      if (member && member.location) {
-        setSelectedMember(member);
-        // Focus map on selected member
-        if (mapRef.current && member.location) {
-          mapRef.current.animateToRegion({
-            latitude: member.location.latitude,
-            longitude: member.location.longitude,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-          }, 500);
-        }
+      if (member && member.location && mapRef.current) {
+        // Only focus map, don't set selectedMember (no dialog)
+        mapRef.current.animateToRegion({
+          latitude: member.location.latitude,
+          longitude: member.location.longitude,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        }, 500);
       }
     }
   }, [route.params, familyMembers]);
@@ -286,8 +322,8 @@ const LocationMapScreen = () => {
         style={styles.map}
         mapType={mapType}
         initialRegion={getInitialRegion()}
-        showsUserLocation={true}
-        showsMyLocationButton={true}
+        showsUserLocation={false}
+        showsMyLocationButton={false}
         showsCompass={true}
         showsScale={true}
         onMapReady={() => {
@@ -314,13 +350,13 @@ const LocationMapScreen = () => {
               latitude: member.location!.latitude,
               longitude: member.location!.longitude,
             }}
-            title={member.name || member.phoneNumber || 'Family Member'}
-            description={`${member.relation || 'Member'} • ${getStatusText(member)}`}
+            // title={member.name || member.phoneNumber || 'Family Member'}
+            // description={`${member.relation || 'Member'} • ${getStatusText(member)}`}
             onPress={() => handleMemberSelect(member)}
           >
             <View style={[
               styles.markerContainer,
-              selectedMember?.userId === member.userId && styles.selectedMarkerContainer
+              // selectedMember?.userId === member.userId && styles.selectedMarkerContainer
             ]}>
               <View style={styles.markerCircle}>
                 <Text style={styles.markerText}>
@@ -332,10 +368,6 @@ const LocationMapScreen = () => {
                     .toUpperCase()}
                 </Text>
               </View>
-              <View style={[
-                styles.markerDot,
-                { backgroundColor: getStatusColor(member) }
-              ]} />
             </View>
           </Marker>
         ))}
@@ -394,7 +426,7 @@ const LocationMapScreen = () => {
               key={member.userId}
               style={[
                 styles.memberCard,
-                selectedMember?.userId === member.userId && styles.selectedMemberCard
+                // selectedMember?.userId === member.userId && styles.selectedMemberCard
               ]}
               onPress={() => handleMemberSelect(member)}
             >
@@ -420,7 +452,10 @@ const LocationMapScreen = () => {
                     {member.name || member.phoneNumber || 'Family Member'}
                   </Text>
                   {member.relation && (
-                    <Text style={styles.memberRelation}>{member.relation}</Text>
+                    <Text style={styles.memberRelation}>
+                      {member.relation}
+                      {member.userId === user?.id && ' (You)'}
+                    </Text>
                   )}
                   <Text style={[styles.memberStatus, { color: getStatusColor(member) }]}>
                     {getStatusText(member)}
@@ -447,7 +482,10 @@ const LocationMapScreen = () => {
                   {selectedMember.name || selectedMember.phoneNumber || 'Family Member'}
                 </Text>
                 <Text style={styles.selectedMemberDetails}>
-                  {selectedMember.relation || 'Member'} • {getStatusText(selectedMember)}
+                  {selectedMember.relation || 'Member'}
+                  {selectedMember.userId === user?.id && ' (You)'}
+                  {' • '}
+                  {getStatusText(selectedMember)}
                 </Text>
                 <Text style={styles.coordinatesText}>
                   {selectedMember.location.latitude.toFixed(6)}, {selectedMember.location.longitude.toFixed(6)}

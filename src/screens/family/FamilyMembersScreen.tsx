@@ -14,6 +14,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { Clipboard } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -23,6 +24,8 @@ import { FONTS, FONT_SIZES } from '../../constants/fonts';
 import Ionicons from "react-native-vector-icons/Ionicons";
 import FamilyService, { FamilyMember, LocationData } from '../../services/FamilyService';
 import { useAuth } from '../../contexts/AuthContext';
+import LocationService from '../../services/LocationService';
+import SharingPreferencesService from '../../services/SharingPreferencesService';
 
 type FamilyMembersScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'FamilyDashboard'>;
 
@@ -33,14 +36,14 @@ interface MemberWithLocation extends FamilyMember {
 }
 
 const FamilyMembersScreen = () => {
-  const [searchQuery, setSearchQuery] = useState("");
   const [familyMembers, setFamilyMembers] = useState<MemberWithLocation[]>([]);
-  const [filteredMembers, setFilteredMembers] = useState<MemberWithLocation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [familyId, setFamilyId] = useState<string | null>(null);
   const [family, setFamily] = useState<any>(null);
   const [showCodeModal, setShowCodeModal] = useState(false);
+  const [isSharingLocation, setIsSharingLocation] = useState(false);
+  const [isTogglingLocation, setIsTogglingLocation] = useState(false);
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<FamilyMembersScreenNavigationProp>();
   const route = useRoute();
@@ -56,6 +59,19 @@ const FamilyMembersScreen = () => {
       navigation.replace('FamilyLaunch' as any);
     }
   }, [route.params, navigation]);
+
+  // Check if user is sharing location
+  const checkSharingStatus = useCallback(async () => {
+    if (!user?.id || !familyId) return;
+
+    try {
+      const isSharing = await SharingPreferencesService.isSharingWithFamily(user.id, familyId);
+      const isTracking = LocationService.isTrackingActive();
+      setIsSharingLocation(isSharing && isTracking);
+    } catch (error) {
+      console.error('Error checking sharing status:', error);
+    }
+  }, [user?.id, familyId]);
 
   // Load family data and members
   const loadFamilyData = useCallback(async () => {
@@ -82,7 +98,9 @@ const FamilyMembersScreen = () => {
       }));
 
       setFamilyMembers(membersWithDefaults);
-      setFilteredMembers(membersWithDefaults);
+
+      // Check sharing status
+      await checkSharingStatus();
     } catch (error) {
       console.error('Error loading family data:', error);
       Alert.alert('Error', 'Failed to load family data');
@@ -90,18 +108,35 @@ const FamilyMembersScreen = () => {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [familyId]);
+  }, [familyId, checkSharingStatus]);
 
   // Subscribe to real-time location updates
   useEffect(() => {
-    if (!familyId) return;
+    if (!familyId || !user?.id) return;
+
+    // Check if current user is sharing (for their own member item)
+    const checkCurrentUserSharing = async () => {
+      try {
+        const isSharing = await SharingPreferencesService.isSharingWithFamily(user.id, familyId);
+        const isTracking = LocationService.isTrackingActive();
+        setIsSharingLocation(isSharing && isTracking);
+      } catch (error) {
+        console.error('Error checking sharing status:', error);
+      }
+    };
+
+    checkCurrentUserSharing();
 
     const unsubscribe = FamilyService.subscribeToMemberLocations(
       familyId,
-      (locations: Map<string, LocationData>) => {
+      async (locations: Map<string, LocationData>) => {
+        // Re-check sharing status for current user
+        await checkCurrentUserSharing();
+
         setFamilyMembers(prevMembers => {
           return prevMembers.map(member => {
             const location = locations.get(member.userId);
+            const isCurrentUser = member.userId === user.id;
             
             if (location) {
               const now = new Date();
@@ -119,19 +154,35 @@ const FamilyMembersScreen = () => {
                 lastSeen = `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
               }
 
+              // For current user, prefer toggle state if it's on (even if location.isActive is false)
+              // For others, use location.isActive
+              const memberIsSharing = isCurrentUser 
+                ? (isSharingLocation || location.isActive)
+                : location.isActive;
+              
               return {
                 ...member,
                 location,
-                isLocationShared: location.isActive,
+                isLocationShared: memberIsSharing,
                 lastSeen,
               };
             } else {
-              // No location data - check if was sharing before
-              return {
-                ...member,
-                isLocationShared: false,
-                lastSeen: member.lastSeen || 'Not sharing',
-              };
+              // No location data in liveLocations yet
+              if (isCurrentUser) {
+                // For current user, use toggle state - location might not be synced yet
+                return {
+                  ...member,
+                  isLocationShared: isSharingLocation,
+                  lastSeen: isSharingLocation ? 'Sharing...' : 'Not sharing',
+                };
+              } else {
+                // For other members, no location means not sharing
+                return {
+                  ...member,
+                  isLocationShared: false,
+                  lastSeen: member.lastSeen || 'Not sharing',
+                };
+              }
             }
           });
         });
@@ -141,22 +192,13 @@ const FamilyMembersScreen = () => {
     return () => {
       unsubscribe();
     };
-  }, [familyId]);
+  }, [familyId, user?.id, isSharingLocation]);
 
   // Load family data when familyId changes
   useEffect(() => {
     loadFamilyData();
   }, [loadFamilyData]);
 
-  // Filter members based on search query
-  useEffect(() => {
-    const filtered = familyMembers.filter(member =>
-      (member.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (member.relation || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (member.phoneNumber || '').includes(searchQuery)
-    );
-    setFilteredMembers(filtered);
-  }, [searchQuery, familyMembers]);
 
   const handleAddMember = () => {
     if (!familyId) {
@@ -172,15 +214,94 @@ const FamilyMembersScreen = () => {
     navigation.navigate('LocationMap', { familyId } as any);
   };
 
+  const handleToggleLocationSharing = async () => {
+    if (!user?.id || !familyId || isTogglingLocation) return;
+
+    try {
+      setIsTogglingLocation(true);
+
+      if (isSharingLocation) {
+        // Stop sharing
+        await LocationService.stopTracking();
+        await SharingPreferencesService.removeSharingFamily(user.id, familyId);
+        setIsSharingLocation(false);
+        Alert.alert('Location Sharing Stopped', 'Your location is no longer being shared with family members.');
+      } else {
+        // Start sharing
+        // First, add family to sharing preferences
+        await SharingPreferencesService.addSharingFamily(user.id, familyId);
+        
+        // Start location tracking
+        await LocationService.startTracking(user.id, {
+          familyIds: [familyId],
+        });
+        
+        setIsSharingLocation(true);
+        Alert.alert('Location Sharing Started', 'Your location is now being shared with family members.');
+      }
+    } catch (error: any) {
+      console.error('Error toggling location sharing:', error);
+      Alert.alert(
+        'Error',
+        error.message || 'Failed to toggle location sharing. Please check location permissions.'
+      );
+    } finally {
+      setIsTogglingLocation(false);
+    }
+  };
+
   const handleMemberPress = (member: MemberWithLocation) => {
-    if (member.location) {
+    if (!familyId) return;
+    
+    // If member has shared location, navigate to map with focus on them
+    if (member.isLocationShared && member.location) {
       navigation.navigate('LocationMap', { 
         familyId,
         selectedMemberId: member.userId 
       } as any);
     } else {
-      // Show member details or options
-      console.log("Member pressed:", member.name);
+      // Otherwise, just navigate to map (they can see other members)
+      navigation.navigate('LocationMap', { 
+        familyId
+      } as any);
+    }
+  };
+
+  const handleRefreshMemberLocation = async (member: MemberWithLocation) => {
+    if (!user?.id || !familyId) return;
+
+    try {
+      // If current user is not sharing location, enable it
+      if (!isSharingLocation) {
+        await SharingPreferencesService.addSharingFamily(user.id, familyId);
+        await LocationService.startTracking(user.id, {
+          familyIds: [familyId],
+        });
+        setIsSharingLocation(true);
+        
+        // Get current location and update it immediately
+        try {
+          await LocationService.getCurrentLocation();
+        } catch (locError) {
+          console.error('Error getting current location:', locError);
+        }
+        
+        Alert.alert('Location Sharing Enabled', 'Your location is now being shared with family members.');
+      } else {
+        // Already sharing - force get current location to update immediately
+        try {
+          await LocationService.getCurrentLocation();
+          Alert.alert('Location Updated', 'Your location has been refreshed.');
+        } catch (locError) {
+          Alert.alert('Location Updated', 'Location tracking is active and will update automatically.');
+        }
+      }
+    } catch (error: any) {
+      console.error('Error refreshing location:', error);
+      Alert.alert(
+        'Error',
+        error.message || 'Failed to update location. Please check location permissions.'
+      );
     }
   };
 
@@ -283,34 +404,52 @@ const FamilyMembersScreen = () => {
         </TouchableOpacity>
         <View style={styles.headerCenter}>
           <Text style={styles.header}>{family?.name || 'Family'}</Text>
-          {family?.code && (
-            <TouchableOpacity 
-              style={styles.codeButton}
-              onPress={() => setShowCodeModal(true)}
-            >
-              <Ionicons name="copy-outline" size={16} color={COLORS.primary} />
-              <Text style={styles.codeText}>Code: {family.code}</Text>
-            </TouchableOpacity>
-          )}
         </View>
-        <TouchableOpacity onPress={handleViewMap}>
-          <Ionicons name="map" size={24} color={COLORS.primary} />
-        </TouchableOpacity>
+        {familyId && user?.id && (
+          <TouchableOpacity
+            style={styles.headerLocationToggle}
+            onPress={handleToggleLocationSharing}
+            disabled={isTogglingLocation}
+          >
+            <View style={styles.headerToggleContent}>
+              {isTogglingLocation ? (
+                <ActivityIndicator size="small" color={COLORS.primary} />
+              ) : (
+                <View style={[
+                  styles.headerToggleSwitch,
+                  isSharingLocation && styles.headerToggleSwitchActive
+                ]}>
+                  <View style={[
+                    styles.headerToggleCircle,
+                    isSharingLocation && styles.headerToggleCircleActive
+                  ]} />
+                </View>
+              )}
+              <Text style={styles.headerToggleLabel}>Location Sharing</Text>
+            </View>
+          </TouchableOpacity>
+        )}
       </View>
 
-      {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
-          <Ionicons name="search" size={20} color={COLORS.text.secondary} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search family members..."
-            placeholderTextColor={COLORS.text.tertiary}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
+      {/* Family Code Button */}
+      {family?.code && (
+        <View style={styles.familyCodeContainer}>
+          <TouchableOpacity 
+            style={styles.familyCodeButton}
+            onPress={() => {
+              Clipboard.setString(family.code);
+              Alert.alert('Copied!', `Family code "${family.code}" copied to clipboard`);
+            }}
+          >
+            <View style={styles.familyCodeLeft}>
+              <Ionicons name="key-outline" size={18} color={COLORS.primary} />
+              <Text style={styles.familyCodeLabel}>Family Code:</Text>
+              <Text style={styles.familyCodeValue}>{family.code}</Text>
+            </View>
+            <Ionicons name="copy-outline" size={20} color={COLORS.primary} />
+          </TouchableOpacity>
         </View>
-      </View>
+      )}
 
       {/* Action Buttons */}
       <View style={styles.actionContainer}>
@@ -344,14 +483,12 @@ const FamilyMembersScreen = () => {
           />
         }
       >
-        {filteredMembers.length === 0 ? (
+        {familyMembers.length === 0 ? (
           <View style={styles.emptyState}>
             <Ionicons name="people-outline" size={64} color={COLORS.text.tertiary} />
             <Text style={styles.emptyTitle}>No family members found</Text>
             <Text style={styles.emptySubtitle}>
-              {searchQuery 
-                ? "Try adjusting your search" 
-                : "Add your first family member to get started"}
+              Add your first family member to get started
             </Text>
             {!familyId && (
               <TouchableOpacity 
@@ -363,7 +500,7 @@ const FamilyMembersScreen = () => {
             )}
           </View>
         ) : (
-          filteredMembers.map((member) => (
+          familyMembers.map((member) => (
             <TouchableOpacity
               key={member.userId}
               style={styles.memberItem}
@@ -408,6 +545,21 @@ const FamilyMembersScreen = () => {
                     size={20}
                     color={COLORS.primary}
                   />
+                )}
+                {member.userId === user?.id && (
+                  <TouchableOpacity
+                    style={styles.refreshButton}
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      handleRefreshMemberLocation(member);
+                    }}
+                  >
+                    <Ionicons
+                      name="refresh"
+                      size={18}
+                      color={COLORS.primary}
+                    />
+                  </TouchableOpacity>
                 )}
                 <Ionicons name="chevron-forward" size={20} color={COLORS.text.tertiary} />
               </View>
@@ -504,16 +656,39 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.gilroy.bold,
     color: COLORS.text.primary,
   },
-  codeButton: {
-    flexDirection: 'row',
+  headerLocationToggle: {
+    alignItems: 'flex-end',
+  },
+  headerToggleContent: {
+    flexDirection: 'column',
     alignItems: 'center',
     gap: 4,
-    marginTop: 4,
   },
-  codeText: {
-    fontSize: FONT_SIZES.xs,
-    fontFamily: FONTS.gilroy.semiBold,
-    color: COLORS.primary,
+  headerToggleSwitch: {
+    width: 36,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: COLORS.background.tertiary,
+    justifyContent: 'center',
+    paddingHorizontal: 2,
+  },
+  headerToggleSwitchActive: {
+    backgroundColor: COLORS.success,
+  },
+  headerToggleCircle: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: COLORS.white,
+    alignSelf: 'flex-start',
+  },
+  headerToggleCircleActive: {
+    alignSelf: 'flex-end',
+  },
+  headerToggleLabel: {
+    fontSize: 9,
+    fontFamily: FONTS.gilroy.regular,
+    color: COLORS.text.secondary,
   },
   loadingText: {
     marginTop: 16,
@@ -540,6 +715,38 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZES.sm,
     fontFamily: FONTS.gilroy.regular,
     color: COLORS.text.primary,
+  },
+  familyCodeContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 12,
+    backgroundColor: COLORS.background.primary,
+  },
+  familyCodeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: COLORS.background.secondary,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: COLORS.primary + '30',
+  },
+  familyCodeLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  familyCodeLabel: {
+    fontSize: FONT_SIZES.sm,
+    fontFamily: FONTS.gilroy.regular,
+    color: COLORS.text.secondary,
+  },
+  familyCodeValue: {
+    fontSize: FONT_SIZES.md,
+    fontFamily: FONTS.gilroy.bold,
+    color: COLORS.primary,
+    letterSpacing: 2,
   },
   actionContainer: {
     flexDirection: 'row',
@@ -579,6 +786,64 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZES.sm,
     fontFamily: FONTS.gilroy.semiBold,
     color: COLORS.primary,
+  },
+  shareLocationContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    backgroundColor: COLORS.background.primary,
+  },
+  shareLocationContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: COLORS.background.secondary,
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border.light,
+  },
+  shareLocationLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 12,
+  },
+  shareLocationText: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  shareLocationTitle: {
+    fontSize: FONT_SIZES.sm,
+    fontFamily: FONTS.gilroy.semiBold,
+    color: COLORS.text.primary,
+    marginBottom: 2,
+  },
+  shareLocationSubtitle: {
+    fontSize: FONT_SIZES.xs,
+    fontFamily: FONTS.gilroy.regular,
+    color: COLORS.text.secondary,
+    lineHeight: 16,
+  },
+  toggleSwitch: {
+    width: 50,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: COLORS.background.tertiary,
+    justifyContent: 'center',
+    paddingHorizontal: 3,
+  },
+  toggleSwitchActive: {
+    backgroundColor: COLORS.success,
+  },
+  toggleCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: COLORS.white,
+    alignSelf: 'flex-start',
+  },
+  toggleCircleActive: {
+    alignSelf: 'flex-end',
   },
   membersList: {
     flex: 1,
@@ -657,6 +922,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+  },
+  refreshButton: {
+    padding: 4,
   },
   emptyState: {
     alignItems: 'center',

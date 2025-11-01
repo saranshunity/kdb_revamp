@@ -177,6 +177,55 @@ class LocationService {
         .doc('current')
         .set(locationDoc, { merge: true });
 
+      // Sync to family liveLocations if sharing with families
+      if (this.options.familyIds && this.options.familyIds.length > 0) {
+        try {
+          // Get user's familyId (quick lookup)
+          const userDoc = await firestore().collection('users').doc(this.currentUserId).get();
+          const userData = userDoc.data();
+          const userFamilyId = userData?.familyId;
+
+          // Also check sharing preferences
+          const sharingPrefsDoc = await firestore()
+            .collection('users')
+            .doc(this.currentUserId)
+            .collection('sharingPreferences')
+            .doc('settings')
+            .get();
+          
+          const sharingPrefs = sharingPrefsDoc.data();
+          const shareWithFamilies = sharingPrefs?.shareWithFamilies || [];
+
+          // Update liveLocations for each family user is sharing with
+          const batch = firestore().batch();
+          const familiesToSync = userFamilyId && shareWithFamilies.includes(userFamilyId) 
+            ? [userFamilyId] 
+            : shareWithFamilies;
+
+          for (const familyId of familiesToSync) {
+            const liveLocationRef = firestore()
+              .collection('families')
+              .doc(familyId)
+              .collection('liveLocations')
+              .doc(this.currentUserId);
+
+            batch.set(liveLocationRef, {
+              userId: this.currentUserId,
+              latitude: location.latitude,
+              longitude: location.longitude,
+              accuracy: location.accuracy,
+              timestamp: firestore.Timestamp.fromMillis(location.timestamp),
+              updatedAt: firestore.FieldValue.serverTimestamp(),
+            }, { merge: true });
+          }
+
+          await batch.commit();
+        } catch (syncError) {
+          console.error('Error syncing to liveLocations:', syncError);
+          // Don't fail the whole update if sync fails
+        }
+      }
+
       // Optionally add to history (if enabled)
       if (this.shouldSaveToHistory()) {
         await firestore()
