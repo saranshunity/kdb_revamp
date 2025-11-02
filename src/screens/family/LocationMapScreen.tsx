@@ -145,11 +145,11 @@ const LocationMapScreen = () => {
                 lastSeen = `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
               }
 
-              // For current user, prefer sharing state OR location.isActive
-              // For others, use location.isActive
+              // If location exists in liveLocations, member IS sharing (by definition)
+              // For current user, also check sharing preferences state
               const memberIsSharing = isCurrentUser 
                 ? (isCurrentUserSharing || location.isActive)
-                : location.isActive;
+                : true; // If location exists in liveLocations, they're sharing
 
               return {
                 ...member,
@@ -309,7 +309,8 @@ const LocationMapScreen = () => {
     );
   }
 
-  const membersWithLocations = familyMembers.filter(m => m.isLocationShared && m.location);
+  // Show markers for all members who have location data (if location exists, they're sharing)
+  const membersWithLocations = familyMembers.filter(m => m.location);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
