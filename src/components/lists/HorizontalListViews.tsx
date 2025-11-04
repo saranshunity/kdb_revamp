@@ -8,28 +8,30 @@ import { RootStackParamList } from '../../navigation/AppNavigator';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-const HorizontalListViews = ({title,listData,type}: {title: string,listData: any[], type?: 'mahotsav' | 'events' | 'tirths'}) => {
+const HorizontalListViews = ({title,listData,type,showAll}: {title: string,listData: any[], type?: 'mahotsav' | 'events' | 'tirths', showAll?: boolean}) => {
   const navigation = useNavigation<NavigationProp>();
   return (
     <View style={styles.container}>
         <View style={styles.titleContainer}>   
     <H5 style={styles.title} weight="semiBold">{title}</H5>
-    <TouchableOpacity 
-      style={styles.viewAll}
-      onPress={() => {
-        if (type) {
-          navigation.navigate('ListScreen', {
-            title: title,
-            data: listData,
-            type: type
-          });
-        }
-      }}
-    >
-      <BodyText color={COLORS.appColor} size='md' weight='semiBold'>
-        Show All
-      </BodyText>
-    </TouchableOpacity>
+    {showAll && (
+      <TouchableOpacity 
+        style={styles.viewAll}
+        onPress={() => {
+          if (type) {
+            navigation.navigate('ListScreen', {
+              title: title,
+              data: listData,
+              type: type
+            });
+          }
+        }}
+      >
+        <BodyText color={COLORS.appColor} size='md' weight='semiBold'>
+          Show All
+        </BodyText>
+      </TouchableOpacity>
+    )}
     </View>
     <ScrollView horizontal style={{ flex: 1, padding: 16 }} showsHorizontalScrollIndicator={false}>
     {listData?.map((item) => (
@@ -38,7 +40,17 @@ const HorizontalListViews = ({title,listData,type}: {title: string,listData: any
     image={item?.image}
     categories={item?.categories}
     title={item?.title}
-    onPress={() => console.log("Card Pressed")}
+    onPress={() => {
+      // If item has a link, navigate to WebView
+      if (item?.link) {
+        navigation.navigate('TirthWebView', {
+          url: item.link,
+          title: item.title || 'Tirth Details'
+        });
+      } else {
+        console.log("Card Pressed - No link available");
+      }
+    }}
     />
     ))}
     

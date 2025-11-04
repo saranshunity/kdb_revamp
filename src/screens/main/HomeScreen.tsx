@@ -547,56 +547,72 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
     {
       id: 1,
-      title: 'Kuala Lumpur, Indonesia',
-      image: 'https://picsum.photos/600/400',
+      title: 'IGM Indonesia',
+      image: 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavStaticData%2FmahotsavAroundWorld%2Findonesai.jpg?alt=media&token=fadd6a6e-a035-42c8-90b6-d9a217c3a7c5',
       categories: ['Cultural Tour'],
       price: 28,
       isFavorite: true,
       rating:false,
       time:'2025',
+      link:'https://internationalgitamahotsav.in/igm-indonesia/'
     },
   
 
     {
       id: 2,
-      title: 'Toronto, Canada',
-      image: 'https://picsum.photos/600/400',
+      title: 'IGM Canada',
+      image: 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavStaticData%2FmahotsavAroundWorld%2Fcanada.jpg?alt=media&token=ca284451-f176-4163-bcd4-1782de68ef4d',
       categories: ['Cultural Tour'],
       price: 28,
       isFavorite: true,
       rating:false,
       time:'2024',
+      link:'https://internationalgitamahotsav.in/igm-canada/'
     },
     {
       id: 3,
-      title: 'Sydney, Australia',
-      image: 'https://picsum.photos/600/400',
+      title: 'IGM Australia',
+      image: 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavStaticData%2FmahotsavAroundWorld%2FfallbackImg.jpg?alt=media&token=dbadb981-b36b-4188-b530-00fd77a5b278',
       categories: ['Cultural Tour'],
       price: 28,
       isFavorite: true,
       rating:false,
       time:'2023',
+      link:'https://internationalgitamahotsav.in/igm-australia/'
     },
     {
       id: 4,
-      title: 'London, UK',
-      image: 'https://picsum.photos/600/400',
+      title: 'IGM UK',
+      image: 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavStaticData%2FmahotsavAroundWorld%2FfallbackImg.jpg?alt=media&token=dbadb981-b36b-4188-b530-00fd77a5b278',
       categories: ['Cultural Tour'],
       price: 28,
       isFavorite: true,
       rating:false,
       time:'2023',
+      link:'https://internationalgitamahotsav.in/igm-united-kingdom/'
     },
     {
       id: 5,
-      title: 'Mauritius',
-      image: 'https://picsum.photos/600/400',
+      title: 'IGM Mauritius',
+      image: 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavStaticData%2FmahotsavAroundWorld%2FfallbackImg.jpg?alt=media&token=dbadb981-b36b-4188-b530-00fd77a5b278',
       categories: ['Cultural Tour'],
       price: 28,
       isFavorite: true,
       rating:false,
       time:'2022',
+      link:'https://internationalgitamahotsav.in/igm-mauritius/'
     },
+    {
+      id: 6,
+      title: 'IGM SriLanka',
+      image: 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavStaticData%2FmahotsavAroundWorld%2FfallbackImg.jpg?alt=media&token=dbadb981-b36b-4188-b530-00fd77a5b278',
+      categories: ['Cultural Tour'],
+      price: 28,
+      isFavorite: true,
+      rating:false,
+      time:'2022',
+      link:'https://internationalgitamahotsav.in/igm-sri-lanka/'
+    }
   ];
 
   const todaysEventsDataArray = [
@@ -705,7 +721,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                 <H5 style={styles.greetingText} weight="semiBold">{`Namastey${firstName ? ", " + firstName : ''}`}</H5>
               </View>
               <View style={styles.addressContainer}>
-                <BodyText style={styles.addressText} color={COLORS.text.primary} size='sm'>
+                <BodyText style={styles.addressText} color={COLORS.text.primary} size='sm' numberOfLines={1}>
                   {userAddress}
                 </BodyText>
                 {permissions.location === 'granted' && (
@@ -1281,14 +1297,15 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZES.sm,
     opacity: 0.9,
     flex: 1,
+    marginRight: 8,
   },
   addressContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 4,
+    flexWrap: 'nowrap',
   },
   refreshLocationButton: {
-    marginLeft: 8,
     padding: 4,
     borderRadius: 12,
     backgroundColor: COLORS.appColor + '20',
