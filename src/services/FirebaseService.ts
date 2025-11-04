@@ -76,10 +76,26 @@ export interface MahotsavHulchal {
   additionalInfo: string;
 }
 
+export interface EventItem {
+  id: string;
+  title: string;
+  image?: string;
+  time: string;
+  location: string;
+  description?: string;
+  categories?: string[];
+  isFavorite?: boolean;
+  hasReminder?: boolean;
+  date: string; // Format: "DD-MM-YYYY" or "DD/MM/YYYY"
+}
+
 // Firebase Storage URL for mahotsavHulchul.json
 // Make sure the file is set to public access in Firebase Storage so no token is needed
 // Format: https://firebasestorage.googleapis.com/v0/b/{bucket}/o/{filename}?alt=media
 const MAHOTSAV_HULCHAL_STORAGE_URL = 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavHulchul.json?alt=media';
+
+// Firebase Storage URL for events.json
+const EVENTS_STORAGE_URL = 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/events.json?alt=media';
 
 class FirebaseService {
   private applicationsCollection = firestore().collection('stallApplications');
@@ -480,6 +496,71 @@ class FirebaseService {
           onChange(items);
         } catch (error) {
           console.error('Error polling mahotsav hulchal:', error);
+        }
+      }
+    }, 5 * 60 * 1000); // 5 minutes
+
+    // Return unsubscribe function
+    return () => {
+      isSubscribed = false;
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }
+
+  // Get all events from Firebase Storage JSON file
+  async getEvents(): Promise<EventItem[]> {
+    try {
+      const response = await fetch(EVENTS_STORAGE_URL);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch events: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      // Handle both array and object with array property
+      const items: EventItem[] = Array.isArray(data) 
+        ? data 
+        : (data.events || data.items || data.data || []);
+      
+      // Ensure each item has an id field (use array index if missing)
+      const itemsWithIds = items.map((item, index) => ({
+        ...item,
+        id: item.id || String(index + 1),
+      })) as EventItem[];
+      
+      return itemsWithIds;
+    } catch (error) {
+      console.error('Error fetching events:', error);
+      // Return empty array on error instead of throwing
+      return [];
+    }
+  }
+
+  // Subscribe to Events changes (polling-based for JSON file)
+  subscribeToEvents(
+    onChange: (items: EventItem[]) => void,
+  ): () => void {
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+    let isSubscribed = true;
+
+    // Fetch immediately
+    this.getEvents().then(items => {
+      if (isSubscribed) {
+        onChange(items);
+      }
+    });
+
+    // Poll every 5 minutes for updates
+    intervalId = setInterval(async () => {
+      if (isSubscribed) {
+        try {
+          const items = await this.getEvents();
+          onChange(items);
+        } catch (error) {
+          console.error('Error polling events:', error);
         }
       }
     }, 5 * 60 * 1000); // 5 minutes

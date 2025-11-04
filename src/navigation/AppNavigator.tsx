@@ -24,6 +24,7 @@ import StallApplicationStatusScreen from '../screens/stalls/StallApplicationStat
 import PaymentScreen from '../screens/stalls/PaymentScreen';
 import PaymentWebViewScreen from '../screens/stalls/PaymentWebViewScreen';
 import TirthWebViewScreen from '../screens/main/TirthWebViewScreen';
+import QuizWebViewScreen from '../screens/main/QuizWebViewScreen';
 import FamilyMembersScreen from '../screens/family/FamilyMembersScreen';
 import AddFamilyMemberScreen from '../screens/family/AddFamilyMemberScreen';
 import LocationMapScreen from '../screens/family/LocationMapScreen';
@@ -317,6 +318,7 @@ function AppNavigator() {
         <Stack.Screen name='Payment' component={PaymentScreen} />
         <Stack.Screen name='PaymentWebView' component={PaymentWebViewScreen} />
         <Stack.Screen name='TirthWebView' component={TirthWebViewScreen} />
+        <Stack.Screen name='Quiz' component={QuizWebViewScreen} />
         <Stack.Screen name='FamilyMembers' component={FamilyMembersScreen} />
         <Stack.Screen name='AddFamilyMember' component={AddFamilyMemberScreen} />
         <Stack.Screen name='LocationMap' component={LocationMapScreen} />

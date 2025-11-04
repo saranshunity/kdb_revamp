@@ -692,22 +692,11 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           onPress={() => stackNavigation.navigate('Events')}
         />
          <QuickLinkItem 
-        key="quiz" 
-        icon="school-outline" 
-        label="Quiz" 
-        onPress={async () => {
-          try {
-            const url = 'https://igmquiz.in';
-            const canOpen = await Linking.canOpenURL(url);
-            if (canOpen) {
-              await Linking.openURL(url);
-            } else {
-              Alert.alert('Error', 'Unable to open the quiz link. Please try again later.');
-            }
-          } catch (error) {
-            console.error('Error opening quiz URL:', error);
-            Alert.alert('Error', 'Unable to open the quiz link. Please try again later.');
-          }
+                key="quiz"
+        icon="school-outline"
+        label="Quiz"
+        onPress={() => {
+          stackNavigation.navigate('Quiz' as any);
         }}
       />
       <QuickLinkItem 

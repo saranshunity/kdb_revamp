@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { View, StyleSheet, Text, TouchableOpacity, StatusBar, ScrollView } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -7,25 +7,10 @@ import { RootStackParamList } from '../../navigation/AppNavigator';
 import { COLORS } from '../../constants/colors';
 import { FONTS, FONT_SIZES } from '../../constants/fonts';
 import DateSelector from "./components/DateSelector";
-import TodaysEvents from "./components/TodaysEvents";
 import EventCard from "./components/EventCard";
+import FirebaseService, { EventItem } from '../../services/FirebaseService';
 
 type EventsScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Events'>;
-
-const todaysEventsDataArray = [
-  {
-    id: 1,
-    title: "The Romanian – Solo Exhibition",
-    image: "https://picsum.photos/400/300",
-    categories: ["Art", "Exhibition"],
-  },
-  {
-    id: 2,
-    title: "M.A in Arts & Management",
-    image: "https://picsum.photos/401/300",
-    categories: ["Art", "Exhibition"],
-  },
-];
 
 export default function EventsScreen() {
     const dates = [
@@ -53,16 +38,63 @@ export default function EventsScreen() {
         { day: "Sat", date: 5 },
       ];
   const [selectedDate, setSelectedDate] = useState<any>(dates[0]);
-  const [todaysEventsData, setTodaysEventsData] = useState<any[]>(todaysEventsDataArray);
+  const [allEvents, setAllEvents] = useState<EventItem[]>([]);
+  const [filteredEvents, setFilteredEvents] = useState<EventItem[]>([]);
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<EventsScreenNavigationProp>();
+
+  // Fetch events from Firebase
+  useEffect(() => {
+    const unsubscribe = FirebaseService.subscribeToEvents((events) => {
+      setAllEvents(events);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  // Filter events based on selected date
+  useEffect(() => {
+    if (!selectedDate) return;
+
+    // Format the date to match the event date format (DD-MM-YYYY or DD/MM/YYYY)
+    const formatDate = (day: string, date: number) => {
+      // You might need to adjust month/year based on your dates array
+      // For now, using November 2025 as default month
+      const month = 11; // November
+      const year = 2025;
+      return `${date.toString().padStart(2, '0')}-${month.toString().padStart(2, '0')}-${year}`;
+    };
+
+    const selectedDateStr = formatDate(selectedDate.day, selectedDate.date);
+    
+    // Filter events that match the selected date
+    const filtered = allEvents.filter(event => {
+      // Normalize date formats for comparison
+      const eventDate = event.date.replace(/\//g, '-');
+      const normalizedSelectedDate = selectedDateStr.replace(/\//g, '-');
+      return eventDate === normalizedSelectedDate;
+    });
+
+    setFilteredEvents(filtered);
+  }, [selectedDate, allEvents]);
 
   const handleDateSelect = useCallback((date: any) => {
     setSelectedDate(date);
   }, []);
 
-  const handleEventPress = useCallback(() => {
-    navigation.navigate('EventDetail');
+  // Format date for display
+  const formatDisplayDate = (date: any) => {
+    if (!date) return '';
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = 11; // November (based on dates array)
+    const year = 2025;
+    return `${date.day}, ${monthNames[month - 1]} ${date.date}`;
+  };
+
+  const handleEventPress = useCallback((eventId?: string) => {
+    navigation.navigate('EventDetail' as any);
   }, [navigation]);
 
 
@@ -79,7 +111,7 @@ export default function EventsScreen() {
         >
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.header}>Nov - Dec 2025</Text>
+        <Text style={styles.header}>Events - {formatDisplayDate(selectedDate)}</Text>
         <View style={styles.placeholder} />
       </View>
 
@@ -88,27 +120,26 @@ export default function EventsScreen() {
       {/* Date Strip */}
       <DateSelector dates={dates} onSelect={handleDateSelect} />
 
-      {/* Events in Spotlight */}
-      <Text style={styles.sectionTitle}>Events</Text>
-      <ScrollView  showsHorizontalScrollIndicator={false} style={{paddingHorizontal: 16}}>
-        <EventCard
-          // image="https://picsum.photos/400/300"
-          title="The Romanian – Solo Exhibition"
-          time="Today at 8:30 PM"
-          location="Vicas Art Studio"
-          isFavorite
-          // onPress={handleEventPress}
-          hasReminder
-        />
-        <EventCard
-          // image="https://picsum.photos/401/300"
-          title="M.A in Arts & Management"
-          time="Tomorrow at 9:00 PM"
-          location="Vicas Art Studio"
-          // onPress={handleEventPress}
-        />
-      </ScrollView>
-    {/* <TodaysEvents listData={todaysEventsDataArray} /> */}
+      {/* Events List */}
+      {filteredEvents.length > 0 ? (
+        <ScrollView showsVerticalScrollIndicator={false} style={{paddingHorizontal: 16}}>
+          {filteredEvents.map((event) => (
+            <EventCard
+              key={event.id}
+              image={event.image}
+              title={event.title}
+              time={event.time}
+              location={event.location}
+              isFavorite={event.isFavorite}
+              onPress={handleEventPress}
+            />
+          ))}
+        </ScrollView>
+      ) : (
+                 <View style={styles.emptyContainer}>
+           <Text style={styles.emptyText}>No events scheduled for this date</Text>
+         </View>
+       )}
     </View>
   );
 }
@@ -159,5 +190,17 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 20,
     color: COLORS.text.primary,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  emptyText: {
+    fontSize: FONT_SIZES.md,
+    fontFamily: FONTS.gilroy.regular,
+    color: COLORS.text.secondary,
+    textAlign: 'center',
   },
 });
