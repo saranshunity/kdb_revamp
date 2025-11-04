@@ -65,83 +65,41 @@ const AboutKDBScreen: React.FC<AboutKDBScreenProps> = ({ navigation }) => {
 
         {/* About Content */}
         <View style={styles.contentSection}>
-          <H3 style={styles.sectionTitle} color={COLORS.text.primary} weight='bold' size='lg'>
-            About Kurukshetra Development Board
-          </H3>
-          
           <BodyText style={styles.description} color={COLORS.text.primary} size='md'>
-            The Kurukshetra Development Board (KDB) is a government organization dedicated to the development and promotion of Kurukshetra as a major pilgrimage and tourist destination. Established with the vision to preserve and showcase the rich cultural heritage and spiritual significance of this ancient city.
+            Kurukshetra as a pilgrimage destination has been in the limelight ever since the days of Mahabharata. Originally it was a pilgrimage visited by millions of pilgrims. However, the destination Kuruksheta also has an additional dimension for being regarded as the cradle of Vedic civilisation and the land of Bhagawadgita. Historically speaking, the antiquity of Kurukshetra dates back to the Indus valley civilisation. Kurukshetra is one of those few destinations, which is a perfect blend of religious sanctity and cultural fervor. Thus, Kurukshetra is an amalgamation of multiple cultural and religious attractions, in the forms of sacred bathing tanks and historical monuments.
           </BodyText>
 
           <H3 style={styles.sectionTitle} color={COLORS.text.primary} weight='bold' size='lg'>
-            Our Mission
+            Foundation
           </H3>
           
           <BodyText style={styles.description} color={COLORS.text.primary} size='md'>
-            To develop Kurukshetra as a world-class pilgrimage destination while preserving its ancient heritage, promoting religious tourism, and providing modern amenities for pilgrims and visitors from around the world.
+            With a view to protect the ancient heritage and age old tradition of Kurukshetra the necessity for establishing a Board for preserving the heritage of the pilgrimage was felt by the Bharat Ratna late Sh. Gulzari Lal Nanda, the founder Chairman of Kurukshetra Development Board. The Kurukshetra Development Board was constituted by the Haryana Government on 1st August, 1968 under the Chairmanship of Sh. Gulzari Lal Nanda. The broad objectives for which the Kurukshetra Development Board was constituted include overall comprehensive development of the Kurukshetra Area including its landscaping, renovation of historical buildings and tanks and providing of civic amenities to the visiting pilgrims and tourists as well as up keeping and maintenance of the tirthas.
+          </BodyText>
+
+          <BodyText style={styles.description} color={COLORS.text.primary} size='md'>
+            After Sh. Gulzari Lal Nanda left the Chairmanship of the Board, Governor of Haryana was appointed as Chairman of the Board w.e.f. 27.6.1990.
           </BodyText>
 
           <H3 style={styles.sectionTitle} color={COLORS.text.primary} weight='bold' size='lg'>
-            Key Initiatives
+            Development & Initiatives
           </H3>
           
-          <View style={styles.initiativesList}>
-            <View style={styles.initiativeItem}>
-              <Ionicons name="checkmark-circle" size={20} color={COLORS.success} />
-              <BodyText style={styles.initiativeText} color={COLORS.text.primary} size='md'>
-                Development of 48 Kos Parikrama circuit
-              </BodyText>
-            </View>
-            <View style={styles.initiativeItem}>
-              <Ionicons name="checkmark-circle" size={20} color={COLORS.success} />
-              <BodyText style={styles.initiativeText} color={COLORS.text.primary} size='md'>
-                Modernization of pilgrimage facilities
-              </BodyText>
-            </View>
-            <View style={styles.initiativeItem}>
-              <Ionicons name="checkmark-circle" size={20} color={COLORS.success} />
-              <BodyText style={styles.initiativeText} color={COLORS.text.primary} size='md'>
-                Cultural heritage preservation
-              </BodyText>
-            </View>
-            <View style={styles.initiativeItem}>
-              <Ionicons name="checkmark-circle" size={20} color={COLORS.success} />
-              <BodyText style={styles.initiativeText} color={COLORS.text.primary} size='md'>
-                Tourist information and guidance services
-              </BodyText>
-            </View>
-            <View style={styles.initiativeItem}>
-              <Ionicons name="checkmark-circle" size={20} color={COLORS.success} />
-              <BodyText style={styles.initiativeText} color={COLORS.text.primary} size='md'>
-                Digital initiatives for enhanced visitor experience
-              </BodyText>
-            </View>
-          </View>
+          <BodyText style={styles.description} color={COLORS.text.primary} size='md'>
+            Kurukshetra Development Board has been shouldering the responsibility for the comprehensive and overall development of Kurukshetra region by undertaking various projects for the upliftment of pilgrimages or tirthas. In this endeavour the Board has documentated alll the 134 tirthas highlighting importance of each of the tirthas, their religious significance with elaborate description about their archaeological and architectural grandeur. This website will enable the viewer all information regarding the tirthas and places of tourist and cultural interest in and around Kurukshetra.
+          </BodyText>
 
-          <H3 style={styles.sectionTitle} color={COLORS.text.primary} weight='bold' size='lg'>
-            Contact Information
-          </H3>
-          
-          <View style={styles.contactInfo}>
-            <View style={styles.contactItem}>
-              <Ionicons name="location-outline" size={20} color={COLORS.primary} />
-              <BodyText style={styles.contactText} color={COLORS.text.primary} size='md'>
-                Kurukshetra Development Board, Haryana
-              </BodyText>
-            </View>
-            <View style={styles.contactItem}>
-              <Ionicons name="call-outline" size={20} color={COLORS.primary} />
-              <BodyText style={styles.contactText} color={COLORS.text.primary} size='md'>
-                +91-1744-XXXXXX
-              </BodyText>
-            </View>
-            <View style={styles.contactItem}>
-              <Ionicons name="mail-outline" size={20} color={COLORS.primary} />
-              <BodyText style={styles.contactText} color={COLORS.text.primary} size='md'>
-                info@kdb.gov.in
-              </BodyText>
-            </View>
-          </View>
+          <BodyText style={styles.description} color={COLORS.text.primary} size='md'>
+            Kurukshetra Development Board ever since its establishment has been consistently trying to fulfill the expectation of the pilgrims and tourists visiting Kurukshetra. In this endeavour it has preserved one of the largest man made water body called Brahamsarover. It is one of the important centres of pilgrimage visited by millions of pilgrims during the Solar Eclipse. The other tirthas developed by the Board include Sannehit Sarovar, Jyotisar, the place where the holy Gita was expounded by Lord Krishna at the out-set of the Mahabharata battle, Bhishmakund at Narkatari, Banganga at Dayalpur, Shalihotra tirtha at Sarsa, where Yaksha-Yudhishiter dialogue was held and Saraswati tirtha at Pehowa.
+          </BodyText>
+
+          <BodyText style={styles.description} color={COLORS.text.primary} size='md'>
+            A few other tirthas such as Kapilmuni tirtha at Kalayat, Kapisthal tirtha at Kaithal, Rinmochan tirtha at Rasina, Sarpadaman tirtha at Safidon have been taken up by the Board for comprehensive development. The Board also provides modern civic amenities at various tirthas. It has also alloted land to various voluntary organisations for the construction of dharamshalas for providing cheaper accommodation to the visiting pilgrims and tourists. More than 800 rooms are available in these dharamshalas for the stay of pilgrims.
+          </BodyText>
+
+          <BodyText style={styles.description} color={COLORS.text.primary} size='md'>
+            As a part of the cultural activity of the Board it has also established the Srikrishna Museum and the Kurukshetra Panorama and Science Centre at Kurukshetra, which have become the heartthrob of the tourists and pilgrims, are gaining popularity day by day.
+          </BodyText>
         </View>
       </ScrollView>
     </View>

@@ -39,36 +39,36 @@ const MenuScreen: React.FC<MenuScreenProps> = ({ navigation }) => {
       },
       {
         id: 'administration',
-        title: 'Administration',
+        title: 'Hierarchy',
         icon: 'people-outline',
         onPress: () => stackNavigation.navigate('Administration'),
       },
-      {
-        id: 'admin',
-        title: 'Admin Panel',
-        icon: 'shield-checkmark-outline',
-        onPress: () => stackNavigation.navigate('AdminPanel'),
-        featureFlag: 'adminPanel',
-      },
-      {
-        id: 'apply-stalls',
-        title: 'Apply for Stalls/Shops',
-        icon: 'storefront-outline',
-        onPress: () => stackNavigation.navigate('Stalls'),
-        featureFlag: 'applyStallsShops',
-      },
-      {
-        id: 'museum',
-        title: 'Sri Krishna Museum',
-        icon: 'library-outline',
-        onPress: () => stackNavigation.navigate('SriKrishnaMuseum'),
-      },
-      {
-        id: 'jyotisar',
-        title: 'Jyotisar',
-        icon: 'location-outline',
-        onPress: () => stackNavigation.navigate('Jyotisar'),
-      },
+      // {
+      //   id: 'admin',
+      //   title: 'Admin Panel',
+      //   icon: 'shield-checkmark-outline',
+      //   onPress: () => stackNavigation.navigate('AdminPanel'),
+      //   featureFlag: 'adminPanel',
+      // },
+      // {
+      //   id: 'apply-stalls',
+      //   title: 'Apply for Stalls/Shops',
+      //   icon: 'storefront-outline',
+      //   onPress: () => stackNavigation.navigate('Stalls'),
+      //   featureFlag: 'applyStallsShops',
+      // },
+      // {
+      //   id: 'museum',
+      //   title: 'Sri Krishna Museum',
+      //   icon: 'library-outline',
+      //   onPress: () => stackNavigation.navigate('SriKrishnaMuseum'),
+      // },
+      // {
+      //   id: 'jyotisar',
+      //   title: 'Jyotisar',
+      //   icon: 'location-outline',
+      //   onPress: () => stackNavigation.navigate('Jyotisar'),
+      // },
       {
         id: 'permissions',
         title: 'Permissions',
@@ -81,15 +81,15 @@ const MenuScreen: React.FC<MenuScreenProps> = ({ navigation }) => {
         icon: 'notifications-outline',
         onPress: () => stackNavigation.navigate('Reminders' as any),
       },
-      {
-        id: 'settings',
-        title: 'Settings',
-        icon: 'settings-outline',
-        onPress: () => {
-          // Navigate to settings - you can implement this later
-          console.log('Settings pressed');
-        },
-      },
+      // {
+      //   id: 'settings',
+      //   title: 'Settings',
+      //   icon: 'settings-outline',
+      //   onPress: () => {
+      //     // Navigate to settings - you can implement this later
+      //     console.log('Settings pressed');
+      //   },
+      // },
       {
         id: 'logout',
         title: 'Logout',

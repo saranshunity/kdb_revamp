@@ -25,87 +25,57 @@ interface AdministrationScreenProps {
 const AdministrationScreen: React.FC<AdministrationScreenProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
 
-  const officials = [
+  const members = [
     {
       id: 1,
-      name: 'Shri Rajesh Kumar',
-      position: 'Chairman',
-      image: 'https://picsum.photos/150/150?random=1',
-      description: 'Leading the Kurukshetra Development Board with over 25 years of experience in public administration and heritage conservation.',
-      achievements: [
-        'Spearheaded major infrastructure development projects',
-        'Established digital initiatives for pilgrim convenience',
-        'Promoted cultural heritage preservation programs'
-      ]
+      name: 'Prof. Ashim Kumar Ghosh',
+      position: 'Hon\'ble Governor of Haryana & Chairman',
+      organization: 'Kurukshetra Development Board',
+      image: 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/heirarchy%2Fgoverner.jpeg?alt=media&token=2ef1b78f-fdbb-48f1-9677-4f994785e96b',
     },
     {
       id: 2,
-      name: 'Dr. Priya Sharma',
-      position: 'Vice Chairman',
-      image: 'https://picsum.photos/150/150?random=2',
-      description: 'A distinguished scholar in ancient Indian history and culture, dedicated to preserving the spiritual essence of Kurukshetra.',
-      achievements: [
-        'Expert in Vedic literature and ancient texts',
-        'Led research initiatives on historical sites',
-        'Developed educational programs for visitors'
-      ]
+      name: 'Nayab Singh Saini',
+      position: 'Hon\'ble Chief Minister, Haryana & Vice-Chairman',
+      organization: 'Kurukshetra Development Board',
+      image: 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/heirarchy%2Fcm.jpg?alt=media&token=a4bad021-ea48-4e6c-bc55-f0605098f146',
     },
     {
       id: 3,
-      name: 'Shri Amit Singh',
-      position: 'Executive Director',
-      image: 'https://picsum.photos/150/150?random=3',
-      description: 'Overseeing day-to-day operations and ensuring smooth functioning of all development activities and pilgrim services.',
-      achievements: [
-        'Streamlined administrative processes',
-        'Implemented modern management practices',
-        'Enhanced visitor experience through technology'
-      ]
+      name: 'Vikas Gupta, IAS',
+      position: 'Member Secretary',
+      organization: 'Kurukshetra Development Board',
+      image: 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/heirarchy%2Fms.png?alt=media&token=fc14c83c-f6f6-43e9-8708-e462ee637a26',
     },
     {
       id: 4,
-      name: 'Dr. Sunita Verma',
-      position: 'Cultural Affairs Director',
-      image: 'https://picsum.photos/150/150?random=4',
-      description: 'Managing cultural programs, festivals, and events that showcase the rich heritage of Kurukshetra throughout the year.',
-      achievements: [
-        'Organized major cultural festivals',
-        'Established cultural exchange programs',
-        'Promoted local artisans and crafts'
-      ]
-    }
+      name: 'Upender Singhal',
+      position: 'Honorary Secretary',
+      organization: 'Kurukshetra Development Board',
+      image: 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/heirarchy%2Fs.png?alt=media&token=923cbf5a-f77e-46ca-9d14-7adbd1831404',
+    },
+    {
+      id: 5,
+      name: 'Pankaj Kumar, HCS',
+      position: 'Chief Executive Officer',
+      organization: 'Kurukshetra Development Board',
+      image: 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/heirarchy%2Fceo.jpg?alt=media&token=10b608a9-fec9-4851-804e-fd7b9ce71094',
+    },
   ];
 
-  const renderOfficial = (official: any) => (
-    <View key={official.id} style={styles.officialCard}>
-      <View style={styles.officialHeader}>
-        <Image source={{ uri: official.image }} style={styles.officialImage} />
-        <View style={styles.officialInfo}>
-          <H3 style={styles.officialName} color={COLORS.text.primary} weight='bold' size='lg'>
-            {official.name}
-          </H3>
-          <BodyText style={styles.officialPosition} color={COLORS.primary} size='md' weight='semiBold'>
-            {official.position}
-          </BodyText>
-        </View>
-      </View>
-      
-      <BodyText style={styles.officialDescription} color={COLORS.text.primary} size='md'>
-        {official.description}
-      </BodyText>
-      
-      <View style={styles.achievementsContainer}>
-        <H3 style={styles.achievementsTitle} color={COLORS.text.primary} weight='bold' size='md'>
-          Key Achievements:
+  const renderMember = (member: any) => (
+    <View key={member.id} style={styles.memberCard}>
+      <Image source={{ uri: member.image }} style={styles.memberImage} />
+      <View style={styles.memberInfo}>
+        <H3 style={styles.memberName} color={COLORS.text.primary} weight='bold' size='lg'>
+          {member.name}
         </H3>
-        {official.achievements.map((achievement: string, index: number) => (
-          <View key={index} style={styles.achievementItem}>
-            <Ionicons name="checkmark-circle" size={16} color={COLORS.success} />
-            <BodyText style={styles.achievementText} color={COLORS.text.primary} size='sm'>
-              {achievement}
-            </BodyText>
-          </View>
-        ))}
+        <BodyText style={styles.memberPosition} color={COLORS.primary} size='md' weight='semiBold'>
+          {member.position}
+        </BodyText>
+        <BodyText style={styles.memberOrganization} color={COLORS.text.secondary} size='sm'>
+          {member.organization}
+        </BodyText>
       </View>
     </View>
   );
@@ -123,7 +93,7 @@ const AdministrationScreen: React.FC<AdministrationScreenProps> = ({ navigation 
           <Ionicons name="arrow-back-outline" size={24} color={COLORS.text.primary} />
         </TouchableOpacity>
         <H2 style={styles.headerTitle} color={COLORS.text.primary} weight='bold' size='xl'>
-          Administration
+          Hierarchy
         </H2>
         <View style={styles.headerRight} />
       </View>
@@ -135,42 +105,15 @@ const AdministrationScreen: React.FC<AdministrationScreenProps> = ({ navigation 
       >
         {/* Introduction */}
         <View style={styles.introSection}>
-          <H2 style={styles.introTitle} color={COLORS.primary} weight='bold' size='xl'>
-            Meet Our Leadership Team
-          </H2>
+        
           <BodyText style={styles.introDescription} color={COLORS.text.primary} size='md'>
-            The Kurukshetra Development Board is led by a team of dedicated professionals who bring together expertise in administration, culture, heritage conservation, and public service to ensure the continued development and preservation of this sacred land.
+            The Kurukshetra Development Board is led by distinguished leaders dedicated to the development and preservation of this sacred land.
           </BodyText>
         </View>
 
-        {/* Officials List */}
-        <View style={styles.officialsContainer}>
-          {officials.map(renderOfficial)}
-        </View>
-
-        {/* Board Information */}
-        <View style={styles.boardInfoSection}>
-          <H3 style={styles.boardTitle} color={COLORS.text.primary} weight='bold' size='lg'>
-            Board Information
-          </H3>
-          <View style={styles.boardInfoItem}>
-            <Ionicons name="calendar-outline" size={20} color={COLORS.primary} />
-            <BodyText style={styles.boardInfoText} color={COLORS.text.primary} size='md'>
-              Established: 1985
-            </BodyText>
-          </View>
-          <View style={styles.boardInfoItem}>
-            <Ionicons name="people-outline" size={20} color={COLORS.primary} />
-            <BodyText style={styles.boardInfoText} color={COLORS.text.primary} size='md'>
-              Board Members: 12
-            </BodyText>
-          </View>
-          <View style={styles.boardInfoItem}>
-            <Ionicons name="location-outline" size={20} color={COLORS.primary} />
-            <BodyText style={styles.boardInfoText} color={COLORS.text.primary} size='md'>
-              Headquarters: Kurukshetra, Haryana
-            </BodyText>
-          </View>
+        {/* Members List */}
+        <View style={styles.membersContainer}>
+          {members.map(renderMember)}
         </View>
       </ScrollView>
     </View>
@@ -225,10 +168,10 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZES.md,
     lineHeight: 24,
   },
-  officialsContainer: {
+  membersContainer: {
     paddingHorizontal: 20,
   },
-  officialCard: {
+  memberCard: {
     backgroundColor: COLORS.background.primary,
     borderRadius: 12,
     padding: 20,
@@ -243,76 +186,36 @@ const styles = StyleSheet.create({
     elevation: 3,
     borderWidth: 1,
     borderColor: COLORS.border.light,
+    alignItems: 'center',
   },
-  officialHeader: {
-    flexDirection: 'row',
+  memberImage: {
+    width: 150,
+    height: 150,
+    borderRadius: 75,
     marginBottom: 16,
+    backgroundColor: COLORS.background.secondary,
   },
-  officialImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    marginRight: 16,
+  memberInfo: {
+    alignItems: 'center',
+    width: '100%',
   },
-  officialInfo: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  officialName: {
+  memberName: {
     fontFamily: FONTS.gilroy.bold,
     fontSize: FONT_SIZES.lg,
-    marginBottom: 4,
+    marginBottom: 8,
+    textAlign: 'center',
   },
-  officialPosition: {
+  memberPosition: {
     fontFamily: FONTS.gilroy.semiBold,
     fontSize: FONT_SIZES.md,
+    marginBottom: 4,
+    textAlign: 'center',
   },
-  officialDescription: {
-    fontFamily: FONTS.gilroy.regular,
-    fontSize: FONT_SIZES.md,
-    lineHeight: 22,
-    marginBottom: 16,
-  },
-  achievementsContainer: {
-    marginTop: 8,
-  },
-  achievementsTitle: {
-    fontFamily: FONTS.gilroy.bold,
-    fontSize: FONT_SIZES.md,
-    marginBottom: 8,
-  },
-  achievementItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 6,
-  },
-  achievementText: {
+  memberOrganization: {
     fontFamily: FONTS.gilroy.regular,
     fontSize: FONT_SIZES.sm,
-    marginLeft: 8,
-    flex: 1,
-    lineHeight: 20,
-  },
-  boardInfoSection: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    backgroundColor: COLORS.background.tertiary,
-    marginTop: 20,
-  },
-  boardTitle: {
-    fontFamily: FONTS.gilroy.bold,
-    fontSize: FONT_SIZES.lg,
-    marginBottom: 16,
-  },
-  boardInfoItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  boardInfoText: {
-    fontFamily: FONTS.gilroy.regular,
-    fontSize: FONT_SIZES.md,
-    marginLeft: 12,
+    textAlign: 'center',
+    marginTop: 4,
   },
 });
 
