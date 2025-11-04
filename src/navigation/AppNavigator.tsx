@@ -23,9 +23,6 @@ import StallApplicationScreen from '../screens/stalls/StallApplicationScreen';
 import StallApplicationStatusScreen from '../screens/stalls/StallApplicationStatusScreen';
 import PaymentScreen from '../screens/stalls/PaymentScreen';
 import PaymentWebViewScreen from '../screens/stalls/PaymentWebViewScreen';
-import FamilyLaunchScreen from '../screens/family/FamilyLaunchScreen';
-import CreateFamilyScreen from '../screens/family/CreateFamilyScreen';
-import JoinFamilyScreen from '../screens/family/JoinFamilyScreen';
 import FamilyMembersScreen from '../screens/family/FamilyMembersScreen';
 import AddFamilyMemberScreen from '../screens/family/AddFamilyMemberScreen';
 import LocationMapScreen from '../screens/family/LocationMapScreen';
@@ -125,12 +122,9 @@ export type RootStackParamList = {
     formData: any;
   };
   PaymentWebView: undefined;
-  FamilyLaunch: undefined;
-  CreateFamily: undefined;
-  JoinFamily: undefined;
-  FamilyDashboard: { familyId: string };
-  AddFamilyMember: { familyId: string };
-  LocationMap: { familyId: string; selectedMemberId?: string };
+  FamilyMembers: undefined;
+  AddFamilyMember: undefined;
+  LocationMap: undefined;
   Tirths: undefined;
   TirthDetail: { tirth: Tirth };
   TirthMitraIntro: undefined;
@@ -320,10 +314,7 @@ function AppNavigator() {
         <Stack.Screen name='StallApplicationStatus' component={StallApplicationStatusScreen} />
         <Stack.Screen name='Payment' component={PaymentScreen} />
         <Stack.Screen name='PaymentWebView' component={PaymentWebViewScreen} />
-        <Stack.Screen name='FamilyLaunch' component={FamilyLaunchScreen} />
-        <Stack.Screen name='CreateFamily' component={CreateFamilyScreen} />
-        <Stack.Screen name='JoinFamily' component={JoinFamilyScreen} />
-        <Stack.Screen name='FamilyDashboard' component={FamilyMembersScreen} />
+        <Stack.Screen name='FamilyMembers' component={FamilyMembersScreen} />
         <Stack.Screen name='AddFamilyMember' component={AddFamilyMemberScreen} />
         <Stack.Screen name='LocationMap' component={LocationMapScreen} />
         <Stack.Screen name='Tirths' component={TirthsScreen} />

@@ -61,5 +61,6 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZES.sm,
     fontFamily: FONTS.gilroy.semiBold,
     color: COLORS.text.primary,
+    textAlign: 'center',
   },
 });

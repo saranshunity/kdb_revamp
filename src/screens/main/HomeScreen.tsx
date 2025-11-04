@@ -266,14 +266,33 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     fetchUserName();
   }, [user?.id]);
 
-  // Subscribe to user's reminders for list on Home
+  // Subscribe to user's reminders for list on Home - only show active reminders
   useEffect(() => {
     if (!user?.id) {
       setReminders([]);
       return;
     }
     const unsubscribe = ReminderService.subscribeToReminders(user.id, (list) => {
-      setReminders(list.filter(r => r.status === 'scheduled'));
+      const now = new Date();
+      const activeReminders = list.filter(r => {
+        // Only show scheduled reminders where the event hasn't passed
+        if (r.status !== 'scheduled') return false;
+        
+        // Check if event start time is in the future
+        if (r.eventStartAtUTC) {
+          const eventStart = new Date(r.eventStartAtUTC);
+          return eventStart > now;
+        }
+        
+        // Fallback: check notification time if eventStartAtUTC is not available
+        if (r.notifyAtUTC) {
+          const notifyAt = new Date(r.notifyAtUTC);
+          return notifyAt > now;
+        }
+        
+        return true; // If no time info, show it (shouldn't happen, but safe fallback)
+      });
+      setReminders(activeReminders);
     });
     return () => unsubscribe();
   }, [user?.id]);
@@ -726,24 +745,50 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           label="Events" 
           onPress={() => stackNavigation.navigate('Events')}
         />
-      {/* <QuickLinkItem 
+         <QuickLinkItem 
+        key="quiz" 
+        icon="school-outline" 
+        label="Quiz" 
+        onPress={async () => {
+          try {
+            const url = 'https://igmquiz.in';
+            const canOpen = await Linking.canOpenURL(url);
+            if (canOpen) {
+              await Linking.openURL(url);
+            } else {
+              Alert.alert('Error', 'Unable to open the quiz link. Please try again later.');
+            }
+          } catch (error) {
+            console.error('Error opening quiz URL:', error);
+            Alert.alert('Error', 'Unable to open the quiz link. Please try again later.');
+          }
+        }}
+      />
+      <QuickLinkItem 
         key="stalls" 
         icon="cart-outline" 
         label="Stalls Directory" 
-        onPress={() => stackNavigation.navigate('Stalls')}
+        onPress={() => {
+          Alert.alert(
+            'Coming Soon',
+            'Stalls Directory feature will be available soon. Stay tuned!',
+            [{ text: 'OK' }]
+          );
+        }}
       />
       <QuickLinkItem 
         key="hotels" 
         icon="bed-outline" 
         label="Live Shows" 
-        onPress={() => console.log('Hotels pressed')}
-      /> */}
-      <QuickLinkItem 
-        key="quiz" 
-        icon="school-outline" 
-        label="Quiz" 
-        onPress={() => stackNavigation.navigate('Quiz')}
+        onPress={() => {
+          Alert.alert(
+            'Coming Soon',
+            'Live Shows feature will be available soon. Stay tuned!',
+            [{ text: 'OK' }]
+          );
+        }}
       />
+     
         </ScrollView>
         
         {/* Reminders List */}
