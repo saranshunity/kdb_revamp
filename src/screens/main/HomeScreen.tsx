@@ -35,6 +35,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import firestore from '@react-native-firebase/firestore';
 import ReminderService, { UserReminder } from '../../services/ReminderService';
 import FamilyService from '../../services/FamilyService';
+import FirebaseService, { MahotsavHulchal as MahotsavHulchalItem } from '../../services/FirebaseService';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
 
@@ -62,6 +63,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   
   // User address state
   const [userAddress, setUserAddress] = useState('Kurukshetra, Haryana, India');
+
+  // Mahotsav Hulchal state
+  const [mahotsavHulchal, setMahotsavHulchal] = useState<MahotsavHulchalItem[]>([]);
 
   // Reverse geocoding function to convert coordinates to address
   const reverseGeocode = async (latitude: number, longitude: number): Promise<string> => {
@@ -342,6 +346,17 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     }
   };
 
+  // Fetch Mahotsav Hulchal from Firebase
+  useEffect(() => {
+    const unsubscribe = FirebaseService.subscribeToMahotsavHulchal((items) => {
+      setMahotsavHulchal(items);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
   // Animation effects for family illustration
   useEffect(() => {
     // Pulse animation for location pin
@@ -456,92 +471,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     },
   ];
 
-  const mahotsavHulchal = [
-    {
-      id: 1,
-      title: 'Cultural Dance Performance',
-      image: 'https://picsum.photos/600/400',
-      categories: ['Dance', 'Cultural'],
-      description: 'Traditional Indian classical dance performance by renowned artists showcasing the rich cultural heritage of India.',
-      rating: 4.8,
-      time: '7:00 PM - 9:00 PM',
-      price: 150,
-      location: 'Main Stage, Kurukshetra',
-      organizer: 'KDB Cultural Society',
-      contactInfo: '+91 98765 43210',
-      additionalInfo: 'Free entry for children under 12. Photography allowed. Traditional attire recommended.',
-    },
-    {
-      id: 2,
-      title: 'Spiritual Discourse',
-      image: 'https://picsum.photos/600/400',
-      categories: ['Spiritual', 'Lecture'],
-      description: 'Enlightening discourse on Bhagavad Gita by spiritual leaders, providing deep insights into ancient wisdom.',
-      rating: 4.9,
-      time: '6:00 PM - 7:30 PM',
-      price: 0,
-      location: 'Temple Hall, Kurukshetra',
-      organizer: 'Spiritual Foundation',
-      contactInfo: '+91 98765 43211',
-      additionalInfo: 'Open to all. No registration required. Traditional seating on floor.',
-    },
-    {
-      id: 3,
-      title: 'Art Exhibition',
-      image: 'https://picsum.photos/600/400',
-      categories: ['Art', 'Exhibition'],
-      description: 'Contemporary and traditional art exhibition showcasing local talent and creative expressions.',
-      rating: 4.6,
-      time: '10:00 AM - 6:00 PM',
-      price: 50,
-      location: 'Art Gallery, Kurukshetra',
-      organizer: 'KDB Art Society',
-      contactInfo: '+91 98765 43212',
-      additionalInfo: 'Artworks available for purchase. Guided tours available every hour.',
-    },
-    {
-      id: 4,
-      title: 'Food Festival',
-      image: 'https://picsum.photos/600/400',
-      categories: ['Food', 'Festival'],
-      description: 'Delicious traditional and modern cuisine from across India, celebrating the diverse flavors of our nation.',
-      rating: 4.7,
-      time: '12:00 PM - 10:00 PM',
-      price: 200,
-      location: 'Food Court, Kurukshetra',
-      organizer: 'KDB Food Committee',
-      contactInfo: '+91 98765 43213',
-      additionalInfo: 'Vegetarian and non-vegetarian options available. Cash and card payments accepted.',
-    },
-    {
-      id: 5,
-      title: 'Music Concert',
-      image: 'https://picsum.photos/600/400',
-      categories: ['Music', 'Concert'],
-      description: 'Soulful devotional music concert featuring famous artists performing classical and contemporary pieces.',
-      rating: 4.9,
-      time: '8:00 PM - 10:30 PM',
-      price: 300,
-      location: 'Concert Hall, Kurukshetra',
-      organizer: 'KDB Music Society',
-      contactInfo: '+91 98765 43214',
-      additionalInfo: 'Limited seating. Advance booking recommended. Age restriction: 12+',
-    },
-    {
-      id: 6,
-      title: 'Workshop on Yoga',
-      image: 'https://picsum.photos/600/400',
-      categories: ['Yoga', 'Wellness'],
-      description: 'Learn ancient yoga techniques from certified instructors and experience the benefits of this ancient practice.',
-      rating: 4.5,
-      time: '5:00 AM - 7:00 AM',
-      price: 100,
-      location: 'Yoga Hall, Kurukshetra',
-      organizer: 'KDB Wellness Center',
-      contactInfo: '+91 98765 43215',
-      additionalInfo: 'Yoga mats provided. Bring comfortable clothing. All levels welcome.',
-    },
-  ];
+
 
   const tirthsList = [
 
@@ -883,11 +813,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                 </View> */}
                 <View style={styles.applyStallsTextContainer}>
                   <H4 color={COLORS.white} weight='semiBold' size='lg'>
-                    Apply for Stalls/Shops
+                    Prepare for Shloka Mantra
                   </H4>
                   <BodyText color={COLORS.white} size='sm' style={styles.applyStallsDescription}>
-                    Book your stall at International Gita Mahotsav 2025
-                  </BodyText>
+Be a part of World's Shloka Chanting                  </BodyText>
                 </View>
               </View>
               <View style={styles.applyStallsRight}>
@@ -905,9 +834,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
         
         <View style={{marginTop: 26}}/>
-        {/* <MahotsavHulchal listData={mahotsavHulchal} type="mahotsav" />
+       <MahotsavHulchal listData={mahotsavHulchal} type="mahotsav" /> 
         <TodaysEvents listData={todaysEventsDataArray} type="events" />
-       */}
+     
       <View style={styles.familyLocationCard}>
           <MapView
             provider={PROVIDER_GOOGLE}
@@ -1304,6 +1233,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 4,
     flexWrap: 'nowrap',
+    // backgroundColor: 'red',
+    width: '65%',
   },
   refreshLocationButton: {
     padding: 4,

@@ -61,6 +61,26 @@ export interface TirthMitraApplication {
   reviewNotes?: string;
 }
 
+export interface MahotsavHulchal {
+  id: string;
+  title: string;
+  image: string;
+  categories: string[];
+  description: string;
+  rating: number;
+  time: string;
+  price: number;
+  location: string;
+  organizer: string;
+  contactInfo: string;
+  additionalInfo: string;
+}
+
+// Firebase Storage URL for mahotsavHulchul.json
+// Make sure the file is set to public access in Firebase Storage so no token is needed
+// Format: https://firebasestorage.googleapis.com/v0/b/{bucket}/o/{filename}?alt=media
+const MAHOTSAV_HULCHAL_STORAGE_URL = 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavHulchul.json?alt=media';
+
 class FirebaseService {
   private applicationsCollection = firestore().collection('stallApplications');
   private categoriesCollection = firestore().collection('stallCategories');
@@ -401,6 +421,76 @@ class FirebaseService {
       console.error('Error getting Tirth Mitra application stats:', error);
       throw error;
     }
+  }
+
+  // Get all Mahotsav Hulchal items from Firebase Storage JSON file
+  async getMahotsavHulchal(): Promise<MahotsavHulchal[]> {
+    try {
+      const response = await fetch(MAHOTSAV_HULCHAL_STORAGE_URL);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch mahotsav hulchal: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      // Handle both array and object with array property
+      const items: MahotsavHulchal[] = Array.isArray(data) 
+        ? data 
+        : (data.items || data.data || []);
+      
+      // Ensure each item has an id field (use array index if missing)
+      const itemsWithIds = items.map((item, index) => ({
+        ...item,
+        id: item.id || String(index + 1),
+      })) as MahotsavHulchal[];
+      
+      // Sort by order field if it exists, otherwise by id
+      return itemsWithIds.sort((a, b) => {
+        const orderA = (a as any).order ?? parseInt(a.id) ?? 0;
+        const orderB = (b as any).order ?? parseInt(b.id) ?? 0;
+        return orderA - orderB;
+      });
+    } catch (error) {
+      console.error('Error fetching mahotsav hulchal:', error);
+      // Return empty array on error instead of throwing
+      return [];
+    }
+  }
+
+  // Subscribe to Mahotsav Hulchal changes (polling-based for JSON file)
+  subscribeToMahotsavHulchal(
+    onChange: (items: MahotsavHulchal[]) => void,
+  ): () => void {
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+    let isSubscribed = true;
+
+    // Fetch immediately
+    this.getMahotsavHulchal().then(items => {
+      if (isSubscribed) {
+        onChange(items);
+      }
+    });
+
+    // Poll every 5 minutes for updates
+    intervalId = setInterval(async () => {
+      if (isSubscribed) {
+        try {
+          const items = await this.getMahotsavHulchal();
+          onChange(items);
+        } catch (error) {
+          console.error('Error polling mahotsav hulchal:', error);
+        }
+      }
+    }, 5 * 60 * 1000); // 5 minutes
+
+    // Return unsubscribe function
+    return () => {
+      isSubscribed = false;
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
   }
 }
 
