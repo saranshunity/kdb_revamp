@@ -29,13 +29,28 @@ const todaysEventsDataArray = [
 
 export default function EventsScreen() {
     const dates = [
-        { day: "Mon", date: 16 },
-        { day: "Tue", date: 17 },
-        { day: "Wed", date: 18 },
-        { day: "Thu", date: 19 },
-        { day: "Fri", date: 20 },
-        { day: "Sat", date: 21 },
-        { day: "Sun", date: 22 },
+        { day: "Sat", date: 15 },
+        { day: "Sun", date: 16 },
+        { day: "Mon", date: 17 },
+        { day: "Tue", date: 18 },
+        { day: "Wed", date: 19 },
+        { day: "Thu", date: 20 },
+        { day: "Fri", date: 21 },
+        { day: "Sat", date: 22 },
+        { day: "Sun", date: 23 },
+        { day: "Mon", date: 24 },
+        { day: "Tue", date: 25 },
+        { day: "Wed", date: 26 },
+        { day: "Thu", date: 27 },
+        { day: "Fri", date: 28 },
+        { day: "Sat", date: 29 },
+        { day: "Sun", date: 30 },
+        { day: "Mon", date: 31 },
+        { day: "Tue", date: 1 },
+        { day: "Wed", date: 2 },
+        { day: "Thu", date: 3 },
+        { day: "Fri", date: 4 },
+        { day: "Sat", date: 5 },
       ];
   const [selectedDate, setSelectedDate] = useState<any>(dates[0]);
   const [todaysEventsData, setTodaysEventsData] = useState<any[]>(todaysEventsDataArray);
@@ -64,7 +79,7 @@ export default function EventsScreen() {
         >
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.header}>November 2025</Text>
+        <Text style={styles.header}>Nov - Dec 2025</Text>
         <View style={styles.placeholder} />
       </View>
 
@@ -74,22 +89,23 @@ export default function EventsScreen() {
       <DateSelector dates={dates} onSelect={handleDateSelect} />
 
       {/* Events in Spotlight */}
-      <Text style={styles.sectionTitle}>Events in spotlight</Text>
+      <Text style={styles.sectionTitle}>Events</Text>
       <ScrollView  showsHorizontalScrollIndicator={false} style={{paddingHorizontal: 16}}>
         <EventCard
-          image="https://picsum.photos/400/300"
+          // image="https://picsum.photos/400/300"
           title="The Romanian – Solo Exhibition"
           time="Today at 8:30 PM"
           location="Vicas Art Studio"
           isFavorite
-          onPress={handleEventPress}
+          // onPress={handleEventPress}
+          hasReminder
         />
         <EventCard
-          image="https://picsum.photos/401/300"
+          // image="https://picsum.photos/401/300"
           title="M.A in Arts & Management"
           time="Tomorrow at 9:00 PM"
           location="Vicas Art Studio"
-          onPress={handleEventPress}
+          // onPress={handleEventPress}
         />
       </ScrollView>
     {/* <TodaysEvents listData={todaysEventsDataArray} /> */}
