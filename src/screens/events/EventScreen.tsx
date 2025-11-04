@@ -40,6 +40,7 @@ export default function EventsScreen() {
   const [selectedDate, setSelectedDate] = useState<any>(dates[0]);
   const [allEvents, setAllEvents] = useState<EventItem[]>([]);
   const [filteredEvents, setFilteredEvents] = useState<EventItem[]>([]);
+  const [viewAllMode, setViewAllMode] = useState(false);
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<EventsScreenNavigationProp>();
 
@@ -56,6 +57,12 @@ export default function EventsScreen() {
 
   // Filter events based on selected date
   useEffect(() => {
+    if (viewAllMode) {
+      // Show all events when in view all mode
+      setFilteredEvents(allEvents);
+      return;
+    }
+
     if (!selectedDate) return;
 
     // Format the date to match the event date format (DD-MM-YYYY or DD/MM/YYYY)
@@ -78,11 +85,16 @@ export default function EventsScreen() {
     });
 
     setFilteredEvents(filtered);
-  }, [selectedDate, allEvents]);
+  }, [selectedDate, allEvents, viewAllMode]);
 
   const handleDateSelect = useCallback((date: any) => {
     setSelectedDate(date);
+    setViewAllMode(false); // Exit view all mode when a date is selected
   }, []);
+
+  const handleViewAll = useCallback(() => {
+    setViewAllMode(!viewAllMode);
+  }, [viewAllMode]);
 
   // Format date for display
   const formatDisplayDate = (date: any) => {
@@ -90,12 +102,43 @@ export default function EventsScreen() {
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const month = 11; // November (based on dates array)
     const year = 2025;
-    return `${date.day}, ${monthNames[month - 1]} ${date.date}`;
+    return `${monthNames[month - 1]} ${date.date}`;
   };
 
   const handleEventPress = useCallback((eventId?: string) => {
     navigation.navigate('EventDetail' as any);
   }, [navigation]);
+
+  // Group events by date for view all mode
+  const groupEventsByDate = (events: EventItem[]) => {
+    const grouped: { [key: string]: EventItem[] } = {};
+    
+    events.forEach(event => {
+      const normalizedDate = event.date.replace(/\//g, '-');
+      if (!grouped[normalizedDate]) {
+        grouped[normalizedDate] = [];
+      }
+      grouped[normalizedDate].push(event);
+    });
+    
+    // Sort dates
+    const sortedDates = Object.keys(grouped).sort((a, b) => {
+      const [dayA, monthA, yearA] = a.split('-').map(Number);
+      const [dayB, monthB, yearB] = b.split('-').map(Number);
+      const dateA = new Date(yearA, monthA - 1, dayA);
+      const dateB = new Date(yearB, monthB - 1, dayB);
+      return dateA.getTime() - dateB.getTime();
+    });
+    
+    return { grouped, sortedDates };
+  };
+
+  // Format date string for display (e.g., "15 Nov 2025")
+  const formatDateHeader = (dateStr: string) => {
+    const [day, month, year] = dateStr.split('-').map(Number);
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return `${day} ${monthNames[month - 1]} ${year}`;
+  };
 
 
 
@@ -111,35 +154,68 @@ export default function EventsScreen() {
         >
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.header}>Events - {formatDisplayDate(selectedDate)}</Text>
-        <View style={styles.placeholder} />
+        <Text style={styles.header}>
+          {viewAllMode ? 'All Events' : `Events - ${formatDisplayDate(selectedDate)}`}
+        </Text>
+        <TouchableOpacity 
+          style={styles.viewAllButton} 
+          onPress={handleViewAll}
+        >
+          <Text style={styles.viewAllButtonText}>
+            {viewAllMode ? 'Filter' : 'View all'}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {/* <Text style={styles.monthHeader}>March 2020</Text> */}
 
-      {/* Date Strip */}
-      <DateSelector dates={dates} onSelect={handleDateSelect} />
+      {/* Date Strip - Hide when viewing all events */}
+      {!viewAllMode && <DateSelector dates={dates} onSelect={handleDateSelect} />}
 
       {/* Events List */}
       {filteredEvents.length > 0 ? (
         <ScrollView showsVerticalScrollIndicator={false} style={{paddingHorizontal: 16}}>
-          {filteredEvents.map((event) => (
-            <EventCard
-              key={event.id}
-              image={event.image}
-              title={event.title}
-              time={event.time}
-              location={event.location}
-              isFavorite={event.isFavorite}
-              onPress={handleEventPress}
-            />
-          ))}
+          {viewAllMode ? (
+            // Group events by date with separators
+            (() => {
+              const { grouped, sortedDates } = groupEventsByDate(filteredEvents);
+              return sortedDates.map((dateStr) => (
+                <View key={dateStr} style={styles.dateGroup}>
+                  <Text style={styles.dateSeparator}>{formatDateHeader(dateStr)}</Text>
+                  {grouped[dateStr].map((event) => (
+                    <EventCard
+                      key={event.id}
+                      image={event.image}
+                      title={event.title}
+                      time={event.time}
+                      location={event.location}
+                      isFavorite={event.isFavorite}
+                      onPress={handleEventPress}
+                    />
+                  ))}
+                </View>
+              ));
+            })()
+          ) : (
+            // Regular list without date separators
+            filteredEvents.map((event) => (
+              <EventCard
+                key={event.id}
+                image={event.image}
+                title={event.title}
+                time={event.time}
+                location={event.location}
+                isFavorite={event.isFavorite}
+                onPress={handleEventPress}
+              />
+            ))
+          )}
         </ScrollView>
       ) : (
-                 <View style={styles.emptyContainer}>
-           <Text style={styles.emptyText}>No events scheduled for this date</Text>
-         </View>
-       )}
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>No events scheduled for this date</Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -175,6 +251,16 @@ const styles = StyleSheet.create({
   placeholder: {
     width: 40, // Same width as back button for centering
   },
+  viewAllButton: {
+    padding: 8,
+    minWidth: 60,
+  },
+  viewAllButtonText: {
+    fontSize: FONT_SIZES.sm,
+    fontFamily: FONTS.gilroy.semiBold,
+    color: COLORS.primary,
+    textAlign: 'right',
+  },
   monthHeader: {
     fontSize: FONT_SIZES.lg,
     fontFamily: FONTS.gilroy.bold,
@@ -202,5 +288,15 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.gilroy.regular,
     color: COLORS.text.secondary,
     textAlign: 'center',
+  },
+  dateGroup: {
+    marginBottom: 24,
+  },
+  dateSeparator: {
+    fontSize: FONT_SIZES.lg,
+    fontFamily: FONTS.gilroy.bold,
+    color: COLORS.primary,
+    marginBottom: 12,
+    marginTop: 8,
   },
 });

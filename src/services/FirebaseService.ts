@@ -95,7 +95,7 @@ export interface EventItem {
 const MAHOTSAV_HULCHAL_STORAGE_URL = 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavHulchul.json?alt=media';
 
 // Firebase Storage URL for events.json
-const EVENTS_STORAGE_URL = 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/events.json?alt=media';
+const EVENTS_STORAGE_URL = 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/events.json?alt=media&token=a2fdf0b3-47ca-4860-a3c0-f58e92c6e210';
 
 class FirebaseService {
   private applicationsCollection = firestore().collection('stallApplications');
