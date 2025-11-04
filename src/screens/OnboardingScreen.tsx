@@ -14,6 +14,7 @@ import {
   Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { H1, H2, BodyText, ButtonTextPrimary, H5 } from '../components/Text';
 import { COLORS } from '../constants/colors';
 import OnboardingCard from '../components/OnboardingCard';
@@ -23,6 +24,8 @@ import { usePermissionContext } from '../contexts/PermissionContext';
 import { FONT_SIZES } from '../constants/fonts';
 import MetadataService from '../services/MetadataService';
 import UpdateBottomSheet from '../components/UpdateBottomSheet';
+
+const HAS_SEEN_ONBOARDING_KEY = '@has_seen_onboarding';
 
 interface OnboardingScreenProps {
   navigation: any;
@@ -150,9 +153,15 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
     }
   };
 
-  const handlePermissionGranted = () => {
+  const handlePermissionGranted = async () => {
     setIsLoading(true);
     setShowPermissionSheet(false);
+    // Mark onboarding as completed
+    try {
+      await AsyncStorage.setItem(HAS_SEEN_ONBOARDING_KEY, 'true');
+    } catch (error) {
+      console.error('Error saving onboarding status:', error);
+    }
     // Start spinning animation
     Animated.loop(
       Animated.timing(spinAnim, {
@@ -167,9 +176,15 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
     }, 300);
   };
 
-  const handlePermissionSkip = () => {
+  const handlePermissionSkip = async () => {
     setIsLoading(true);
     setShowPermissionSheet(false);
+    // Mark onboarding as completed
+    try {
+      await AsyncStorage.setItem(HAS_SEEN_ONBOARDING_KEY, 'true');
+    } catch (error) {
+      console.error('Error saving onboarding status:', error);
+    }
     // Start spinning animation
     Animated.loop(
       Animated.timing(spinAnim, {

@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, StatusBar, Image, Linking, Alert, Platform } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, StyleSheet, StatusBar, Image, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { H1, BodyText } from '../components/Text';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS } from '../constants/colors';
 import { useAuth } from '../contexts/AuthContext';
 import MetadataService from '../services/MetadataService';
+
+const HAS_SEEN_ONBOARDING_KEY = '@has_seen_onboarding';
 
 interface SplashScreenProps {
   navigation: any;
@@ -30,13 +32,29 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ navigation }) => {
       
       // Continue normal flow - let OnboardingScreen/HomeScreen handle update checks
       if (!isLoading) {
-        const timer = setTimeout(() => {
+        const timer = setTimeout(async () => {
           if (isAuthenticated) {
+            // User is authenticated, go to main app
             navigation.replace('Main');
           } else {
-            navigation.replace('Onboarding');
+            // Check if it's the first time opening the app
+            try {
+              const hasSeenOnboarding = await AsyncStorage.getItem(HAS_SEEN_ONBOARDING_KEY);
+              
+              if (hasSeenOnboarding === null) {
+                // First time - show onboarding
+                navigation.replace('Onboarding');
+              } else {
+                // Not first time - show login screen
+                navigation.replace('Auth');
+              }
+            } catch (error) {
+              console.error('Error checking onboarding status:', error);
+              // On error, default to onboarding
+              // navigation.replace('Onboarding');
+            }
           }
-        }, 2000);
+        }, 4000);
 
         return () => clearTimeout(timer);
       }
@@ -50,41 +68,13 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ navigation }) => {
     <>
       <View style={[styles.container, { paddingTop: insets.top }]}>
         <StatusBar barStyle='dark-content' backgroundColor={COLORS.white} />
-
-        <View style={styles.content}>
-          {/* Logo placeholder - replace with actual KDB logo */}
-          <View style={styles.logoContainer}>
-            <View style={styles.logoPlaceholder}>
-              <Image source={require('../assets/images/appLogo.png')} style={{width: 100, height: 100}} />
-            </View>
-          </View>
-
-          {/* <View style={styles.textContainer}>
-            <H1 color={COLORS.white} weight='bold'>
-             48 Kos Kurukshetra
-            </H1>
-            {/* <BodyText
-              color={COLORS.text.secondary}
-              size='lg'
-              style={styles.subtitle}
-            >
-              Your trusted financial partner
-            </BodyText> */}
-          {/* </View>  */}
-
-          {/* <View style={styles.loadingContainer}>
-            <View style={styles.loadingBar}>
-              <View style={styles.loadingProgress} />
-            </View>
-            <BodyText
-              color={COLORS.text.tertiary}
-              size='sm'
-              style={styles.loadingText}
-            >
-              Loading...
-            </BodyText>
-          </View> */}
-        </View>
+        
+        {/* Full-width and full-height image */}
+        <Image 
+          source={require('../assets/explainerImages/first.jpg')} 
+          style={styles.fullScreenImage}
+          resizeMode="cover"
+        />
       </View>
     </>
   );
@@ -93,62 +83,11 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white
-    ,
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 32,
-  },
-  logoContainer: {
-    marginBottom: 48,
-  },
-  logoPlaceholder: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
     backgroundColor: COLORS.white,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: COLORS.white,
-    shadowOffset: {
-      width: 0,
-      height: 8,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
   },
-  textContainer: {
-    alignItems: 'center',
-    marginBottom: 64,
-  },
-  subtitle: {
-    marginTop: 8,
-    textAlign: 'center',
-  },
-  loadingContainer: {
-    alignItems: 'center',
+  fullScreenImage: {
     width: '100%',
-  },
-  loadingBar: {
-    width: '100%',
-    height: 4,
-    backgroundColor: COLORS.border.light,
-    borderRadius: 2,
-    overflow: 'hidden',
-    marginBottom: 16,
-  },
-  loadingProgress: {
-    width: '30%',
     height: '100%',
-    backgroundColor: COLORS.primary,
-    borderRadius: 2,
-  },
-  loadingText: {
-    textAlign: 'center',
   },
 });
 
