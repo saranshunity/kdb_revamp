@@ -57,14 +57,18 @@ const HorizontalListViews = ({title,listData,type,showAll}: {title: string,listD
       categories={item?.categories}
       title={item?.title}
       onPress={() => {
-        // If item has a link, navigate to WebView
+        // Events are non-clickable for now
+        if (type === 'events') {
+          return; // Do nothing for events
+        }
+        // If item has a link, navigate to WebView (for tirths/mahotsav)
         if (item?.link) {
           navigation.navigate('TirthWebView', {
             url: item.link,
             title: item.title || 'Tirth Details'
           });
         } else {
-          console.log("Card Pressed - No link available");
+          console.log("Card Pressed - No navigation available");
         }
       }}
       />

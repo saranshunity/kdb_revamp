@@ -106,8 +106,10 @@ export default function EventsScreen() {
   };
 
   const handleEventPress = useCallback((eventId?: string) => {
-    navigation.navigate('EventDetail' as any);
-  }, [navigation]);
+    // Events are non-clickable for now
+    // TODO: Re-enable navigation to EventDetail when ready
+    // navigation.navigate('EventDetail' as any);
+  }, []);
 
   // Group events by date for view all mode
   const groupEventsByDate = (events: EventItem[]) => {

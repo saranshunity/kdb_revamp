@@ -7,6 +7,7 @@ import {
   StatusBar,
   ActivityIndicator,
   ScrollView,
+  Alert,
 } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -29,6 +30,7 @@ const FamilyLaunchScreen = () => {
   useEffect(() => {
     checkUserFamily();
   }, [user?.id]);
+
 
   const checkUserFamily = async () => {
     if (!user?.id) {
@@ -82,6 +84,12 @@ const FamilyLaunchScreen = () => {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
+        {/* Alert Banner */}
+        <View style={styles.alertBanner}>
+          <Ionicons name="information-circle" size={20} color={COLORS.white} />
+          <Text style={styles.alertText}>This feature will be enabled from 15th November</Text>
+        </View>
+
         {/* Header */}
         <View style={styles.header}>
           <Ionicons name="people" size={64} color={COLORS.primary} />
@@ -94,27 +102,29 @@ const FamilyLaunchScreen = () => {
         {/* Action Buttons */}
         <View style={styles.actionsContainer}>
           <TouchableOpacity
-            style={styles.primaryButton}
-            onPress={() => navigation.navigate('CreateFamily' as any)}
+            style={[styles.primaryButton, styles.disabledButton]}
+            onPress={() => {}}
+            disabled={true}
           >
             <View style={styles.buttonContent}>
-              <Ionicons name="add-circle" size={24} color={COLORS.white} />
-              <Text style={styles.primaryButtonText}>Create Family</Text>
+              <Ionicons name="add-circle" size={24} color={COLORS.white + '80'} />
+              <Text style={[styles.primaryButtonText, styles.disabledButtonText]}>Create Family</Text>
             </View>
-            <Text style={[styles.buttonDescription, styles.primaryButtonDescription]}>
+            <Text style={[styles.buttonDescription, styles.primaryButtonDescription, styles.disabledButtonText]}>
               Start a new family group and invite members
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.secondaryButton}
-            onPress={() => navigation.navigate('JoinFamily' as any)}
+            style={[styles.secondaryButton, styles.disabledButton]}
+            onPress={() => {}}
+            disabled={true}
           >
             <View style={styles.buttonContent}>
-              <Ionicons name="people-circle" size={24} color={COLORS.primary} />
-              <Text style={styles.secondaryButtonText}>Join Family</Text>
+              <Ionicons name="people-circle" size={24} color={COLORS.primary + '80'} />
+              <Text style={[styles.secondaryButtonText, styles.disabledButtonText]}>Join Family</Text>
             </View>
-            <Text style={[styles.buttonDescription, styles.secondaryButtonDescription]}>
+            <Text style={[styles.buttonDescription, styles.secondaryButtonDescription, styles.disabledButtonText]}>
               Join an existing family using family code
             </Text>
           </TouchableOpacity>
@@ -260,6 +270,38 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZES.md,
     fontFamily: FONTS.gilroy.regular,
     color: COLORS.text.secondary,
+  },
+  disabledButton: {
+    opacity: 0.6,
+  },
+  disabledButtonText: {
+    opacity: 0.7,
+  },
+  alertBanner: {
+    backgroundColor: COLORS.warning,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 24,
+    gap: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  alertText: {
+    fontSize: FONT_SIZES.sm,
+    fontFamily: FONTS.gilroy.semiBold,
+    color: COLORS.white,
+    flex: 1,
+    textAlign: 'center',
   },
 });
 

@@ -192,16 +192,17 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
             },
             (error) => {
               console.error('Error getting location:', error);
-              // Handle different error types
-              if (error.code === 1) {
-                Alert.alert('Permission Denied', 'Location permission was denied. Please enable location access in settings.');
-              } else if (error.code === 2) {
-                Alert.alert('Location Unavailable', 'Unable to get your current location. Please check your GPS settings.');
-              } else if (error.code === 3) {
-                Alert.alert('Timeout', 'Location request timed out. Please try again.');
-              } else {
-                Alert.alert('Location Error', 'Unable to get your location. Using default address.');
-              }
+              // PHASE 1: Hide location error alerts
+              // Handle different error types silently
+              // if (error.code === 1) {
+              //   Alert.alert('Permission Denied', 'Location permission was denied. Please enable location access in settings.');
+              // } else if (error.code === 2) {
+              //   Alert.alert('Location Unavailable', 'Unable to get your current location. Please check your GPS settings.');
+              // } else if (error.code === 3) {
+              //   Alert.alert('Timeout', 'Location request timed out. Please try again.');
+              // } else {
+              //   Alert.alert('Location Error', 'Unable to get your location. Using default address.');
+              // }
               // Keep default address on error
               setUserAddress('Kurukshetra, Haryana, India');
             },
@@ -338,7 +339,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         },
         (error) => {
           console.error('Error refreshing location:', error);
-          Alert.alert('Location Error', 'Unable to refresh location. Please check your GPS settings.');
+          // PHASE 1: Hide location error alerts
+          // Alert.alert('Location Error', 'Unable to refresh location. Please check your GPS settings.');
         },
         { 
           enableHighAccuracy: true, 
