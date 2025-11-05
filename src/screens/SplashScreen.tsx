@@ -31,26 +31,29 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ navigation }) => {
         return;
       }
       
-      // PHASE 1: Skip authentication - go directly to onboarding or home based on onboarding status
-      // TODO: Re-enable authentication check for Phase 2
+      // PHASE 1: Skip authentication and onboarding - go directly to home screen
+      // TODO: Re-enable authentication and onboarding check for Phase 2
       // Continue normal flow - let OnboardingScreen/HomeScreen handle update checks
       const timer = setTimeout(async () => {
-        // Check if it's the first time opening the app
-        try {
-          const hasSeenOnboarding = await AsyncStorage.getItem(HAS_SEEN_ONBOARDING_KEY);
-          
-          if (hasSeenOnboarding === null) {
-            // First time - show onboarding
-            navigation.replace('Onboarding');
-          } else {
-            // Onboarding already seen - navigate directly to HomeScreen (skip auth)
-            navigation.replace('Main');
-          }
-        } catch (error) {
-          console.error('Error checking onboarding status:', error);
-          // On error, navigate to Main
-          navigation.replace('Main');
-        }
+        // Navigate directly to HomeScreen for both new and returning users
+        navigation.replace('Main');
+        
+        // PHASE 2: Re-enable onboarding check
+        // try {
+        //   const hasSeenOnboarding = await AsyncStorage.getItem(HAS_SEEN_ONBOARDING_KEY);
+        //   
+        //   if (hasSeenOnboarding === null) {
+        //     // First time - show onboarding
+        //     navigation.replace('Onboarding');
+        //   } else {
+        //     // Onboarding already seen - navigate directly to HomeScreen (skip auth)
+        //     navigation.replace('Main');
+        //   }
+        // } catch (error) {
+        //   console.error('Error checking onboarding status:', error);
+        //   // On error, navigate to Main
+        //   navigation.replace('Main');
+        // }
       }, 2000);
 
       return () => clearTimeout(timer);
