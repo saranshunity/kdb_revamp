@@ -108,6 +108,14 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     navigation.navigate('ForgotPassword');
   };
 
+  const handleSkip = () => {
+    // Navigate directly to Main (Home Screen) and reset navigation stack
+    navigation.getParent()?.reset({
+      index: 0,
+      routes: [{ name: 'Main' }],
+    });
+  };
+
   const validatePhoneForOtp = () => {
     const digits = phone.replace(/\D/g, '');
     if (!/^\d{10}$/.test(digits)) {
@@ -225,6 +233,11 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                     </BodyText>
                   </TouchableOpacity>
                 </View>
+                <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+                  <BodyText color={COLORS.text.secondary} size='sm' weight='medium'>
+                    Skip for now
+                  </BodyText>
+                </TouchableOpacity>
              
               </View>
        
@@ -363,6 +376,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 8,
+  },
+  skipButton: {
+    marginTop: 24,
+    paddingVertical: 12,
+    alignItems: 'center',
   },
 });
 

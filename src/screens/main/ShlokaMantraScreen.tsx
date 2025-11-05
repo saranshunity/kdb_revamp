@@ -12,11 +12,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
-import { H2, BodyText } from '../../components/Text';
+import { H2, BodyText, H3 } from '../../components/Text';
 import { COLORS } from '../../constants/colors';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import Sound from 'react-native-sound';
 import storage from '@react-native-firebase/storage';
+import { WebView } from 'react-native-webview';
 
 type ShlokaMantraScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'ShlokaMantra'>;
 
@@ -25,8 +25,8 @@ interface Shloka {
   title: string;
   number: number;
   description?: string;
-  text: string; // Sanskrit text
-  audioUrl: string; // Firebase storage path
+  text: string;
+  audioUrl: string;
 }
 
 // 18 Shlokas from Bhagavad Gita
@@ -37,7 +37,7 @@ const SHLOKAS: Shloka[] = [
     number: 1,
     description: 'Bhagavad Gita Shloka 1',
     text: 'धर्मक्षेत्रे कुरुक्षेत्रे समवेता युयुत्सवः |\nमामकाः पाण्डवाश्चैव किमकुर्वत सञ्जय ||',
-    audioUrl: 'श्रमदभगवदगत अष्टदश शलक  Bhagavad Gita 18 Shlokas.mp3',
+    audioUrl: 'shlokaAudio/firstShlokaAudio.mp3',
   },
   {
     id: 'shloka-2',
@@ -45,7 +45,7 @@ const SHLOKAS: Shloka[] = [
     number: 2,
     description: 'Bhagavad Gita Shloka 2',
     text: 'कर्मण्येवाधिकारस्ते मा फलेषु कदाचन |\nमा कर्मफलहेतुर्भूर्मा ते सङ्गोऽस्त्वकर्मणि ||',
-    audioUrl: 'श्रमदभगवदगत अष्टदश शलक  Bhagavad Gita 18 Shlokas.mp3',
+    audioUrl: 'shlokaAudio/secondShloka.mp3',
   },
   {
     id: 'shloka-3',
@@ -53,7 +53,7 @@ const SHLOKAS: Shloka[] = [
     number: 3,
     description: 'Bhagavad Gita Shloka 3',
     text: 'कर्मणैव हि संसिद्धिमास्थिता जनकादय: |\nलोकसंग्रहमेवापि सम्पश्यन्कर्तुमर्हसि ||',
-    audioUrl: 'श्रमदभगवदगत अष्टदश शलक  Bhagavad Gita 18 Shlokas.mp3',
+    audioUrl: 'shlokaAudio/thirdShloka.mp3',
   },
   {
     id: 'shloka-4',
@@ -61,7 +61,7 @@ const SHLOKAS: Shloka[] = [
     number: 4,
     description: 'Bhagavad Gita Shloka 4',
     text: 'एवं ज्ञात्वा कृतं कर्म पूर्वैरपि मुमुक्षुभि: |\nकुरु कर्मैव तस्मात्त्वं पूर्वै: पूर्वतरं कृतम् ||',
-    audioUrl: 'श्रमदभगवदगत अष्टदश शलक  Bhagavad Gita 18 Shlokas.mp3',
+    audioUrl: 'shlokaAudio/fourthShloka.mp3',
   },
   {
     id: 'shloka-5',
@@ -69,7 +69,7 @@ const SHLOKAS: Shloka[] = [
     number: 5,
     description: 'Bhagavad Gita Shloka 5',
     text: 'ब्रह्मण्याधाय कर्माणि सङ्गं त्यक्त्वा करोति य:|\nलिप्यते न स पापेन पद्मपत्रमिवाम्भसा ||',
-    audioUrl: 'श्रमदभगवदगत अष्टदश शलक  Bhagavad Gita 18 Shlokas.mp3',
+    audioUrl: 'shlokaAudio/fifthShloka.mp3',
   },
   {
     id: 'shloka-6',
@@ -77,7 +77,7 @@ const SHLOKAS: Shloka[] = [
     number: 6,
     description: 'Bhagavad Gita Shloka 6',
     text: 'आत्मौपम्येन सर्वत्र समं पश्यति योऽर्जुन |\nसुखं वा यदि वा दु:खं स योगी परमो मत: ||',
-    audioUrl: 'श्रमदभगवदगत अष्टदश शलक  Bhagavad Gita 18 Shlokas.mp3',
+    audioUrl: 'shlokaAudio/sixthShloka.mp3',
   },
   {
     id: 'shloka-7',
@@ -85,7 +85,7 @@ const SHLOKAS: Shloka[] = [
     number: 7,
     description: 'Bhagavad Gita Shloka 7',
     text: 'मत्त: परतरं नान्यत्किञ्चिदस्ति धनञ्जय |\nमयि सर्वमिदं प्रोतं सूत्रे मणिगणा इव ||',
-    audioUrl: 'श्रमदभगवदगत अष्टदश शलक  Bhagavad Gita 18 Shlokas.mp3',
+    audioUrl: 'shlokaAudio/seventhShloka.mp3',
   },
   {
     id: 'shloka-8',
@@ -93,7 +93,7 @@ const SHLOKAS: Shloka[] = [
     number: 8,
     description: 'Bhagavad Gita Shloka 8',
     text: 'तस्मात्सर्वेषु कालेषु मामनुस्मर युध्य च |\nमय्यर्पितमनोबुद्धिर्मामेवैष्यस्यसंशयम् ||',
-    audioUrl: 'श्रमदभगवदगत अष्टदश शलक  Bhagavad Gita 18 Shlokas.mp3',
+    audioUrl: 'shlokaAudio/eighthShloka.mp3',
   },
   {
     id: 'shloka-9',
@@ -101,7 +101,7 @@ const SHLOKAS: Shloka[] = [
     number: 9,
     description: 'Bhagavad Gita Shloka 9',
     text: 'मयाध्यक्षेण प्रकृति: सूयते सचराचरम् |\nहेतुनानेन कौन्तेय जगद्विपरिवर्तते ||',
-    audioUrl: 'श्रमदभगवदगत अष्टदश शलक  Bhagavad Gita 18 Shlokas.mp3',
+    audioUrl: 'shlokaAudio/ninthShloka.mp3',
   },
   {
     id: 'shloka-10',
@@ -109,7 +109,7 @@ const SHLOKAS: Shloka[] = [
     number: 10,
     description: 'Bhagavad Gita Shloka 10',
     text: 'महर्षय: सप्त पूर्वे चत्वारो मनवस्तथा |\nमद्भावा मानसा जाता येषां लोक इमा: प्रजा: ||',
-    audioUrl: 'श्रमदभगवदगत अष्टदश शलक  Bhagavad Gita 18 Shlokas.mp3',
+    audioUrl: 'shlokaAudio/tenthShloka.mp3',
   },
   {
     id: 'shloka-11',
@@ -117,7 +117,7 @@ const SHLOKAS: Shloka[] = [
     number: 11,
     description: 'Bhagavad Gita Shloka 11',
     text: 'दिवि सूर्यसहस्रस्य भवेद्युगपदुत्थिता |\nयदि भा: सदृशी सा स्याद्भासस्तस्य महात्मन: ||',
-    audioUrl: 'श्रमदभगवदगत अष्टदश शलक  Bhagavad Gita 18 Shlokas.mp3',
+    audioUrl: 'shlokaAudio/eleventhShloka.mp3',
   },
   {
     id: 'shloka-12',
@@ -125,7 +125,7 @@ const SHLOKAS: Shloka[] = [
     number: 12,
     description: 'Bhagavad Gita Shloka 12',
     text: 'सन्नियम्येन्द्रियग्रामं सर्वत्र समबुद्धय: |\nते प्राप्नुवन्ति मामेव सर्वभूतहिते रता: ||',
-    audioUrl: 'श्रमदभगवदगत अष्टदश शलक  Bhagavad Gita 18 Shlokas.mp3',
+    audioUrl: 'shlokaAudio/twelveShloka.mp3',
   },
   {
     id: 'shloka-13',
@@ -133,7 +133,7 @@ const SHLOKAS: Shloka[] = [
     number: 13,
     description: 'Bhagavad Gita Shloka 13',
     text: 'बहिरन्तश्च भूतानामचरं चरमेव च |\nसूक्ष्मत्वात्तदविज्ञेयं दूरस्थं चान्तिके च तत् ||',
-    audioUrl: 'श्रमदभगवदगत अष्टदश शलक  Bhagavad Gita 18 Shlokas.mp3',
+    audioUrl: 'shlokaAudio/thirteenthShloka.mp3',
   },
   {
     id: 'shloka-14',
@@ -141,7 +141,7 @@ const SHLOKAS: Shloka[] = [
     number: 14,
     description: 'Bhagavad Gita Shloka 14',
     text: 'कर्मण: सुकृतस्याहु: सात्विकं निर्मलं फलम् |\nरजसस्तु फलं दु:खमज्ञानं तमस: फलम् ||',
-    audioUrl: 'श्रमदभगवदगत अष्टदश शलक  Bhagavad Gita 18 Shlokas.mp3',
+    audioUrl: 'shlokaAudio/fourteenShloka.mp3',
   },
   {
     id: 'shloka-15',
@@ -149,7 +149,7 @@ const SHLOKAS: Shloka[] = [
     number: 15,
     description: 'Bhagavad Gita Shloka 15',
     text: 'शरीरं यदवाप्नोति यच्चाप्युत्क्रामतीश्वर: |\nगृहीत्वैतानि संयाति वायुर्गन्धानिवाशयात् ||',
-    audioUrl: 'श्रमदभगवदगत अष्टदश शलक  Bhagavad Gita 18 Shlokas.mp3',
+    audioUrl: 'shlokaAudio/fiteenthShloka.mp3',
   },
   {
     id: 'shloka-16',
@@ -157,7 +157,7 @@ const SHLOKAS: Shloka[] = [
     number: 16,
     description: 'Bhagavad Gita Shloka 16',
     text: 'दैवी सम्पद्विमोक्षाय निबन्धायासुरी मता |\nमा शुच: सम्पदं दैवीमभिजातोऽसि पाण्डव ||',
-    audioUrl: 'श्रमदभगवदगत अष्टदश शलक  Bhagavad Gita 18 Shlokas.mp3',
+    audioUrl: 'shlokaAudio/sixteenthShloka.mp3',
   },
   {
     id: 'shloka-17',
@@ -165,7 +165,7 @@ const SHLOKAS: Shloka[] = [
     number: 17,
     description: 'Bhagavad Gita Shloka 17',
     text: 'सद्भावे साधुभावे च सदित्येतत्प्रयुज्यते |\nप्रशस्ते कर्मणि तथा सच्छब्द: पार्थ युज्यते ||',
-    audioUrl: 'श्रमदभगवदगत अष्टदश शलक  Bhagavad Gita 18 Shlokas.mp3',
+    audioUrl: 'shlokaAudio/seventeenthShloka.mp3',
   },
   {
     id: 'shloka-18',
@@ -173,28 +173,20 @@ const SHLOKAS: Shloka[] = [
     number: 18,
     description: 'Bhagavad Gita Shloka 18',
     text: 'यत्र योगेश्वर: कृष्णो यत्र पार्थो धनुर्धर: |\nतत्र श्रीर्विजयो भूतिध्रुवा नीतिर्मतिर्मम ||',
-    audioUrl: 'श्रमदभगवदगत अष्टदश शलक  Bhagavad Gita 18 Shlokas.mp3',
+    audioUrl: 'shlokaAudio/eighteenthShloka.mp3',
   },
 ];
-
-// Enable playback in silence mode
-Sound.setCategory('Playback');
 
 const ShlokaMantraScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<ShlokaMantraScreenNavigationProp>();
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [playingId, setPlayingId] = useState<string | null>(null);
-  const [loadingAudio, setLoadingAudio] = useState<string | null>(null);
-  const [progress, setProgress] = useState<{ [key: string]: number }>({});
-  const [duration, setDuration] = useState<{ [key: string]: number }>({});
+  const [error, setError] = useState<string | null>(null);
+  const [audioUrls, setAudioUrls] = useState<{ [key: string]: string }>({});
 
-  const soundRef = useRef<Sound | null>(null);
-  const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null);
   const animatedHeights = useRef<{ [key: string]: Animated.Value }>({});
 
-  // Initialize animated values for each shloka
   useEffect(() => {
     SHLOKAS.forEach(shloka => {
       if (!animatedHeights.current[shloka.id]) {
@@ -203,28 +195,28 @@ const ShlokaMantraScreen: React.FC = () => {
     });
   }, []);
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (soundRef.current) {
-        soundRef.current.release();
-      }
-      if (progressInterval.current) {
-        clearInterval(progressInterval.current);
-      }
-    };
-  }, []);
 
-  const toggleExpand = (id: string) => {
+  const toggleExpand = async (id: string) => {
     const isExpanding = expandedId !== id;
-
-    // Stop audio if collapsing
-    if (!isExpanding && playingId === id) {
-      stopAudio();
-    }
     setExpandedId(isExpanding ? id : null);
 
-    // Animate height
+    // Fetch audio URL from Firebase when expanding
+    if (isExpanding) {
+      const shloka = SHLOKAS.find(s => s.id === id);
+      if (shloka && !audioUrls[id]) {
+        try {
+          setError(null);
+          console.log('Fetching audio URL for:', shloka.audioUrl);
+          const url = await storage().ref(shloka.audioUrl).getDownloadURL();
+          setAudioUrls(prev => ({ ...prev, [id]: url }));
+          console.log('Audio URL fetched:', url);
+        } catch (error: any) {
+          console.error('Error fetching audio URL:', error);
+          setError(`Failed to load audio: ${error.message || 'Unknown error'}`);
+        }
+      }
+    }
+
     Animated.timing(animatedHeights.current[id], {
       toValue: isExpanding ? 1 : 0,
       duration: 300,
@@ -232,185 +224,124 @@ const ShlokaMantraScreen: React.FC = () => {
     }).start();
   };
 
-  const loadAudio = async (shloka: Shloka): Promise<Sound | null> => {
-    try {
-      setLoadingAudio(shloka.id);
+  // Generate HTML for audio player
+  const generateAudioPlayerHTML = (audioUrl: string, shlokaText: string) => {
+    // Escape HTML to prevent XSS
+    const escapeHtml = (text: string) => {
+      const map: { [key: string]: string } = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;',
+      };
+      return text.replace(/[&<>"']/g, (m) => map[m]);
+    };
 
-      // Get download URL from Firebase Storage
-      const url = await storage().ref(shloka.audioUrl).getDownloadURL();
+    const escapedText = escapeHtml(shlokaText).replace(/\n/g, '<br>');
+    const escapedUrl = escapeHtml(audioUrl);
 
-      return new Promise((resolve, reject) => {
-        const sound = new Sound(url, '', (error) => {
-          setLoadingAudio(null);
-
-          if (error) {
-            console.error('Failed to load audio:', error);
-            reject(error);
-            return;
-          }
-
-          // Set duration
-          setDuration(prev => ({ ...prev, [shloka.id]: sound.getDuration() }));
-          resolve(sound);
-        });
-      });
-    } catch (error) {
-      console.error('Error loading audio from Firebase:', error);
-      setLoadingAudio(null);
-      return null;
-    }
-  };
-
-  const startProgressTracking = (shlokaId: string) => {
-    if (progressInterval.current) {
-      clearInterval(progressInterval.current);
-    }
-    progressInterval.current = setInterval(() => {
-      if (soundRef.current) {
-        soundRef.current.getCurrentTime((seconds) => {
-          setProgress(prev => ({ ...prev, [shlokaId]: seconds }));
-        });
-      }
-    }, 100);
-  };
-
-  const stopProgressTracking = () => {
-    if (progressInterval.current) {
-      clearInterval(progressInterval.current);
-      progressInterval.current = null;
-    }
-  };
-
-  const playAudio = async (shloka: Shloka) => {
-    // If same audio is playing, pause it
-    if (playingId === shloka.id && soundRef.current) {
-      soundRef.current.pause();
-      setPlayingId(null);
-      stopProgressTracking();
-      return;
-    }
-
-    // Stop current audio if playing different one
-    if (soundRef.current) {
-      soundRef.current.stop();
-      soundRef.current.release();
-      stopProgressTracking();
-    }
-
-    // Load and play new audio
-    const sound = await loadAudio(shloka);
-    if (!sound) return;
-
-    soundRef.current = sound;
-    setPlayingId(shloka.id);
-    startProgressTracking(shloka.id);
-
-    sound.play((success) => {
-      if (success) {
-        console.log('Audio finished playing');
-      } else {
-        console.log('Audio playback failed');
-      }
-      setPlayingId(null);
-      setProgress(prev => ({ ...prev, [shloka.id]: 0 }));
-      stopProgressTracking();
-    });
-  };
-
-  const stopAudio = () => {
-    if (soundRef.current) {
-      soundRef.current.stop();
-      soundRef.current.release();
-      soundRef.current = null;
-    }
-    setPlayingId(null);
-    stopProgressTracking();
-  };
-
-  const seekAudio = (shlokaId: string, value: number) => {
-    if (soundRef.current && playingId === shlokaId) {
-      soundRef.current.setCurrentTime(value);
-      setProgress(prev => ({ ...prev, [shlokaId]: value }));
-    }
-  };
-
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+          <style>
+            * {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+            }
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+              background-color: #f9fafb;
+              padding: 16px;
+              color: #000000;
+            }
+            .shloka-text {
+              background-color: #f3f4f6;
+              padding: 16px;
+              border-radius: 8px;
+              margin-bottom: 16px;
+              text-align: center;
+              font-size: 16px;
+              line-height: 24px;
+              white-space: pre-line;
+            }
+            .audio-container {
+              background-color: #ffffff;
+              border-radius: 12px;
+              padding: 16px;
+              box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+            audio {
+              width: 100%;
+              outline: none;
+            }
+            .loading {
+              text-align: center;
+              padding: 20px;
+              color: #666666;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="shloka-text">${escapedText}</div>
+          <div class="audio-container">
+            <audio controls autoplay>
+              <source src="${escapedUrl}" type="audio/mpeg">
+              Your browser does not support the audio element.
+            </audio>
+          </div>
+        </body>
+      </html>
+    `;
   };
 
   const renderAudioPlayer = (shloka: Shloka) => {
-    const isPlaying = playingId === shloka.id;
-    const isLoading = loadingAudio === shloka.id;
-    const currentProgress = progress[shloka.id] || 0;
-    const totalDuration = duration[shloka.id] || 0;
-    const progressPercentage = totalDuration > 0 ? (currentProgress / totalDuration) * 100 : 0;
+    const audioUrl = audioUrls[shloka.id];
 
     return (
       <View style={styles.audioPlayer}>
-        {/* Shloka Text */}
-        <View style={styles.shlokaTextContainer}>
-          <BodyText
-            color={COLORS.text.primary}
-            size="md"
-            style={styles.shlokaText}
-          >
-            {shloka.text}
-          </BodyText>
-        </View>
-
-        {/* Audio Controls */}
-        <View style={styles.audioControls}>
-          {/* Play/Pause Button */}
-          <TouchableOpacity
-            style={styles.playButton}
-            onPress={() => playAudio(shloka)}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <ActivityIndicator size="small" color={COLORS.primary} />
-            ) : (
-              <Ionicons
-                name={isPlaying ? 'pause' : 'play'}
-                size={24}
-                color={COLORS.primary}
-              />
-            )}
-          </TouchableOpacity>
-
-          {/* Progress Bar */}
-          <View style={styles.progressContainer}>
-            <View style={styles.progressBar}>
-              <View
-                style={[
-                  styles.progressFill,
-                  { width: `${progressPercentage}%` },
-                ]}
-              />
-            </View>
-
-            {/* Time Labels */}
-            <View style={styles.timeLabels}>
-              <BodyText color={COLORS.text.secondary} size="xs">
-                {formatTime(currentProgress)}
-              </BodyText>
-              <BodyText color={COLORS.text.secondary} size="xs">
-                {formatTime(totalDuration)}
-              </BodyText>
-            </View>
+        {error && (
+          <View style={styles.errorContainer}>
+            <BodyText color={COLORS.error} size="sm" style={styles.errorText}>
+              {error}
+            </BodyText>
           </View>
+        )}
 
-          {/* Stop Button */}
-          {isPlaying && (
-            <TouchableOpacity
-              style={styles.stopButton}
-              onPress={stopAudio}
-            >
-              <Ionicons name="stop" size={20} color={COLORS.text.secondary} />
-            </TouchableOpacity>
-          )}
-        </View>
+        {!audioUrl ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="small" color={COLORS.primary} />
+            <BodyText color={COLORS.text.secondary} size="sm" style={styles.loadingText}>
+              Loading audio...
+            </BodyText>
+          </View>
+        ) : (
+          <WebView
+            source={{ html: generateAudioPlayerHTML(audioUrl, shloka.text) }}
+            style={styles.webView}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+            startInLoadingState={true}
+            renderLoading={() => (
+              <View style={styles.webViewLoading}>
+                <ActivityIndicator size="small" color={COLORS.primary} />
+              </View>
+            )}
+            onError={(syntheticEvent) => {
+              const { nativeEvent } = syntheticEvent;
+              console.error('WebView error: ', nativeEvent);
+              setError('Failed to load audio player');
+            }}
+            onHttpError={(syntheticEvent) => {
+              const { nativeEvent } = syntheticEvent;
+              console.error('WebView HTTP error: ', nativeEvent);
+              setError(`HTTP error: ${nativeEvent.statusCode}`);
+            }}
+          />
+        )}
       </View>
     );
   };
@@ -459,7 +390,6 @@ const ShlokaMantraScreen: React.FC = () => {
           />
         </TouchableOpacity>
 
-        {/* Expandable Audio Player */}
         {isExpanded && (
           <Animated.View
             style={[
@@ -468,7 +398,7 @@ const ShlokaMantraScreen: React.FC = () => {
                 opacity: animatedHeight,
                 maxHeight: animatedHeight.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0, 500],
+                  outputRange: [0, 600],
                 }),
               },
             ]}
@@ -484,7 +414,6 @@ const ShlokaMantraScreen: React.FC = () => {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.background.primary} />
 
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
@@ -492,13 +421,12 @@ const ShlokaMantraScreen: React.FC = () => {
         >
           <Ionicons name="arrow-back-outline" size={24} color={COLORS.text.primary} />
         </TouchableOpacity>
-        <H2 color={COLORS.text.primary} weight="bold" size="xl">
+        <H3 color={COLORS.text.primary} weight="semiBold" size="xl">
           18 Shlokas
-        </H2>
+        </H3>
         <View style={styles.headerRight} />
       </View>
 
-      {/* Shlokas List */}
       <FlatList
         data={SHLOKAS}
         keyExtractor={(item) => item.id}
@@ -564,56 +492,44 @@ const styles = StyleSheet.create({
   audioPlayer: {
     padding: 16,
     paddingTop: 0,
+    height: 230,
   },
-  shlokaTextContainer: {
-    backgroundColor: COLORS.background.tertiary,
-    padding: 16,
+  webView: {
+    backgroundColor: COLORS.background.primary,
     borderRadius: 8,
-    marginBottom: 16,
-  },
-  shlokaText: {
-    lineHeight: 24,
-    textAlign: 'center',
-  },
-  audioControls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  playButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: COLORS.background.tertiary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  progressContainer: {
-    flex: 1,
-    marginRight: 12,
-  },
-  progressBar: {
-    height: 4,
-    backgroundColor: COLORS.border.light,
-    borderRadius: 2,
     overflow: 'hidden',
+    flex: 1,
   },
-  progressFill: {
-    height: '100%',
-    backgroundColor: COLORS.primary,
-  },
-  timeLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 4,
-  },
-  stopButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: COLORS.background.tertiary,
+  webViewLoading: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: COLORS.background.primary,
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+    gap: 12,
+  },
+  loadingText: {
+    marginLeft: 8,
+  },
+  errorContainer: {
+    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(220, 53, 69, 0.3)',
+  },
+  errorText: {
+    textAlign: 'center',
   },
 });
 
