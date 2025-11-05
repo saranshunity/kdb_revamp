@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   alertBanner: {
-    backgroundColor: COLORS.warning,
+    backgroundColor: COLORS.success,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
