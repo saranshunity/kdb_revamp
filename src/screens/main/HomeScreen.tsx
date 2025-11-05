@@ -10,6 +10,7 @@ import {
   Linking,
   Platform,
   Alert,
+  Image,
 } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -545,92 +546,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     }
   ];
 
-  const todaysEventsDataArray = [
-    {
-      id: 1,
-      title: 'Bhagavad Gita Recitation',
-      image: 'https://picsum.photos/600/400',
-      categories: ['Spiritual', 'Recitation'],
-      description: 'Daily recitation of Bhagavad Gita verses with detailed explanations and spiritual insights.',
-      rating: 4.9,
-      time: '6:00 AM - 7:00 AM',
-      price: 0,
-      location: 'Temple Hall, Kurukshetra',
-      organizer: 'Spiritual Foundation',
-      contactInfo: '+91 98765 43220',
-      additionalInfo: 'Open to all devotees. Traditional Sanskrit recitation with Hindi translation.',
-    },
-    {
-      id: 2,
-      title: 'Temple Darshan',
-      image: 'https://picsum.photos/600/400',
-      categories: ['Spiritual', 'Darshan'],
-      description: 'Guided tour of ancient temples with historical significance and architectural marvels.',
-      rating: 4.8,
-      time: '8:00 AM - 10:00 AM',
-      price: 25,
-      location: 'Various Temples, Kurukshetra',
-      organizer: 'KDB Tourism Board',
-      contactInfo: '+91 98765 43221',
-      additionalInfo: 'Transportation provided. Professional guide included. Photography allowed.',
-    },
-    {
-      id: 3,
-      title: 'Cultural Workshop',
-      image: 'https://picsum.photos/600/400',
-      categories: ['Workshop', 'Cultural'],
-      description: 'Learn traditional Indian arts and crafts from master artisans and preserve our heritage.',
-      rating: 4.7,
-      time: '10:00 AM - 12:00 PM',
-      price: 150,
-      location: 'Cultural Center, Kurukshetra',
-      organizer: 'KDB Cultural Society',
-      contactInfo: '+91 98765 43222',
-      additionalInfo: 'Materials provided. All skill levels welcome. Take home your creations.',
-    },
-    {
-      id: 4,
-      title: 'Meditation Session',
-      image: 'https://picsum.photos/600/400',
-      categories: ['Meditation', 'Wellness'],
-      description: 'Guided meditation session for inner peace, spiritual growth, and mental well-being.',
-      rating: 4.9,
-      time: '5:00 PM - 6:00 PM',
-      price: 0,
-      location: 'Meditation Hall, Kurukshetra',
-      organizer: 'KDB Wellness Center',
-      contactInfo: '+91 98765 43223',
-      additionalInfo: 'Cushions provided. Silent environment. All experience levels welcome.',
-    },
-    {
-      id: 5,
-      title: 'Evening Aarti',
-      image: 'https://picsum.photos/600/400',
-      categories: ['Aarti', 'Spiritual'],
-      description: 'Traditional evening prayer ceremony with devotional songs and spiritual atmosphere.',
-      rating: 4.8,
-      time: '7:00 PM - 7:30 PM',
-      price: 0,
-      location: 'Main Temple, Kurukshetra',
-      organizer: 'Temple Committee',
-      contactInfo: '+91 98765 43224',
-      additionalInfo: 'Open to all. Traditional dress code. Photography restricted during ceremony.',
-    },
-    {
-      id: 6,
-      title: 'Storytelling Session',
-      image: 'https://picsum.photos/600/400',
-      categories: ['Storytelling', 'Education'],
-      description: 'Fascinating stories from Indian mythology and history, bringing ancient wisdom to life.',
-      rating: 4.6,
-      time: '4:00 PM - 5:00 PM',
-      price: 50,
-      location: 'Story Hall, Kurukshetra',
-      organizer: 'KDB Education Society',
-      contactInfo: '+91 98765 43225',
-      additionalInfo: 'Interactive session. Q&A included. Suitable for all ages.',
-    },
-  ];
+  const todaysEventsDataArray: any[] = [];
 
 
   return (
@@ -646,23 +562,15 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         <View style={styles.headerContainer}>
           <View style={styles.header}>
             <View style={styles.headerLeft}>
-              <View style={styles.greetingContainer}>
-                <BodyText style={styles.namasteIcon} size='xl'>🙏</BodyText>
-                <H5 style={styles.greetingText} weight="semiBold">{`Namastey${firstName ? ", " + firstName : ''}`}</H5>
-              </View>
-              <View style={styles.addressContainer}>
-                <BodyText style={styles.addressText} color={COLORS.text.primary} size='sm' numberOfLines={1}>
-                  {userAddress}
-                </BodyText>
-                {permissions.location === 'granted' && (
-                  <TouchableOpacity 
-                    style={styles.refreshLocationButton}
-                    onPress={refreshLocation}
-                    activeOpacity={0.7}
-                  >
-                    <Ionicons name="refresh" size={16} color={COLORS.appColor} />
-                  </TouchableOpacity>
-                )}
+              <View style={styles.logoContainer}>
+                <Image 
+                  source={require('../../assets/images/appLogo.png')} 
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
+                <H3 style={styles.headerTitle} weight="semiBold" size='md'>
+                  International Gita Mahotsav 2025
+                </H3>
               </View>
             </View>
             <View style={styles.headerRight}>
@@ -789,7 +697,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         )}
 
         {/* Prepare for Shloka Mantra Section */}
-        {showApplyStalls && (
+     
           <TouchableOpacity 
             style={styles.applyStallsCard}
             onPress={() => {
@@ -823,7 +731,7 @@ Be a part of World's Shloka Chanting                  </BodyText>
             </View>
             <View style={styles.applyStallsGradient} />
           </TouchableOpacity>
-        )}
+     
 
         
         <View style={{marginTop: 26}}/>
@@ -1197,42 +1105,24 @@ const styles = StyleSheet.create({
   headerLeft: {
     flex: 1,
   },
-  greetingContainer: {
+  logoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
   },
-  namasteIcon: {
-    marginRight: 8,
+  logo: {
+    width: 50,
+    height: 50,
+    marginRight: 12,
+  },
+  headerTitle: {
+    flex: 1,
+    fontFamily: FONTS.gilroy.semiBold,
   },
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-  },
-  greetingText: {
-    fontFamily: FONTS.gilroy.bold,
-    fontSize: FONT_SIZES.lg,
-    // marginBottom: 2,
-  },
-  addressText: {
-    fontFamily: FONTS.gilroy.regular,
-    fontSize: FONT_SIZES.sm,
-    opacity: 0.9,
-    flex: 1,
-    marginRight: 8,
-  },
-  addressContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 4,
-    flexWrap: 'nowrap',
-    // backgroundColor: 'red',
-    width: '65%',
-  },
-  refreshLocationButton: {
-    padding: 4,
-    borderRadius: 12,
-    backgroundColor: COLORS.appColor + '20',
   },
   menuButton: {
     padding: 8,

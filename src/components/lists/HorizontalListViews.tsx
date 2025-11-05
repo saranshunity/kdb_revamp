@@ -10,6 +10,17 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const HorizontalListViews = ({title,listData,type,showAll}: {title: string,listData: any[], type?: 'mahotsav' | 'events' | 'tirths', showAll?: boolean}) => {
   const navigation = useNavigation<NavigationProp>();
+  
+  // Determine empty state message based on title
+  const getEmptyMessage = () => {
+    if (title === "LIVE Updates") {
+      return "Updates will come soon. Stay tuned.";
+    } else if (title === "Today's Events") {
+      return "Events will be shown from 15th november";
+    }
+    return "No items available";
+  };
+  
   return (
     <View style={styles.container}>
         <View style={styles.titleContainer}>   
@@ -33,28 +44,36 @@ const HorizontalListViews = ({title,listData,type,showAll}: {title: string,listD
       </TouchableOpacity>
     )}
     </View>
-    <ScrollView horizontal style={{ flex: 1, padding: 16 }} showsHorizontalScrollIndicator={false}>
-    {listData?.map((item) => (
-    <SpotlightCard
-    key={item?.id}
-    image={item?.image}
-    categories={item?.categories}
-    title={item?.title}
-    onPress={() => {
-      // If item has a link, navigate to WebView
-      if (item?.link) {
-        navigation.navigate('TirthWebView', {
-          url: item.link,
-          title: item.title || 'Tirth Details'
-        });
-      } else {
-        console.log("Card Pressed - No link available");
-      }
-    }}
-    />
-    ))}
-    
-    </ScrollView>
+    {listData && listData.length > 0 ? (
+      <ScrollView horizontal style={{ flex: 1, padding: 16 }} showsHorizontalScrollIndicator={false}>
+      {listData.map((item) => (
+      <SpotlightCard
+      key={item?.id}
+      image={item?.image}
+      categories={item?.categories}
+      title={item?.title}
+      onPress={() => {
+        // If item has a link, navigate to WebView
+        if (item?.link) {
+          navigation.navigate('TirthWebView', {
+            url: item.link,
+            title: item.title || 'Tirth Details'
+          });
+        } else {
+          console.log("Card Pressed - No link available");
+        }
+      }}
+      />
+      ))}
+      
+      </ScrollView>
+    ) : (
+      <View style={styles.emptyContainer}>
+        <BodyText style={styles.emptyText} color={COLORS.text.secondary} size='md'>
+          {getEmptyMessage()}
+        </BodyText>
+      </View>
+    )}
     </View>
   );
 };
@@ -78,6 +97,16 @@ const styles = StyleSheet.create({
   },
   viewAllText: {
     textDecorationLine: 'underline',
+  },
+  emptyContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyText: {
+    textAlign: 'center',
+    opacity: 0.7,
   },
 });
 
