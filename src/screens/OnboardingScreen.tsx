@@ -31,32 +31,16 @@ interface OnboardingScreenProps {
   navigation: any;
 }
 
-const { width: screenWidth } = Dimensions.get('window');
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 const onboardingData = [
   {
     id: 1,
-    title: 'International Gita Mahotsav 2025',
-    subtitle: 'Celebrate the Divine Wisdom',
-    description:
-      'Join the grand celebration of the Bhagavad Gita with cultural events, spiritual discourses, and divine experiences.',
-    illustration: 'igm',
+    image: require('../assets/explainerImages/second.jpg'),
   },
   {
     id: 2,
-    title: '48 Kos Kurukshetra',
-    subtitle: 'Explore 182 Sacred Tirths',
-    description:
-      'Discover the sacred 48 Kos area of Kurukshetra with detailed information about all 182 holy tirths and their significance.',
-    illustration: 'kos',
-  },
-  {
-    id: 3,
-    title: 'Tirth Mitra',
-    subtitle: 'Your Spiritual Companion',
-    description:
-      'Get your digital Tirth Mitra card to access exclusive facilities and services during your pilgrimage journey.',
-    illustration: 'tirth-mitra',
+    image: require('../assets/explainerImages/third.jpg'),
   },
 ];
 
@@ -122,21 +106,16 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
   useEffect(() => {
     clearAutoScrollTimer();
     
-    if (!isAnimating) {
+    if (!isAnimating && currentIndex < onboardingData.length - 1) {
       autoScrollTimerRef.current = setInterval(() => {
-        if (currentIndex < onboardingData.length - 1) {
-          setCurrentIndex(prev => prev + 1);
-        } else {
-          // Restart from the first screen
-          setCurrentIndex(0);
-        }
-      }, 4000); // Auto-scroll every 4 seconds
+        setCurrentIndex(prev => prev + 1);
+      }, 3000); // Auto-scroll every 3 seconds
     }
 
     return () => clearAutoScrollTimer();
   }, [currentIndex, isAnimating]);
 
-  const handleNext = () => {
+  const handleNext = async () => {
     // Prevent multiple rapid clicks
     if (isAnimating || isLoading) return;
     
@@ -146,10 +125,16 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
     if (currentIndex < onboardingData.length - 1) {
       // Move to next slide
       setCurrentIndex(prev => prev + 1);
-    } else {
-      // On last slide, show permission sheet immediately
       setIsAnimating(false);
-      setShowPermissionSheet(true);
+    } else {
+      // On last slide, mark onboarding as completed and navigate to Main
+      try {
+        await AsyncStorage.setItem(HAS_SEEN_ONBOARDING_KEY, 'true');
+      } catch (error) {
+        console.error('Error saving onboarding status:', error);
+      }
+      setIsAnimating(false);
+      navigation.replace('Main');
     }
   };
 
@@ -257,130 +242,34 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
 
   const currentSlide = onboardingData[currentIndex];
 
-  const renderIllustration = (slide: any) => {
-    // Show appropriate logo based on slide
-    switch (slide.illustration) {
-      case 'igm':
-        return (
-          <Image
-            source={require('../assets/images/igmLogo.png')}
-            style={styles.logoImage}
-            resizeMode="contain"
-          />
-        );
-      case 'kos':
-        return (
-          <Image
-            source={require('../assets/images/appLogo.png')}
-            style={styles.logoImage}
-            resizeMode="contain"
-          />
-        );
-      case 'tirth-mitra':
-        return (
-          <Image
-            source={require('../assets/images/hr_logo.png')}
-            style={styles.logoImage}
-            resizeMode="contain"
-          />
-        );
-      default:
-        return (
-          <Image
-            source={require('../assets/images/igmLogo.png')}
-            style={styles.logoImage}
-            resizeMode="contain"
-          />
-        );
-    }
-  };
-
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <StatusBar barStyle='light-content' backgroundColor={COLORS.appColor}/>
+      <StatusBar barStyle='light-content' backgroundColor={COLORS.black}/>
   
-      {/* App Color Background */}
-      <View style={styles.appColorBackground} />
+      {/* Full Screen Image */}
+      <Image 
+        source={currentSlide.image} 
+        style={styles.fullScreenImage}
+        resizeMode="cover"
+      />
 
-      {/* Main Content Area */}
-      <View style={styles.mainContent}>
-        {/* Logo */}
-        <Animated.View 
-          style={[
-            styles.iconContainer,
-            {
-              opacity: fadeAnim,
-              transform: [
-                { translateY: slideAnim }
-              ]
-            }
-          ]}
-        >
-          {renderIllustration(currentSlide)}
-        </Animated.View>
-      </View>
-
-      {/* Bottom Sheet */}
-      <Animated.View 
-        style={[
-          styles.bottomSheet,
-          { 
-            paddingBottom: insets.bottom + 24,
-          }
-        ]}
-      >
+      {/* Overlay Content */}
+      <View style={[styles.overlay, { paddingBottom: insets.bottom + 24 }]}>
         {/* Progress Indicators */}
         <View style={styles.progressContainer}>
           {onboardingData.map((_, index) => (
-            <Animated.View
+            <View
               key={index}
               style={[
                 styles.progressDot,
                 {
                   backgroundColor:
-                    index === currentIndex ? COLORS.appColor : COLORS.border.light,
+                    index === currentIndex ? COLORS.white : 'rgba(255, 255, 255, 0.5)',
                 },
               ]}
             />
           ))}
         </View>
-
-        {/* Text Content */}
-        <Animated.View 
-          style={[
-            styles.textContainer,
-            {
-              opacity: fadeAnim,
-              transform: [
-                { translateY: slideAnim }
-              ]
-            }
-          ]}
-        >
-          <H5
-            color={COLORS.primary}
-            weight='semiBold'
-            size='lg'
-            style={styles.title}
-          >
-            {currentSlide.title}
-          </H5>
-          {/* <H5
-            color={COLORS.secondary}
-            weight='medium'
-            size='xl'
-            style={styles.subtitle}
-          >
-            {currentSlide.subtitle}
-          </H5> */}
-          <BodyText
-            color={COLORS.secondary}
-            size='md'
-            style={styles.description}
-          >
-            {currentSlide.description}
-          </BodyText>
-        </Animated.View>
 
         {/* Button */}
         <TouchableOpacity 
@@ -412,20 +301,12 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
               </ButtonTextPrimary>
             </View>
           ) : (
-            <ButtonTextPrimary size='lg'>
+            <ButtonTextPrimary size='lg' style={{ color: COLORS.white }}>
               {currentIndex < onboardingData.length - 1 ? 'Next' : 'Get Started'}
             </ButtonTextPrimary>
           )}
         </TouchableOpacity>
-      </Animated.View>
-
-      {/* Permission Bottom Sheet */}
-      <PermissionBottomSheet
-        visible={showPermissionSheet}
-        onClose={handlePermissionSkip}
-        onPermissionsGranted={handlePermissionGranted}
-        isOnboarding={true}
-      />
+      </View>
 
       {/* Update Bottom Sheet */}
       {updateData && (
@@ -445,85 +326,29 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.appColor,
+    backgroundColor: COLORS.black,
   },
-  appColorBackground: {
+  fullScreenImage: {
+    width: screenWidth,
+    height: screenHeight,
     position: 'absolute',
     top: 0,
     left: 0,
-    right: 0,
+  },
+  overlay: {
+    position: 'absolute',
     bottom: 0,
-    backgroundColor: COLORS.appColor,
-  },
-  mainContent: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    position: 'relative',
-  },
-  iconContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoImage: {
-    width: 200,
-    height: 200,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 8,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
-    elevation: 8,
-  },
-  bottomSheet: {
-    backgroundColor: COLORS.white,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    left: 0,
+    right: 0,
     paddingHorizontal: 24,
     paddingTop: 24,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: -4,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  textContainer: {
-    alignItems: 'center',
-    marginBottom: 24,
-    paddingHorizontal: 16,
-  },
-  title: {
-    textAlign: 'center',
-    marginBottom: 12,
-    lineHeight: 32,
-    letterSpacing: -0.5,
-    fontSize: FONT_SIZES['2xl'],
-  },
-  subtitle: {
-    textAlign: 'center',
-    marginBottom: 16,
-    lineHeight: 24,
-    letterSpacing: -0.3,
-    opacity: 0.9,
-  },
-  description: {
-    textAlign: 'center',
-    lineHeight: 22,
-    letterSpacing: 0.2,
-    maxWidth: screenWidth * 0.8,
-    opacity: 0.8,
+    backgroundColor: 'transparent',
   },
   progressContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 24,
   },
   progressDot: {
     width: 8,
@@ -532,18 +357,11 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   nextButton: {
-    backgroundColor: COLORS.appColor,
+    backgroundColor: COLORS.black,
     paddingVertical: 18,
     borderRadius: 16,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 6,
+    opacity: 0.9,
   },
   nextButtonDisabled: {
     opacity: 0.6,
@@ -560,7 +378,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderWidth: 2,
-    borderColor: COLORS.appColor,
+    borderColor: COLORS.white,
     borderTopColor: 'transparent',
     borderRadius: 10,
   },

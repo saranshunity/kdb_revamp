@@ -788,11 +788,15 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           </View>
         )}
 
-        {/* Apply for Stalls - Attention Grabbing Section (Visible until November 7th) */}
+        {/* Prepare for Shloka Mantra Section */}
         {showApplyStalls && (
           <TouchableOpacity 
             style={styles.applyStallsCard}
-            onPress={() => stackNavigation.navigate('Stalls')}
+            onPress={() => {
+             
+                  stackNavigation.navigate('ShlokaMantra' as any);
+               
+            }}
             activeOpacity={0.8}
           >
             <View style={styles.applyStallsContent}>

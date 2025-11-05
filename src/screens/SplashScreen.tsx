@@ -45,13 +45,13 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ navigation }) => {
                 // First time - show onboarding
                 navigation.replace('Onboarding');
               } else {
-                // Not first time - show login screen
-                navigation.replace('Auth');
+                // Onboarding already seen - navigate to HomeScreen
+                navigation.replace('Main');
               }
             } catch (error) {
               console.error('Error checking onboarding status:', error);
-              // On error, default to onboarding
-              // navigation.replace('Onboarding');
+              // On error, navigate to Main
+              navigation.replace('Main');
             }
           }
         }, 4000);
