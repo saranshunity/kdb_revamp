@@ -36,7 +36,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import firestore from '@react-native-firebase/firestore';
 import ReminderService, { UserReminder } from '../../services/ReminderService';
 import FamilyService from '../../services/FamilyService';
-import FirebaseService, { MahotsavHulchal as MahotsavHulchalItem } from '../../services/FirebaseService';
+import FirebaseService, { MahotsavHulchal as MahotsavHulchalItem, EventItem } from '../../services/FirebaseService';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
 
@@ -67,6 +67,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
   // Mahotsav Hulchal state
   const [mahotsavHulchal, setMahotsavHulchal] = useState<MahotsavHulchalItem[]>([]);
+  
+  // Today's events state
+  const [todaysEvents, setTodaysEvents] = useState<EventItem[]>([]);
+  const [hasMoreEvents, setHasMoreEvents] = useState(false);
 
   // Reverse geocoding function to convert coordinates to address
   const reverseGeocode = async (latitude: number, longitude: number): Promise<string> => {
@@ -358,6 +362,35 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     };
   }, []);
 
+  // Fetch and filter today's events from Firebase
+  useEffect(() => {
+    const unsubscribe = FirebaseService.subscribeToEvents((events) => {
+      // Format today's date as DD-MM-YYYY
+      const today = new Date();
+      const day = today.getDate().toString().padStart(2, '0');
+      const month = (today.getMonth() + 1).toString().padStart(2, '0');
+      const year = today.getFullYear();
+      const todayDateStr = `${day}-${month}-${year}`;
+      
+      // Filter events for today
+      const filteredEvents = events.filter(event => {
+        // Normalize date formats for comparison (handle both DD-MM-YYYY and DD/MM/YYYY)
+        const eventDate = event.date.replace(/\//g, '-');
+        return eventDate === todayDateStr;
+      });
+
+      // Set hasMoreEvents flag if there are more than 3
+      setHasMoreEvents(filteredEvents.length > 3);
+      
+      // Take only first 3 events for display
+      setTodaysEvents(filteredEvents.slice(0, 3));
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
   // Animation effects for family illustration
   useEffect(() => {
     // Pulse animation for location pin
@@ -546,7 +579,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     }
   ];
 
-  const todaysEventsDataArray: any[] = [];
 
 
   return (
@@ -736,7 +768,7 @@ Be a part of World's Shloka Chanting                  </BodyText>
         
         <View style={{marginTop: 26}}/>
        <MahotsavHulchal listData={mahotsavHulchal} type="mahotsav" /> 
-        <TodaysEvents listData={todaysEventsDataArray} type="events" />
+        <TodaysEvents listData={todaysEvents} type="events" showAll={hasMoreEvents} />
      
       <View style={styles.familyLocationCard}>
           <MapView

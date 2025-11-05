@@ -29,7 +29,11 @@ const HorizontalListViews = ({title,listData,type,showAll}: {title: string,listD
       <TouchableOpacity 
         style={styles.viewAll}
         onPress={() => {
-          if (type) {
+          if (type === 'events') {
+            // Navigate to Events screen for events
+            navigation.navigate('Events');
+          } else if (type) {
+            // For other types, navigate to ListScreen
             navigation.navigate('ListScreen', {
               title: title,
               data: listData,
@@ -39,7 +43,7 @@ const HorizontalListViews = ({title,listData,type,showAll}: {title: string,listD
         }}
       >
         <BodyText color={COLORS.appColor} size='md' weight='semiBold'>
-          Show All
+          View All
         </BodyText>
       </TouchableOpacity>
     )}
