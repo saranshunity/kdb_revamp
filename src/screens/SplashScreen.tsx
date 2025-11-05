@@ -14,7 +14,8 @@ interface SplashScreenProps {
 
 const SplashScreen: React.FC<SplashScreenProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
-  const { isAuthenticated, isLoading } = useAuth();
+  // PHASE 1: Authentication disabled - keeping for Phase 2
+  // const { isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -30,38 +31,33 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ navigation }) => {
         return;
       }
       
+      // PHASE 1: Skip authentication - go directly to onboarding or home based on onboarding status
+      // TODO: Re-enable authentication check for Phase 2
       // Continue normal flow - let OnboardingScreen/HomeScreen handle update checks
-      if (!isLoading) {
-        const timer = setTimeout(async () => {
-          if (isAuthenticated) {
-            // User is authenticated, go to main app
-            navigation.replace('Main');
+      const timer = setTimeout(async () => {
+        // Check if it's the first time opening the app
+        try {
+          const hasSeenOnboarding = await AsyncStorage.getItem(HAS_SEEN_ONBOARDING_KEY);
+          
+          if (hasSeenOnboarding === null) {
+            // First time - show onboarding
+            navigation.replace('Onboarding');
           } else {
-            // Check if it's the first time opening the app
-            try {
-              const hasSeenOnboarding = await AsyncStorage.getItem(HAS_SEEN_ONBOARDING_KEY);
-              
-              if (hasSeenOnboarding === null) {
-                // First time - show onboarding
-                navigation.replace('Onboarding');
-              } else {
-                // Onboarding already seen - navigate to HomeScreen
-                navigation.replace('Main');
-              }
-            } catch (error) {
-              console.error('Error checking onboarding status:', error);
-              // On error, navigate to Main
-              navigation.replace('Main');
-            }
+            // Onboarding already seen - navigate directly to HomeScreen (skip auth)
+            navigation.replace('Main');
           }
-        }, 4000);
+        } catch (error) {
+          console.error('Error checking onboarding status:', error);
+          // On error, navigate to Main
+          navigation.replace('Main');
+        }
+      }, 2000);
 
-        return () => clearTimeout(timer);
-      }
+      return () => clearTimeout(timer);
     };
 
     initializeApp();
-  }, [isLoading, isAuthenticated, navigation]);
+  }, [navigation]); // Removed isLoading and isAuthenticated from dependencies for Phase 1
 
 
   return (
