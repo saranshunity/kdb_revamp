@@ -731,39 +731,27 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         )}
 
         {/* Prepare for Shloka Mantra Section */}
-     
           <TouchableOpacity 
-            style={styles.applyStallsCard}
+            style={styles.shlokaMantraCard}
             onPress={() => {
-             
-                  stackNavigation.navigate('ShlokaMantra' as any);
-               
+              stackNavigation.navigate('ShlokaMantra' as any);
             }}
-            activeOpacity={0.8}
+            activeOpacity={0.9}
           >
-            <View style={styles.applyStallsContent}>
-              <View style={styles.applyStallsLeft}>
-                {/* <View style={styles.applyStallsIconContainer}>
-                  <Ionicons name="storefront-outline" size={28} color={COLORS.white} />
-                </View> */}
-                <View style={styles.applyStallsTextContainer}>
-                  <H4 color={COLORS.white} weight='semiBold' size='lg'>
-                    Prepare for Shloka Mantra
-                  </H4>
-                  <BodyText color={COLORS.white} size='sm' style={styles.applyStallsDescription}>
-Be a part of World's Shloka Chanting                  </BodyText>
-                </View>
-              </View>
-              <View style={styles.applyStallsRight}>
-                {/* <View style={styles.applyStallsBadge}>
-                  <BodyText color={COLORS.white} size='xs' weight='bold'>
-                    LIMITED
-                  </BodyText>
-                </View> */}
-                <Ionicons name="chevron-forward" size={24} color={COLORS.white} />
-              </View>
+            <Image 
+              source={{ 
+                uri: 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavStaticData%2Fvaishvika.jpeg?alt=media&token=a3e1e33c-c963-4d34-8a73-a176a5a00baf'
+              }} 
+              style={styles.shlokaMantraImage}
+              resizeMode="cover"
+            />
+            {/* Bottom Overlay with Text and Arrow */}
+            <View style={styles.shlokaMantraOverlay}>
+              <BodyText color={COLORS.white} size='md' weight='semiBold' style={styles.shlokaMantraText}>
+              Prepare Your Spirit for Shloka Mantra.
+              </BodyText>
+              <Ionicons name="arrow-forward" size={24} color={COLORS.white} />
             </View>
-            <View style={styles.applyStallsGradient} />
           </TouchableOpacity>
      
 
@@ -1497,6 +1485,43 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
     position: 'relative',
+  },
+  shlokaMantraCard: {
+    marginHorizontal: 20,
+    marginTop: 20,
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 8,
+    position: 'relative',
+    height: 260,
+  },
+  shlokaMantraImage: {
+    width: '100%',
+    height: '100%',
+  },
+  shlokaMantraOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    gap: 12,
+  },
+  shlokaMantraText: {
+    flex: 1,
+    fontFamily: FONTS.gilroy.semiBold,
   },
   applyStallsContent: {
     flexDirection: 'row',
