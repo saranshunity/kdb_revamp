@@ -26,6 +26,7 @@ import PaymentWebViewScreen from '../screens/stalls/PaymentWebViewScreen';
 import TirthWebViewScreen from '../screens/main/TirthWebViewScreen';
 import QuizWebViewScreen from '../screens/main/QuizWebViewScreen';
 import FamilyMembersScreen from '../screens/family/FamilyMembersScreen';
+import FamilyLaunchScreen from '../screens/family/FamilyLaunchScreen';
 import AddFamilyMemberScreen from '../screens/family/AddFamilyMemberScreen';
 import LocationMapScreen from '../screens/family/LocationMapScreen';
 import TirthsScreen from '../screens/tirths/TirthsScreen';
@@ -127,6 +128,8 @@ export type RootStackParamList = {
   PaymentWebView: undefined;
   TirthWebView: { url: string; title?: string };
   FamilyMembers: undefined;
+  FamilyLaunch: undefined;
+  FamilyDashboard: { familyId: string };
   AddFamilyMember: undefined;
   LocationMap: undefined;
   Tirths: undefined;
@@ -322,6 +325,8 @@ function AppNavigator() {
         <Stack.Screen name='TirthWebView' component={TirthWebViewScreen} />
         <Stack.Screen name='Quiz' component={QuizWebViewScreen} />
         <Stack.Screen name='FamilyMembers' component={FamilyMembersScreen} />
+        <Stack.Screen name='FamilyLaunch' component={FamilyLaunchScreen} />
+        <Stack.Screen name='FamilyDashboard' component={FamilyMembersScreen} />
         <Stack.Screen name='AddFamilyMember' component={AddFamilyMemberScreen} />
         <Stack.Screen name='LocationMap' component={LocationMapScreen} />
         <Stack.Screen name='Tirths' component={TirthsScreen} />
