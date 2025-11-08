@@ -16,6 +16,7 @@ import ProfileScreen from '../screens/main/ProfileScreen';
 import SettingsScreen from '../screens/main/SettingsScreen';
 import EventsScreen from '../screens/events/EventScreen';
 import EventDetailScreen from '../screens/events/EventDetailScreen';
+import GitaMahotsavColorsScreen from '../screens/events/GitaMahotsavColorsScreen';
 import StallsScreen from '../screens/stalls/StallsMainScreen';
 import StallCategoriesScreen from '../screens/stalls/StallCategoriesScreen';
 import CheckApplicationStatusScreen from '../screens/stalls/CheckApplicationStatusScreen';
@@ -109,6 +110,7 @@ export type RootStackParamList = {
   Main: undefined;
   Events: undefined;
   EventDetail: { eventId?: string };
+  GitaMahotsavColors: undefined;
   Stalls: undefined;
   StallCategories: undefined;
   CheckApplicationStatus: undefined;
@@ -315,6 +317,7 @@ function AppNavigator() {
         <Stack.Screen name='Main' component={MainTabNavigator} />
         <Stack.Screen name='Events' component={EventsScreen} />
         <Stack.Screen name='EventDetail' component={EventDetailScreen} />
+        <Stack.Screen name='GitaMahotsavColors' component={GitaMahotsavColorsScreen} />
         <Stack.Screen name='Stalls' component={StallsScreen} />
         <Stack.Screen name='StallCategories' component={StallCategoriesScreen} />
         <Stack.Screen name='CheckApplicationStatus' component={CheckApplicationStatusScreen} />

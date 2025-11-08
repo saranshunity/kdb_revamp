@@ -11,6 +11,7 @@ import {
   Platform,
   Alert,
   Image,
+  ImageBackground,
 } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -37,6 +38,7 @@ import firestore from '@react-native-firebase/firestore';
 import ReminderService, { UserReminder } from '../../services/ReminderService';
 import FamilyService from '../../services/FamilyService';
 import FirebaseService, { MahotsavHulchal as MahotsavHulchalItem, EventItem } from '../../services/FirebaseService';
+import { GITA_MAHOTSAV_COLORS } from '../events/constants/gitaMahotsavColors';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
 
@@ -634,12 +636,58 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           onPress={() => stackNavigation.navigate('Events')}
         />
          <QuickLinkItem 
-                key="quiz"
-        icon="school-outline"
-        label="Quiz"
-        onPress={() => {
+          key="quiz"
+          icon="school-outline"
+          label="Quiz"
+          onPress={() => {
           stackNavigation.navigate('Quiz' as any);
+          }}
+      />
+      <QuickLinkItem 
+        key="stalls" 
+        icon="cart-outline" 
+        label="Stalls/Shops" 
+        onPress={() => {
+          Alert.alert(
+            'Coming Soon',
+            'Stalls Directory feature will be available soon. Stay tuned!',
+            [{ text: 'OK' }]
+          );
         }}
+      />
+      <QuickLinkItem 
+        key="hotels" 
+        icon="bed-outline" 
+        label="Live Shows" 
+        onPress={() => {
+          Alert.alert(
+            'Coming Soon',
+            'Live Shows feature will be available soon. Stay tuned!',
+            [{ text: 'OK' }]
+          );
+        }}
+      />
+     
+        </ScrollView>
+        {/* <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          style={styles.quickLinkContainer}
+          contentContainerStyle={styles.quickLinkContent}
+        >
+        <QuickLinkItem 
+          key="events-1" 
+          icon="calendar-outline" 
+          label="Exhibitions" 
+          onPress={() => stackNavigation.navigate('Events')}
+        />
+         <QuickLinkItem 
+          key="quiz"
+          icon="school-outline"
+          label="Fun Fair"
+          onPress={() => {
+          stackNavigation.navigate('Quiz' as any);
+          }}
       />
       <QuickLinkItem 
         key="stalls" 
@@ -666,7 +714,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         }}
       />
      
-        </ScrollView>
+        </ScrollView> */}
         
         {/* Reminders List */}
         {reminders.length > 0 && (
@@ -730,29 +778,63 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           </View>
         )}
 
-        {/* Prepare for Shloka Mantra Section */}
-          <TouchableOpacity 
-            style={styles.shlokaMantraCard}
-            onPress={() => {
-              stackNavigation.navigate('ShlokaMantra' as any);
-            }}
-            activeOpacity={0.9}
+        {/* Gita Mahotsav Colors CTA */}
+        <View style={styles.mahotsavTabContainer}>
+          <TouchableOpacity
+            style={styles.mahotsavTab}
+            activeOpacity={0.85}
+            onPress={() => stackNavigation.navigate('GitaMahotsavColors')}
           >
-            <Image 
-              source={{ 
-                uri: 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavStaticData%2Fvaishvika.jpeg?alt=media&token=a3e1e33c-c963-4d34-8a73-a176a5a00baf'
-              }} 
-              style={styles.shlokaMantraImage}
-              resizeMode="cover"
-            />
-            {/* Bottom Overlay with Text and Arrow */}
-            <View style={styles.shlokaMantraOverlay}>
-              <BodyText color={COLORS.white} size='md' weight='semiBold' style={styles.shlokaMantraText}>
-              Prepare Your Spirit for Shloka Mantra.
+            <View style={styles.mahotsavTabTextWrapper}>
+              <H5 color={COLORS.primary} weight='semiBold' size='lg'>
+                18 Colors of Gita Mahotsav
+              </H5>
+              <BodyText color={COLORS.text.secondary} size='sm'>
+                Explore all {GITA_MAHOTSAV_COLORS.length} vibrant celebrations
               </BodyText>
-              <Ionicons name="arrow-forward" size={24} color={COLORS.white} />
             </View>
+            <Ionicons name="chevron-forward" size={20} color={COLORS.primary} />
           </TouchableOpacity>
+        </View>
+
+        {/* Prepare for Shloka Mantra Section */}
+        <TouchableOpacity 
+          style={styles.shlokaMantraCard}
+          onPress={() => {
+            stackNavigation.navigate('ShlokaMantra' as any);
+          }}
+          activeOpacity={0.9}
+        >
+          <ImageBackground
+            source={{
+              uri: 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavStaticData%2Fvaishvika.jpeg?alt=media&token=a3e1e33c-c963-4d34-8a73-a176a5a00baf',
+            }}
+            style={styles.shlokaBackgroundImage}
+            imageStyle={styles.shlokaBackgroundImageRadius}
+          >
+            <View style={styles.shlokaOverlay}>
+              <View style={styles.shlokaMantraContent}>
+                <View style={styles.shlokaTextContainer}>
+                  <View style={styles.shlokaBadge}>
+                    <Ionicons name="musical-notes-outline" size={18} color={COLORS.white} />
+                    <BodyText color='rgba(255,255,255,0.9)' size='xs' weight='semiBold' style={styles.shlokaBadgeText}>
+                      Vaishvik Path on 1st December
+                    </BodyText>
+                  </View>
+                  <H5 color={COLORS.white} weight='semiBold' size='lg' style={styles.shlokaHeadline}>
+                    Prepare Your Spirit for Shloka Mantra.
+                  </H5>
+                  <BodyText color='rgba(255,255,255,0.95)' size='sm' weight='semiBold'>
+                  Shloka Mantra chanting will be performed by 18,000 students.
+                  </BodyText>
+                </View>
+                <View style={styles.shlokaAction}>
+                  <Ionicons name="arrow-forward" size={22} color={COLORS.primary} />
+                </View>
+              </View>
+            </View>
+          </ImageBackground>
+        </TouchableOpacity>
      
 
         
@@ -1248,6 +1330,31 @@ const styles = StyleSheet.create({
   transactionDetails: {
     flex: 1,
   },
+  mahotsavTabContainer: {
+    paddingHorizontal: 20,
+    marginTop: 10,
+    marginBottom: 12,
+  },
+  mahotsavTab: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    backgroundColor: COLORS.background.primary,
+    borderWidth: 1,
+    borderColor: COLORS.border.light,
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  mahotsavTabTextWrapper: {
+    flex: 1,
+    marginRight: 12,
+  },
   familyLocationCard: {
     // marginHorizontal: 20,
     height: 200,
@@ -1488,9 +1595,8 @@ const styles = StyleSheet.create({
   },
   shlokaMantraCard: {
     marginHorizontal: 20,
-    marginTop: 20,
+    marginTop: 10,
     borderRadius: 16,
-    overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -1499,29 +1605,64 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 8,
-    position: 'relative',
-    height: 260,
   },
-  shlokaMantraImage: {
+  shlokaBackgroundImage: {
     width: '100%',
-    height: '100%',
+    minHeight: 180,
+    justifyContent: 'flex-end',
   },
-  shlokaMantraOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  shlokaBackgroundImageRadius: {
+    borderRadius: 16,
+  },
+  shlokaOverlay: {
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    borderRadius: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 22,
+  },
+  shlokaMantraContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
     gap: 12,
   },
-  shlokaMantraText: {
+  shlokaTextContainer: {
     flex: 1,
-    fontFamily: FONTS.gilroy.semiBold,
+    marginRight: 12,
+    gap: 8,
+  },
+  shlokaBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    gap: 6,
+  },
+  shlokaBadgeText: {
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
+  shlokaHeadline: {
+    lineHeight: 24,
+  },
+  shlokaAction: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: COLORS.background.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 4,
   },
   applyStallsContent: {
     flexDirection: 'row',
