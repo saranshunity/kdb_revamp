@@ -21,6 +21,7 @@ import FacilitiesScreen from '../screens/facilities/FacilitiesScreen';
 import FacilityMapScreen from '../screens/facilities/FacilityMapScreen';
 import MuseumShowsScreen from '../screens/museum/MuseumShowsScreen';
 import IconicPlacesScreen from '../screens/main/IconicPlacesScreen';
+import ChatBotScreen from '../screens/chat/ChatBotScreen';
 import StallsScreen from '../screens/stalls/StallsMainScreen';
 import StallCategoriesScreen from '../screens/stalls/StallCategoriesScreen';
 import CheckApplicationStatusScreen from '../screens/stalls/CheckApplicationStatusScreen';
@@ -128,6 +129,7 @@ export type RootStackParamList = {
   };
   MuseumShows: undefined;
   IconicPlaces: undefined;
+  ChatBot: undefined;
   Stalls: undefined;
   StallCategories: undefined;
   CheckApplicationStatus: undefined;
@@ -339,6 +341,7 @@ function AppNavigator() {
         <Stack.Screen name='FacilityMap' component={FacilityMapScreen} />
         <Stack.Screen name='MuseumShows' component={MuseumShowsScreen} />
         <Stack.Screen name='IconicPlaces' component={IconicPlacesScreen} />
+        <Stack.Screen name='ChatBot' component={ChatBotScreen} />
         <Stack.Screen name='Stalls' component={StallsScreen} />
         <Stack.Screen name='StallCategories' component={StallCategoriesScreen} />
         <Stack.Screen name='CheckApplicationStatus' component={CheckApplicationStatusScreen} />

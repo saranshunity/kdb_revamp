@@ -12,6 +12,7 @@ import {
   Alert,
   Image,
   ImageBackground,
+  Text,
 } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -1226,6 +1227,15 @@ onPress={() => {
 
       </ScrollView>
 
+      <TouchableOpacity
+        style={[styles.fab, { bottom: insets.bottom + 24 }]}
+        activeOpacity={0.9}
+        onPress={() => stackNavigation.navigate('ChatBot')}
+      >
+        <Ionicons name="chatbubbles-outline" size={24} color={COLORS.white} />
+        <Text style={styles.fabLabel}>Ask me</Text>
+      </TouchableOpacity>
+
       {/* Permission Bottom Sheet for existing users */}
       <PermissionBottomSheet
         visible={showPermissionSheet}
@@ -1771,6 +1781,27 @@ const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: 'linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)',
     opacity: 0.1,
+  },
+  fab: {
+    position: 'absolute',
+    right: 6,
+    backgroundColor: COLORS.background.appColor,
+    borderRadius: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 6,
+    gap: 8,
+  },
+  fabLabel: {
+    fontSize: FONT_SIZES.sm,
+    fontFamily: FONTS.gilroy.semiBold,
+    color: COLORS.white,
   },
 });
 

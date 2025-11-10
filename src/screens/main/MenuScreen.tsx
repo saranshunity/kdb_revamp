@@ -44,6 +44,12 @@ const MenuScreen: React.FC<MenuScreenProps> = ({ navigation }) => {
         onPress: () => stackNavigation.navigate('Administration'),
       },
       {
+        id: 'chatbot',
+        title: 'Mahotsav Assistant',
+        icon: 'chatbubbles-outline',
+        onPress: () => stackNavigation.navigate('ChatBot'),
+      },
+      {
         id: 'iconic-places',
         title: 'Iconic Places',
         icon: 'compass-outline',
