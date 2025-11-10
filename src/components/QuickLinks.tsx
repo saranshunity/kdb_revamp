@@ -16,7 +16,7 @@ const QuickLinkItem: React.FC<QuickLinkItemProps> = ({ icon, label, onPress }) =
       {/* Yellow circle background */}
       <View style={styles.iconWrapper}>
         <View style={styles.circle} />
-        <Ionicons name={icon} size={36} color={COLORS.text.primary} style={styles.icon} />
+        <Ionicons name={icon} size={24} color={COLORS.text.primary} style={styles.icon} />
       </View>
       <Text style={styles.label}>{label}</Text>
     </TouchableOpacity>
@@ -27,19 +27,19 @@ export default QuickLinkItem;
 
 const styles = StyleSheet.create({
   container: {
-    width: 90,
-    height: 110,
-    borderRadius: 20,
+    width: 75,
+    height: 90,
+    borderRadius: 10,
     backgroundColor: COLORS.background.primary,
     borderWidth: 1,
     borderColor: COLORS.border.light,
     justifyContent: "center",
     alignItems: "center",
-    marginHorizontal: 8,
+    marginHorizontal: 4,
   },
   iconWrapper: {
-    width: 60,
-    height: 60,
+    width: 40,
+    height: 40,
     justifyContent: "center",
     alignItems: "center",
     position: "relative",

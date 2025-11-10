@@ -17,6 +17,8 @@ import SettingsScreen from '../screens/main/SettingsScreen';
 import EventsScreen from '../screens/events/EventScreen';
 import EventDetailScreen from '../screens/events/EventDetailScreen';
 import GitaMahotsavColorsScreen from '../screens/events/GitaMahotsavColorsScreen';
+import FacilitiesScreen from '../screens/facilities/FacilitiesScreen';
+import FacilityMapScreen from '../screens/facilities/FacilityMapScreen';
 import StallsScreen from '../screens/stalls/StallsMainScreen';
 import StallCategoriesScreen from '../screens/stalls/StallCategoriesScreen';
 import CheckApplicationStatusScreen from '../screens/stalls/CheckApplicationStatusScreen';
@@ -111,6 +113,12 @@ export type RootStackParamList = {
   Events: undefined;
   EventDetail: { eventId?: string };
   GitaMahotsavColors: undefined;
+  Facilities: undefined;
+  FacilityMap: {
+    latitude: number;
+    longitude: number;
+    title: string;
+  };
   Stalls: undefined;
   StallCategories: undefined;
   CheckApplicationStatus: undefined;
@@ -318,6 +326,8 @@ function AppNavigator() {
         <Stack.Screen name='Events' component={EventsScreen} />
         <Stack.Screen name='EventDetail' component={EventDetailScreen} />
         <Stack.Screen name='GitaMahotsavColors' component={GitaMahotsavColorsScreen} />
+        <Stack.Screen name='Facilities' component={FacilitiesScreen} />
+        <Stack.Screen name='FacilityMap' component={FacilityMapScreen} />
         <Stack.Screen name='Stalls' component={StallsScreen} />
         <Stack.Screen name='StallCategories' component={StallCategoriesScreen} />
         <Stack.Screen name='CheckApplicationStatus' component={CheckApplicationStatusScreen} />

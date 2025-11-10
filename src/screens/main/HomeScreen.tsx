@@ -39,6 +39,7 @@ import ReminderService, { UserReminder } from '../../services/ReminderService';
 import FamilyService from '../../services/FamilyService';
 import FirebaseService, { MahotsavHulchal as MahotsavHulchalItem, EventItem } from '../../services/FirebaseService';
 import { GITA_MAHOTSAV_COLORS } from '../events/constants/gitaMahotsavColors';
+import { BodyText as BodyTextComponent } from '../../components/Text';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
 
@@ -600,13 +601,16 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
             <View style={styles.headerLeft}>
               <View style={styles.logoContainer}>
                 <Image 
-                  source={require('../../assets/images/appLogo.png')} 
+                  source={require('../../assets/images/igmLogo.png')} 
                   style={styles.logo}
                   resizeMode="contain"
                 />
-                <H3 style={styles.headerTitle} weight="semiBold" size='md'>
+                <H5 style={styles.headerTitle} weight="semiBold" size='xs'>
                   International Gita Mahotsav 2025
-                </H3>
+                </H5>
+              </View>
+              <View>
+                <BodyTextComponent color={COLORS.text.secondary} size='xs' style={{ marginTop: 5,fontSize: 10}}>Managed by Kurukshetra Development Board</BodyTextComponent>
               </View>
             </View>
             <View style={styles.headerRight}>
@@ -622,7 +626,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
         {/* Balance Card */}
       <View style={styles.contentContainer}>
-        <H5 style={styles.quickLinkTitle} color={COLORS.primary} weight='semiBold' size='lg'>Mahotsav related Links</H5>
+        <H5 style={styles.quickLinkTitle} color={COLORS.primary} weight='semiBold' size='md'>Quick Links</H5>
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false}
@@ -646,7 +650,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       <QuickLinkItem 
         key="stalls" 
         icon="cart-outline" 
-        label="Stalls/Shops" 
+        label="Stalls Info" 
         onPress={() => {
           Alert.alert(
             'Coming Soon',
@@ -667,8 +671,69 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           );
         }}
       />
+      <QuickLinkItem 
+        key="facilities-main" 
+        icon="medkit-outline" 
+        label="Facilities" 
+        onPress={() => stackNavigation.navigate('Facilities')}
+      />
      
         </ScrollView>
+        {/* <H5 style={styles.quickLinkTitle} color={COLORS.primary} weight='semiBold' size='md'>Public Facilities Links</H5> */}
+
+<ScrollView 
+  horizontal 
+  showsHorizontalScrollIndicator={false}
+  style={styles.quickLinkContainer}
+  contentContainerStyle={styles.quickLinkContent}
+>
+<QuickLinkItem 
+  key="events-1" 
+  icon="calendar-outline" 
+  label="Exhibitions" 
+  onPress={() => {
+    Alert.alert(
+      'Coming Soon',
+      'Exhibitions feature will be available soon. Stay tuned!',
+      [{ text: 'OK' }]
+    );
+  }}
+/>
+ <QuickLinkItem 
+  key="facilities"
+  icon="medkit-outline"
+  label="Facilities"
+  onPress={() => {
+    stackNavigation.navigate('Facilities');
+  }}
+/>
+<QuickLinkItem 
+key="stalls" 
+icon="cart-outline" 
+label="Fun Fair" 
+onPress={() => {
+  Alert.alert(
+    'Coming Soon',
+    'Amusement feature will be available soon. Stay tuned!',
+    [{ text: 'OK' }]
+  );
+}}
+/>
+<QuickLinkItem 
+key="hotels" 
+icon="bed-outline" 
+label="Museum & Show" 
+onPress={() => {
+  Alert.alert(
+    'Coming Soon',
+    'Live Shows feature will be available soon. Stay tuned!',
+    [{ text: 'OK' }]
+  );
+}}
+/>
+
+</ScrollView>
+      
         {/* <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false}
@@ -841,7 +906,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         <View style={{marginTop: 26}}/>
        <MahotsavHulchal listData={mahotsavHulchal} type="mahotsav" /> 
         <TodaysEvents listData={todaysEvents} type="events" showAll={hasMoreEvents} />
-     
+      
       <View style={styles.familyLocationCard}>
           <MapView
             provider={PROVIDER_GOOGLE}
