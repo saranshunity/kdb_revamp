@@ -29,11 +29,7 @@ type Facility = {
   location: string;
   timings?: string;
   notes?: string;
-  mapRoute?: {
-    lat: number;
-    lng: number;
-    label: string;
-  };
+  mapPdfUrl?: string;
 };
 
 const FACILITIES: Facility[] = [
@@ -84,11 +80,8 @@ const FACILITIES: Facility[] = [
       "In front of Balmiki Ashram – all vehicles\n" +
       "Designated mela/fair grounds on KDB land",
     timings: "Open 24x7 during Mahotsav",
-    mapRoute: {
-      lat: 29.9655,
-      lng: 76.8279,
-      label: "Mahotsav Parking Hub",
-    },
+    mapPdfUrl:
+      "https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavStaticData%2FparkingMap%2FAdobe%20Scan%20Oct%2024%2C%202025%20(3).pdf?alt=media&token=229478d8-6ec2-428f-a7b1-635f6bb6d565",
   },
   {
     id: "toilets",
@@ -136,11 +129,10 @@ const FacilitiesScreen = () => {
 
   const handleViewMap = useCallback(
     (facility: Facility) => {
-      if (facility.mapRoute) {
+      if (facility.mapPdfUrl) {
         navigation.navigate("FacilityMap", {
-          latitude: facility.mapRoute.lat,
-          longitude: facility.mapRoute.lng,
-          title: facility.mapRoute.label,
+          title: facility.title,
+          pdfUrl: facility.mapPdfUrl,
         });
       } else {
         Alert.alert(
@@ -270,7 +262,7 @@ const FacilitiesScreen = () => {
                 </View>
               ) : null}
 
-              {facility.mapRoute && (
+              {facility.mapPdfUrl && (
                 <View style={styles.cardFooter}>
                   <TouchableOpacity
                     style={[styles.mapButton, styles.mapButtonSecondary]}

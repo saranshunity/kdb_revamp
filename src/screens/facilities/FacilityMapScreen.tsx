@@ -1,6 +1,12 @@
 import React from "react";
-import { View, StyleSheet, TouchableOpacity, Text, StatusBar } from "react-native";
-import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  Text,
+  StatusBar,
+  ActivityIndicator,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -8,6 +14,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../navigation/AppNavigator";
 import { COLORS } from "../../constants/colors";
 import { FONTS, FONT_SIZES } from "../../constants/fonts";
+import { WebView } from "react-native-webview";
 
 type FacilityMapNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -15,9 +22,8 @@ type FacilityMapNavigationProp = NativeStackNavigationProp<
 >;
 
 type FacilityMapRouteParams = {
-  latitude: number;
-  longitude: number;
   title: string;
+  pdfUrl: string;
 };
 
 const FacilityMapScreen = () => {
@@ -26,9 +32,11 @@ const FacilityMapScreen = () => {
   const route = useRoute();
   const params = (route.params || {}) as FacilityMapRouteParams;
 
-  const latitude = params.latitude ?? 29.9655;
-  const longitude = params.longitude ?? 76.8279;
   const title = params.title ?? "Mahotsav Facility";
+  const pdfUrl = params.pdfUrl;
+  const embeddedUrl = pdfUrl
+    ? `https://docs.google.com/gview?embedded=1&url=${encodeURIComponent(pdfUrl)}`
+    : undefined;
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -45,18 +53,27 @@ const FacilityMapScreen = () => {
         <View style={styles.headerSpacer} />
       </View>
 
-      <MapView
-        provider={PROVIDER_GOOGLE}
-        style={styles.map}
-        initialRegion={{
-          latitude,
-          longitude,
-          latitudeDelta: 0.005,
-          longitudeDelta: 0.005,
-        }}
-      >
-        <Marker coordinate={{ latitude, longitude }} title={title} />
-      </MapView>
+      {embeddedUrl ? (
+        <WebView
+          source={{ uri: embeddedUrl }}
+          style={styles.webView}
+          startInLoadingState
+          renderLoading={() => (
+            <View style={styles.loader}>
+              <ActivityIndicator size="large" color={COLORS.primary} />
+              <Text style={styles.loaderText}>Loading parking map…</Text>
+            </View>
+          )}
+        />
+      ) : (
+        <View style={styles.emptyState}>
+          <Ionicons name="document-text-outline" size={48} color={COLORS.primary} />
+          <Text style={styles.emptyTitle}>Map unavailable</Text>
+          <Text style={styles.emptySubtitle}>
+            The parking map file could not be found. Please try again later.
+          </Text>
+        </View>
+      )}
     </View>
   );
 };
@@ -89,8 +106,40 @@ const styles = StyleSheet.create({
   headerSpacer: {
     width: 32,
   },
-  map: {
+  webView: {
     flex: 1,
+  },
+  loader: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: COLORS.background.secondary,
+  },
+  loaderText: {
+    marginTop: 12,
+    fontSize: FONT_SIZES.sm,
+    fontFamily: FONTS.gilroy.medium,
+    color: COLORS.text.secondary,
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 32,
+    backgroundColor: COLORS.background.secondary,
+  },
+  emptyTitle: {
+    marginTop: 12,
+    fontSize: FONT_SIZES.lg,
+    fontFamily: FONTS.gilroy.semiBold,
+    color: COLORS.primary,
+  },
+  emptySubtitle: {
+    marginTop: 6,
+    fontSize: FONT_SIZES.sm,
+    fontFamily: FONTS.gilroy.medium,
+    color: COLORS.text.secondary,
+    textAlign: "center",
   },
 });
 

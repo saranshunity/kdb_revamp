@@ -115,9 +115,8 @@ export type RootStackParamList = {
   GitaMahotsavColors: undefined;
   Facilities: undefined;
   FacilityMap: {
-    latitude: number;
-    longitude: number;
     title: string;
+    pdfUrl: string;
   };
   Stalls: undefined;
   StallCategories: undefined;
