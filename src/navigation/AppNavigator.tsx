@@ -19,6 +19,8 @@ import EventDetailScreen from '../screens/events/EventDetailScreen';
 import GitaMahotsavColorsScreen from '../screens/events/GitaMahotsavColorsScreen';
 import FacilitiesScreen from '../screens/facilities/FacilitiesScreen';
 import FacilityMapScreen from '../screens/facilities/FacilityMapScreen';
+import MuseumShowsScreen from '../screens/museum/MuseumShowsScreen';
+import IconicPlacesScreen from '../screens/main/IconicPlacesScreen';
 import StallsScreen from '../screens/stalls/StallsMainScreen';
 import StallCategoriesScreen from '../screens/stalls/StallCategoriesScreen';
 import CheckApplicationStatusScreen from '../screens/stalls/CheckApplicationStatusScreen';
@@ -117,7 +119,15 @@ export type RootStackParamList = {
   FacilityMap: {
     title: string;
     pdfUrl: string;
+    markers?: {
+      name: string;
+      supervisor?: string;
+      latitude: number;
+      longitude: number;
+    }[];
   };
+  MuseumShows: undefined;
+  IconicPlaces: undefined;
   Stalls: undefined;
   StallCategories: undefined;
   CheckApplicationStatus: undefined;
@@ -327,6 +337,8 @@ function AppNavigator() {
         <Stack.Screen name='GitaMahotsavColors' component={GitaMahotsavColorsScreen} />
         <Stack.Screen name='Facilities' component={FacilitiesScreen} />
         <Stack.Screen name='FacilityMap' component={FacilityMapScreen} />
+        <Stack.Screen name='MuseumShows' component={MuseumShowsScreen} />
+        <Stack.Screen name='IconicPlaces' component={IconicPlacesScreen} />
         <Stack.Screen name='Stalls' component={StallsScreen} />
         <Stack.Screen name='StallCategories' component={StallCategoriesScreen} />
         <Stack.Screen name='CheckApplicationStatus' component={CheckApplicationStatusScreen} />

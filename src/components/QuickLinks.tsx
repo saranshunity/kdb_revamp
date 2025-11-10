@@ -8,11 +8,17 @@ type QuickLinkItemProps = {
   icon: string;      // Ionicons name
   label: string;     // e.g. "Foods"
   onPress?: () => void;
+  badgeText?: string;
 };
 
-const QuickLinkItem: React.FC<QuickLinkItemProps> = ({ icon, label, onPress }) => {
+const QuickLinkItem: React.FC<QuickLinkItemProps> = ({ icon, label, onPress, badgeText }) => {
   return (
     <TouchableOpacity style={styles.container} activeOpacity={0.8} onPress={onPress}>
+      {badgeText ? (
+        <View style={styles.badgeWrapper}>
+          <Text style={styles.badgeText}>{badgeText}</Text>
+        </View>
+      ) : null}
       {/* Yellow circle background */}
       <View style={styles.iconWrapper}>
         <View style={styles.circle} />
@@ -27,7 +33,7 @@ export default QuickLinkItem;
 
 const styles = StyleSheet.create({
   container: {
-    width: 75,
+    width: 70,
     height: 90,
     borderRadius: 10,
     backgroundColor: COLORS.background.primary,
@@ -35,7 +41,8 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border.light,
     justifyContent: "center",
     alignItems: "center",
-    marginHorizontal: 4,
+    marginHorizontal: 8,
+    position: 'relative',
   },
   iconWrapper: {
     width: 40,
@@ -58,9 +65,26 @@ const styles = StyleSheet.create({
   },
   label: {
     marginTop: 10,
-    fontSize: FONT_SIZES.sm,
+    fontSize: FONT_SIZES.xs,
     fontFamily: FONTS.gilroy.semiBold,
     color: COLORS.text.primary,
     textAlign: 'center',
+  },
+  badgeWrapper: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: COLORS.background.appColor,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.white,
+  },
+  badgeText: {
+    fontSize: 8,
+    fontFamily: FONTS.gilroy.semiBold,
+    color: COLORS.white,
+    textTransform: 'uppercase',
   },
 });

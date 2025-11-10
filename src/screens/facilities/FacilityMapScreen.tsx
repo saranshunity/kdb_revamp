@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   View,
   StyleSheet,
@@ -15,6 +15,7 @@ import { RootStackParamList } from "../../navigation/AppNavigator";
 import { COLORS } from "../../constants/colors";
 import { FONTS, FONT_SIZES } from "../../constants/fonts";
 import { WebView } from "react-native-webview";
+import MapView, { Marker, PROVIDER_GOOGLE, Region } from "react-native-maps";
 
 type FacilityMapNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -23,7 +24,13 @@ type FacilityMapNavigationProp = NativeStackNavigationProp<
 
 type FacilityMapRouteParams = {
   title: string;
-  pdfUrl: string;
+  pdfUrl?: string;
+  markers?: {
+    name: string;
+    supervisor?: string;
+    latitude: number;
+    longitude: number;
+  }[];
 };
 
 const FacilityMapScreen = () => {
@@ -34,9 +41,26 @@ const FacilityMapScreen = () => {
 
   const title = params.title ?? "Mahotsav Facility";
   const pdfUrl = params.pdfUrl;
+  const markers = params.markers ?? [];
+  const hasMarkers = markers.length > 0;
   const embeddedUrl = pdfUrl
     ? `https://docs.google.com/gview?embedded=1&url=${encodeURIComponent(pdfUrl)}`
     : undefined;
+
+  const initialRegion: Region | undefined = useMemo(() => {
+    if (!hasMarkers) return undefined;
+    const lats = markers.map((m) => m.latitude);
+    const lngs = markers.map((m) => m.longitude);
+    const minLat = Math.min(...lats);
+    const maxLat = Math.max(...lats);
+    const minLng = Math.min(...lngs);
+    const maxLng = Math.max(...lngs);
+    const latitude = (minLat + maxLat) / 2;
+    const longitude = (minLng + maxLng) / 2;
+    const latitudeDelta = Math.max(0.01, (maxLat - minLat) * 1.5 || 0.02);
+    const longitudeDelta = Math.max(0.01, (maxLng - minLng) * 1.5 || 0.02);
+    return { latitude, longitude, latitudeDelta, longitudeDelta };
+  }, [hasMarkers, markers]);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -53,7 +77,22 @@ const FacilityMapScreen = () => {
         <View style={styles.headerSpacer} />
       </View>
 
-      {embeddedUrl ? (
+      {hasMarkers ? (
+        <MapView
+          provider={PROVIDER_GOOGLE}
+          style={styles.map}
+          initialRegion={initialRegion}
+        >
+          {markers.map((marker) => (
+            <Marker
+              key={`${marker.name}-${marker.latitude}-${marker.longitude}`}
+              coordinate={{ latitude: marker.latitude, longitude: marker.longitude }}
+              title={marker.name}
+              description={marker.supervisor}
+            />
+          ))}
+        </MapView>
+      ) : embeddedUrl ? (
         <WebView
           source={{ uri: embeddedUrl }}
           style={styles.webView}
@@ -61,7 +100,7 @@ const FacilityMapScreen = () => {
           renderLoading={() => (
             <View style={styles.loader}>
               <ActivityIndicator size="large" color={COLORS.primary} />
-              <Text style={styles.loaderText}>Loading parking map…</Text>
+              <Text style={styles.loaderText}>Loading map…</Text>
             </View>
           )}
         />
@@ -70,7 +109,7 @@ const FacilityMapScreen = () => {
           <Ionicons name="document-text-outline" size={48} color={COLORS.primary} />
           <Text style={styles.emptyTitle}>Map unavailable</Text>
           <Text style={styles.emptySubtitle}>
-            The parking map file could not be found. Please try again later.
+            The facility map could not be found. Please try again later.
           </Text>
         </View>
       )}
@@ -107,6 +146,9 @@ const styles = StyleSheet.create({
     width: 32,
   },
   webView: {
+    flex: 1,
+  },
+  map: {
     flex: 1,
   },
   loader: {

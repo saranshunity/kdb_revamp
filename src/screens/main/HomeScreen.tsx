@@ -609,9 +609,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                   International Gita Mahotsav 2025
                 </H5>
               </View>
-              <View>
+              {/* <View>
                 <BodyTextComponent color={COLORS.text.secondary} size='xs' style={{ marginTop: 5,fontSize: 10}}>Managed by Kurukshetra Development Board</BodyTextComponent>
-              </View>
+              </View> */}
             </View>
             <View style={styles.headerRight}>
               <TouchableOpacity 
@@ -647,37 +647,20 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           stackNavigation.navigate('Quiz' as any);
           }}
       />
-      <QuickLinkItem 
-        key="stalls" 
-        icon="cart-outline" 
-        label="Stalls Info" 
-        onPress={() => {
-          Alert.alert(
-            'Coming Soon',
-            'Stalls Directory feature will be available soon. Stay tuned!',
-            [{ text: 'OK' }]
-          );
-        }}
-      />
-      <QuickLinkItem 
-        key="hotels" 
-        icon="bed-outline" 
-        label="Live Shows" 
-        onPress={() => {
-          Alert.alert(
-            'Coming Soon',
-            'Live Shows feature will be available soon. Stay tuned!',
-            [{ text: 'OK' }]
-          );
-        }}
-      />
-      <QuickLinkItem 
-        key="facilities-main" 
-        icon="medkit-outline" 
-        label="Facilities" 
-        onPress={() => stackNavigation.navigate('Facilities')}
-      />
-     
+       <QuickLinkItem 
+  key="facilities"
+  icon="medkit-outline"
+  label="Facilities"
+  onPress={() => {
+    stackNavigation.navigate('Facilities');
+  }}
+/>
+<QuickLinkItem 
+  key="museumshows-secondary"
+  icon="color-palette-outline"
+  label="Museums & Shows"
+  onPress={() => stackNavigation.navigate('MuseumShows')}
+/>  
         </ScrollView>
         {/* <H5 style={styles.quickLinkTitle} color={COLORS.primary} weight='semiBold' size='md'>Public Facilities Links</H5> */}
 
@@ -694,20 +677,24 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   onPress={() => {
     Alert.alert(
       'Coming Soon',
-      'Exhibitions feature will be available soon. Stay tuned!',
+      'Exhibitions will be available soon. Stay tuned!',
       [{ text: 'OK' }]
     );
   }}
 />
- <QuickLinkItem 
-  key="facilities"
-  icon="medkit-outline"
-  label="Facilities"
-  onPress={() => {
-    stackNavigation.navigate('Facilities');
-  }}
-/>
 <QuickLinkItem 
+        key="stalls" 
+        icon="cart-outline" 
+        label="Stalls Info" 
+        onPress={() => {
+          Alert.alert(
+            'Coming Soon',
+            'Stalls Directory will be available soon. Stay tuned!',
+            [{ text: 'OK' }]
+          );
+        }}
+      />
+{/* <QuickLinkItem 
 key="stalls" 
 icon="cart-outline" 
 label="Fun Fair" 
@@ -718,19 +705,26 @@ onPress={() => {
     [{ text: 'OK' }]
   );
 }}
-/>
+/> */}
 <QuickLinkItem 
-key="hotels" 
-icon="bed-outline" 
-label="Museum & Show" 
-onPress={() => {
-  Alert.alert(
-    'Coming Soon',
-    'Live Shows feature will be available soon. Stay tuned!',
-    [{ text: 'OK' }]
-  );
-}}
-/>
+        key="hotels" 
+        icon="bed-outline" 
+        label="Live Shows" 
+        onPress={() => {
+          Alert.alert(
+            'Coming Soon',
+            'Live Shows feature will be available soon. Stay tuned!',
+            [{ text: 'OK' }]
+          );
+        }}
+      />
+
+{/* <QuickLinkItem 
+  key="funfair-secondary"
+  icon="color-palette-outline"
+  label="Fun Fair"
+  onPress={() => stackNavigation.navigate('MuseumShows')}
+/> */}
 
 </ScrollView>
       

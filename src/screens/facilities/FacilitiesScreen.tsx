@@ -30,6 +30,12 @@ type Facility = {
   timings?: string;
   notes?: string;
   mapPdfUrl?: string;
+  markers?: {
+    name: string;
+    supervisor?: string;
+    latitude: number;
+    longitude: number;
+  }[];
 };
 
 const FACILITIES: Facility[] = [
@@ -91,6 +97,48 @@ const FACILITIES: Facility[] = [
     icon: "water-outline",
     location: "Every 150m along the main stretch & near all entry gates",
     notes: "Maintenance staff on duty round the clock.",
+    markers: [
+      { name: "Pipli Flyover Ambala Side", supervisor: "KDB", latitude: 29.976466, longitude: 76.892684 },
+      { name: "Pipli Flyover Karnal Side", supervisor: "KDB", latitude: 29.976174, longitude: 76.892739 },
+      { name: "New Bus Stand", supervisor: "Transport Dept. (Maintained by KDB)", latitude: 29.973655, longitude: 76.865807 },
+      { name: "Old Bus Stand", supervisor: "Transport Dept. (Maintained by KDB)", latitude: 29.97267, longitude: 76.837986 },
+      { name: "Theme Park (Opp. Panorama)", supervisor: "KDB", latitude: 29.967045, longitude: 76.833299 },
+      { name: "Theme Park (Opp. Anand Hospital)", supervisor: "KDB", latitude: 29.966713, longitude: 76.831452 },
+      { name: "Bhadrkali Mandir", supervisor: "KDB", latitude: 29.978655, longitude: 76.831404 },
+      { name: "Sthaneshwar Mandir", supervisor: "KDB", latitude: 29.980946, longitude: 76.827543 },
+      { name: "Labour Chowk", supervisor: "KDB", latitude: 29.96354, longitude: 76.83537 },
+      { name: "19 Manjil", supervisor: "KDB", latitude: 29.961014, longitude: 76.834814 },
+      { name: "Near Amusement Site", supervisor: "KDB", latitude: 29.960036, longitude: 76.833863 },
+      { name: "Mandi", supervisor: "KDB", latitude: 29.956747, longitude: 76.840733 },
+      { name: "Near MAC", supervisor: "KDB", latitude: 29.957675, longitude: 76.832303 },
+      { name: "Kirmach Gate", supervisor: "KDB", latitude: 29.958546, longitude: 76.826233 },
+      { name: "Bajigar Dharmshala", supervisor: "KDB", latitude: 29.959105, longitude: 76.822445 },
+      { name: "In front of KDB Office", supervisor: "KDB", latitude: 29.963996, longitude: 76.828738 },
+      { name: "Jyotisar", supervisor: "KDB", latitude: 29.961076, longitude: 76.77188 },
+      { name: "Narkatari", supervisor: "KDB", latitude: 29.967058, longitude: 76.799153 },
+      { name: "Dyalpur", supervisor: "KDB", latitude: 29.938638, longitude: 76.814001 },
+      { name: "Snahhit Sarover", supervisor: "KDB", latitude: 29.968039, longitude: 76.836514 },
+      { name: "Near Dukhbhnjan Mandir", supervisor: "KDB", latitude: 29.965517, longitude: 76.836655 },
+      { name: "Toilet No.1 Jai Ram Vidya Peeth North", supervisor: "KDB", latitude: 29.963202, longitude: 76.830958 },
+      { name: "Toilet No.2 Near KDB Office", supervisor: "KDB", latitude: 29.963418, longitude: 76.829401 },
+      { name: "Toilet No.4 Opp. Ror Dharmshala North", supervisor: "KDB", latitude: 29.964317, longitude: 76.824788 },
+      { name: "Toilet No.5 Adjoining Yog Bhawan North", supervisor: "KDB", latitude: 29.96429, longitude: 76.82429 },
+      { name: "Toilet No.6 West Side Adjoining PS", supervisor: "KDB", latitude: 29.963019, longitude: 76.821882 },
+      { name: "Toilet No.7 West Side", supervisor: "KDB", latitude: 29.962664, longitude: 76.821817 },
+      { name: "Toilet No.8 West Side", supervisor: "KDB", latitude: 29.96151, longitude: 76.821714 },
+      { name: "Toilet No.9 West Side", supervisor: "KDB", latitude: 29.959552, longitude: 76.823508 },
+      { name: "Toilet No.10 South Side University Side", supervisor: "KDB", latitude: 29.959405, longitude: 76.823846 },
+      { name: "Toilet No.11 South Side University Side", supervisor: "KDB", latitude: 29.959184, longitude: 76.82517 },
+      { name: "Toilet No.12 South Side University Side", supervisor: "KDB", latitude: 29.959129, longitude: 76.825586 },
+      { name: "Toilet No.13 South Side University Side", supervisor: "KDB", latitude: 29.959034, longitude: 76.825625 },
+      { name: "Toilet No.14 South Side MAC Side", supervisor: "KDB", latitude: 29.958685, longitude: 76.828384 },
+      { name: "Toilet No.15 South Side MAC Side", supervisor: "KDB", latitude: 29.958636, longitude: 76.828797 },
+      { name: "Toilet No.16 South Side MAC Side", supervisor: "KDB", latitude: 29.95844, longitude: 76.830103 },
+      { name: "Toilet No.17 South Side MAC Side", supervisor: "KDB", latitude: 29.958345, longitude: 76.830462 },
+      { name: "Toilet No.18 New East Side", supervisor: "KDB", latitude: 29.959554, longitude: 76.832996 },
+      { name: "Toilet No.21 New East Side", supervisor: "KDB", latitude: 29.961362, longitude: 76.833298 },
+      { name: "Purshotam Pura Bagh", supervisor: "KDB", latitude: 29.960918, longitude: 76.826342 },
+    ],
   },
   {
     id: "drinking-water",
@@ -129,10 +177,11 @@ const FacilitiesScreen = () => {
 
   const handleViewMap = useCallback(
     (facility: Facility) => {
-      if (facility.mapPdfUrl) {
+      if (facility.mapPdfUrl || facility.markers) {
         navigation.navigate("FacilityMap", {
           title: facility.title,
           pdfUrl: facility.mapPdfUrl,
+          markers: facility.markers,
         });
       } else {
         Alert.alert(
@@ -262,7 +311,7 @@ const FacilitiesScreen = () => {
                 </View>
               ) : null}
 
-              {facility.mapPdfUrl && (
+              {(facility.mapPdfUrl || facility.markers) && (
                 <View style={styles.cardFooter}>
                   <TouchableOpacity
                     style={[styles.mapButton, styles.mapButtonSecondary]}
@@ -275,7 +324,7 @@ const FacilitiesScreen = () => {
                       color={COLORS.primary}
                     />
                     <Text style={[styles.mapButtonText, styles.mapButtonTextPrimary]}>
-                      View Parking Map
+                      View Map
                     </Text>
                   </TouchableOpacity>
                 </View>

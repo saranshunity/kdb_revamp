@@ -43,6 +43,12 @@ const MenuScreen: React.FC<MenuScreenProps> = ({ navigation }) => {
         icon: 'people-outline',
         onPress: () => stackNavigation.navigate('Administration'),
       },
+      {
+        id: 'iconic-places',
+        title: 'Iconic Places',
+        icon: 'compass-outline',
+        onPress: () => stackNavigation.navigate('IconicPlaces'),
+      },
       // {
       //   id: 'admin',
       //   title: 'Admin Panel',
