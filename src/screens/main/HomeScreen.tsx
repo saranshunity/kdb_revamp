@@ -13,6 +13,8 @@ import {
   Image,
   ImageBackground,
   Text,
+  FlatList,
+  Dimensions,
 } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -75,6 +77,29 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   // Today's events state
   const [todaysEvents, setTodaysEvents] = useState<EventItem[]>([]);
   const [hasMoreEvents, setHasMoreEvents] = useState(false);
+
+  // Cultural Events carousel state
+  const culturalEventsImagesOriginal = [
+    'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavStaticData%2FculturalImages%2FSureshWadkar.jpg?alt=media&token=5012cd84-42f0-4d96-9c10-305de0404fd4',
+    'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavStaticData%2FculturalImages%2Famyaana.jpg?alt=media&token=b10a6328-511b-4ccd-9b8b-a5e951e2b905',
+    'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavStaticData%2FculturalImages%2Fanup.jpg?alt=media&token=136b642f-4866-46c9-9b76-cbf547bf0c20',
+    'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavStaticData%2FculturalImages%2Fhariom.jpg?alt=media&token=bca25970-1b91-42a8-8427-1f8c6c1a9c84',
+    'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavStaticData%2FculturalImages%2Fkanwar.jpg?alt=media&token=b132656e-af12-485f-b091-1d67fcb61cae',
+    'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavStaticData%2FculturalImages%2Fpuneet.jpg?alt=media&token=345aff32-413c-426e-89ca-00e6f21a8f0c',
+    'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavStaticData%2FculturalImages%2Fsadhvi.jpg?alt=media&token=afd9f3c4-9551-4979-bb55-ae7897ee631b',
+  ];
+  // Create extended array for infinite scroll: [last, ...original, first]
+  const culturalEventsImages = [
+    ...culturalEventsImagesOriginal.slice(-1), // Last item at the beginning
+    ...culturalEventsImagesOriginal,
+    ...culturalEventsImagesOriginal.slice(0, 1), // First item at the end
+  ];
+  const [currentCulturalEventIndex, setCurrentCulturalEventIndex] = useState(1); // Start at first real item
+  const [isCulturalCarouselPaused, setIsCulturalCarouselPaused] = useState(false);
+  const culturalCarouselRef = useRef<FlatList>(null);
+  const culturalCarouselTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const culturalCarouselScrollRef = useRef<{ isScrolling: boolean }>({ isScrolling: false });
+  const screenWidth = Dimensions.get('window').width;
 
   // Reverse geocoding function to convert coordinates to address
   const reverseGeocode = async (latitude: number, longitude: number): Promise<string> => {
@@ -396,6 +421,45 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       unsubscribe();
     };
   }, []);
+
+  // Auto-scroll Cultural Events carousel with infinite loop
+  useEffect(() => {
+    if (isCulturalCarouselPaused || culturalEventsImagesOriginal.length === 0 || culturalCarouselScrollRef.current.isScrolling) {
+      return;
+    }
+
+    const scrollInterval = setInterval(() => {
+      setCurrentCulturalEventIndex((prevIndex) => {
+        const nextIndex = prevIndex + 1;
+        
+        // If we're at the last duplicate (end of extended array), jump to first real item
+        if (nextIndex >= culturalEventsImages.length - 1) {
+          // Scroll to the first real item (index 1) without animation for seamless loop
+          setTimeout(() => {
+            culturalCarouselRef.current?.scrollToIndex({
+              index: 1,
+              animated: false,
+            });
+          }, 100);
+          return 1;
+        }
+        
+        culturalCarouselRef.current?.scrollToIndex({
+          index: nextIndex,
+          animated: true,
+        });
+        return nextIndex;
+      });
+    }, 3000); // Auto-scroll every 3 seconds
+
+    culturalCarouselTimerRef.current = scrollInterval;
+
+    return () => {
+      if (culturalCarouselTimerRef.current) {
+        clearInterval(culturalCarouselTimerRef.current);
+      }
+    };
+  }, [isCulturalCarouselPaused, culturalEventsImagesOriginal.length]);
 
   // Animation effects for family illustration
   useEffect(() => {
@@ -855,6 +919,94 @@ onPress={() => {
             </View>
             <Ionicons name="chevron-forward" size={20} color={COLORS.primary} />
           </TouchableOpacity>
+        </View>
+
+        {/* Cultural Events Section */}
+        <View style={styles.culturalEventsSection}>
+          <View style={styles.culturalEventsHeader}>
+            <H5 color={COLORS.text.primary} weight='semiBold' size='lg'>
+              Cultural Events
+            </H5>
+          </View>
+          <View style={styles.culturalCarouselContainer}>
+            <FlatList
+              ref={culturalCarouselRef}
+              data={culturalEventsImages}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(item, index) => `cultural-${index}`}
+              renderItem={({ item, index }) => (
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPressIn={() => setIsCulturalCarouselPaused(true)}
+                  onPressOut={() => setIsCulturalCarouselPaused(false)}
+                  style={styles.culturalImageContainer}
+                >
+                  <Image
+                    source={{ uri: item }}
+                    style={styles.culturalImage}
+                    resizeMode="contain"
+                  />
+                </TouchableOpacity>
+              )}
+              onScrollBeginDrag={() => {
+                culturalCarouselScrollRef.current.isScrolling = true;
+              }}
+              onMomentumScrollEnd={(event) => {
+                culturalCarouselScrollRef.current.isScrolling = false;
+                const itemWidth = 200 + 10; // width + marginRight
+                const paddingLeft = 20; // contentContainerStyle paddingHorizontal
+                const offset = event.nativeEvent.contentOffset.x;
+                const index = Math.round((offset - paddingLeft) / itemWidth);
+                const clampedIndex = Math.max(0, Math.min(index, culturalEventsImages.length - 1));
+                
+                // Handle infinite loop: if at the last duplicate (end), jump to first real item
+                if (clampedIndex >= culturalEventsImages.length - 1) {
+                  setTimeout(() => {
+                    culturalCarouselRef.current?.scrollToIndex({
+                      index: 1,
+                      animated: false,
+                    });
+                  }, 50);
+                  setCurrentCulturalEventIndex(1);
+                }
+                // Handle infinite loop: if at the first duplicate (beginning), jump to last real item
+                else if (clampedIndex === 0) {
+                  const lastRealIndex = culturalEventsImagesOriginal.length;
+                  setTimeout(() => {
+                    culturalCarouselRef.current?.scrollToIndex({
+                      index: lastRealIndex,
+                      animated: false,
+                    });
+                  }, 50);
+                  setCurrentCulturalEventIndex(lastRealIndex);
+                } else {
+                  setCurrentCulturalEventIndex(clampedIndex);
+                }
+              }}
+              onScrollToIndexFailed={(info) => {
+                const wait = new Promise<void>((resolve) => setTimeout(() => resolve(), 500));
+                wait.then(() => {
+                  culturalCarouselRef.current?.scrollToIndex({
+                    index: info.index,
+                    animated: true,
+                  });
+                });
+              }}
+              getItemLayout={(data, index) => {
+                const itemWidth = 200 + 10; // width + marginRight
+                const paddingLeft = 20; // contentContainerStyle paddingHorizontal
+                return {
+                  length: itemWidth,
+                  offset: paddingLeft + itemWidth * index,
+                  index,
+                };
+              }}
+              initialScrollIndex={1}
+              contentContainerStyle={styles.culturalCarouselContent}
+            />
+          </View>
         </View>
 
         {/* Prepare for Shloka Mantra Section */}
@@ -1802,6 +1954,30 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZES.sm,
     fontFamily: FONTS.gilroy.semiBold,
     color: COLORS.white,
+  },
+  culturalEventsSection: {
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  culturalEventsHeader: {
+    paddingHorizontal: 20,
+    marginBottom: 16,
+  },
+  culturalCarouselContainer: {
+    height: 230,
+  },
+  culturalCarouselContent: {
+    paddingHorizontal: 20,
+  },
+  culturalImageContainer: {
+    width: 200,
+    height: 230,
+    marginRight: 10,
+    borderRadius: 16,
+  },
+  culturalImage: {
+    width: '100%',
+    height: '100%',
   },
 });
 
