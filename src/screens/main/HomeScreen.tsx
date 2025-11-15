@@ -53,6 +53,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const stackNavigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user } = useAuth();
   const { permissions } = usePermissionContext();
+  const [liveStreamLink, setLiveStreamLink] = useState<string | null>(null);
 
   // Animation values for family illustration
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -61,6 +62,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const member3Anim = useRef(new Animated.Value(0)).current;
   const member4Anim = useRef(new Animated.Value(0)).current;
   const lineAnim = useRef(new Animated.Value(0)).current;
+  const liveStreamPulse = useRef(new Animated.Value(0)).current;
 
   // Date-based visibility for Apply for Stalls section
   const [showApplyStalls, setShowApplyStalls] = useState(false);
@@ -240,6 +242,18 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     checkForUpdates();
   }, []);
 
+  useEffect(() => {
+    const resolveLiveLink = (metadata: any) =>
+      metadata?.liveStreamingLink || metadata?.liveStreamLink || metadata?.live_link || null;
+
+    const load = async () => {
+      const data = await MetadataService.fetchMetadata();
+      setLiveStreamLink(resolveLiveLink(data));
+    };
+
+    load();
+  }, []);
+
   // Fetch current user's name from Firestore
   useEffect(() => {
     const fetchUserName = async () => {
@@ -301,6 +315,14 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     } else {
       Linking.openURL('https://play.google.com/store/apps/details?id=com.yourapp');
     }
+  };
+
+  const handleLiveStreamPress = () => {
+    const url = liveStreamLink || 'https://internationalgitamahotsav.in/igm-2025/#live-streaming';
+    stackNavigation.navigate('TirthWebView', {
+      url,
+      title: 'Live Streaming',
+    });
   };
 
   const handleDismissUpdate = () => {
@@ -379,6 +401,25 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(liveStreamPulse, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(liveStreamPulse, {
+          toValue: 0,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    pulse.start();
+    return () => pulse.stop();
+  }, [liveStreamPulse]);
 
   // Animation effects for family illustration
   useEffect(() => {
@@ -563,7 +604,29 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
         {/* Balance Card */}
       <View style={styles.contentContainer}>
-        <H5 style={styles.quickLinkTitle} color={COLORS.primary} weight='semiBold' size='md'>Quick Links</H5>
+        <View style={styles.quickLinksHeader}>
+          <H5 style={styles.quickLinkTitle} color={COLORS.primary} weight='semiBold' size='md'>Quick Links</H5>
+          <Animated.View
+            style={[
+              styles.liveStreamWrapper,
+              {
+                opacity: liveStreamPulse.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0.6, 1],
+                }),
+              },
+            ]}
+          >
+            <TouchableOpacity
+              style={styles.liveStreamButton}
+              activeOpacity={0.85}
+              onPress={handleLiveStreamPress}
+            >
+              <Ionicons name="radio-outline" size={16} color={COLORS.white} style={{ marginRight: 6 }} />
+              <Text style={styles.liveStreamText}>Live Streaming</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </View>
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false}
@@ -1429,9 +1492,33 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     flexDirection: 'row',
   },
-  quickLinkTitle: {
-    marginBottom: 10,
+  quickLinksHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
+    marginBottom: 8,
+  },
+  quickLinkTitle: {
+    marginBottom: 0,
+  },
+  liveStreamWrapper: {
+    borderRadius: 999,
+    overflow: 'hidden',
+  },
+  liveStreamButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.background.appColor,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  liveStreamText: {
+    color: COLORS.white,
+    fontSize: FONT_SIZES.xs,
+    fontFamily: FONTS.gilroy.semiBold,
+    textTransform: 'uppercase',
   },
   applyStallsCard: {
     marginHorizontal: 20,

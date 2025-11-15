@@ -8,6 +8,9 @@ export interface AppMetadata {
   features: FeatureConfig;
   announcements: Announcement[];
   lastUpdated: string;
+  liveStreamingLink?: string;
+  liveStreamLink?: string;
+  live_link?: string;
 }
 
 export interface FeatureConfig {
