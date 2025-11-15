@@ -448,45 +448,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     };
   }, []);
 
-  const quickActions = [
-    { id: 1, title: 'Transfer Money', icon: '💸', color: COLORS.primary },
-    { id: 2, title: 'Pay Bills', icon: '📄', color: COLORS.info },
-    { id: 3, title: 'Deposit Check', icon: '📷', color: COLORS.success },
-    { id: 4, title: 'View Statements', icon: '📊', color: COLORS.warning },
-  ];
-
-  const recentTransactions = [
-    {
-      id: 1,
-      description: 'Coffee Shop',
-      amount: '-$4.50',
-      date: 'Today',
-      type: 'debit',
-    },
-    {
-      id: 2,
-      description: 'Salary Deposit',
-      amount: '+$3,500.00',
-      date: 'Yesterday',
-      type: 'credit',
-    },
-    {
-      id: 3,
-      description: 'Grocery Store',
-      amount: '-$89.32',
-      date: '2 days ago',
-      type: 'debit',
-    },
-    {
-      id: 4,
-      description: 'ATM Withdrawal',
-      amount: '-$100.00',
-      date: '3 days ago',
-      type: 'debit',
-    },
-  ];
-
-
 
   const tirthsList = [
 
@@ -615,12 +576,12 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
             label="Events" 
             onPress={() => stackNavigation.navigate('Events')}
           />
-          <QuickLinkItem 
+          {/* <QuickLinkItem 
             key="cultural-events" 
             icon="musical-notes-outline" 
             label="Cultural Events" 
             onPress={() => stackNavigation.navigate('CulturalEvents')}
-          />
+          /> */}
           <QuickLinkItem 
             key="facilities"
             icon="medkit-outline"
@@ -636,6 +597,38 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
             onPress={() => stackNavigation.navigate('MuseumShows')}
           />  
           <QuickLinkItem 
+        key="stalls" 
+        icon="cart-outline" 
+        label="Stalls Info" 
+        onPress={() => {
+          stackNavigation.navigate('StallsLanding');
+        }}
+      />
+         
+        </ScrollView>
+        {/* <H5 style={styles.quickLinkTitle} color={COLORS.primary} weight='semiBold' size='md'>Public Facilities Links</H5> */}
+
+{/* <ScrollView 
+  horizontal 
+  showsHorizontalScrollIndicator={false}
+  style={styles.quickLinkContainer}
+  contentContainerStyle={styles.quickLinkContent}
+>
+
+
+<QuickLinkItem 
+        key="hotels" 
+        icon="bed-outline" 
+        label="Live Shows" 
+        onPress={() => {
+          Alert.alert(
+            'Coming Soon',
+            'Live Shows feature will be available soon. Stay tuned!',
+            [{ text: 'OK' }]
+          );
+        }}
+      />
+       <QuickLinkItem 
             key="Exhibitions-1" 
             icon="calendar-outline" 
             label="Exhibitions" 
@@ -647,112 +640,11 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               );
             }}
           />
-        </ScrollView>
-        {/* <H5 style={styles.quickLinkTitle} color={COLORS.primary} weight='semiBold' size='md'>Public Facilities Links</H5> */}
-
-<ScrollView 
-  horizontal 
-  showsHorizontalScrollIndicator={false}
-  style={styles.quickLinkContainer}
-  contentContainerStyle={styles.quickLinkContent}
->
-
-<QuickLinkItem 
-        key="stalls" 
-        icon="cart-outline" 
-        label="Stalls Info" 
-        onPress={() => {
-          Alert.alert(
-            'Coming Soon',
-            'Stalls Directory will be available soon. Stay tuned!',
-            [{ text: 'OK' }]
-          );
-        }}
-      />
-{/* <QuickLinkItem 
-key="stalls" 
-icon="cart-outline" 
-label="Fun Fair" 
-onPress={() => {
-  Alert.alert(
-    'Coming Soon',
-    'Amusement feature will be available soon. Stay tuned!',
-    [{ text: 'OK' }]
-  );
-}}
-/> */}
-<QuickLinkItem 
-        key="hotels" 
-        icon="bed-outline" 
-        label="Live Shows" 
-        onPress={() => {
-          Alert.alert(
-            'Coming Soon',
-            'Live Shows feature will be available soon. Stay tuned!',
-            [{ text: 'OK' }]
-          );
-        }}
-      />
-
-{/* <QuickLinkItem 
-  key="funfair-secondary"
-  icon="color-palette-outline"
-  label="Fun Fair"
-  onPress={() => stackNavigation.navigate('MuseumShows')}
-/> */}
-
-</ScrollView>
+</ScrollView> */}
 
         <View style={{ marginTop: 16 }}>
           <MahotsavHulchal listData={mahotsavHulchal} type="mahotsav" />
         </View>
-      
-        {/* <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          style={styles.quickLinkContainer}
-          contentContainerStyle={styles.quickLinkContent}
-        >
-        <QuickLinkItem 
-          key="events-1" 
-          icon="calendar-outline" 
-          label="Exhibitions" 
-          onPress={() => stackNavigation.navigate('Events')}
-        />
-         <QuickLinkItem 
-          key="quiz"
-          icon="school-outline"
-          label="Fun Fair"
-          onPress={() => {
-          stackNavigation.navigate('Quiz' as any);
-          }}
-      />
-      <QuickLinkItem 
-        key="stalls" 
-        icon="cart-outline" 
-        label="Stalls Directory" 
-        onPress={() => {
-          Alert.alert(
-            'Coming Soon',
-            'Stalls Directory feature will be available soon. Stay tuned!',
-            [{ text: 'OK' }]
-          );
-        }}
-      />
-      <QuickLinkItem 
-        key="hotels" 
-        icon="bed-outline" 
-        label="Live Shows" 
-        onPress={() => {
-          Alert.alert(
-            'Coming Soon',
-            'Live Shows feature will be available soon. Stay tuned!',
-            [{ text: 'OK' }]
-          );
-        }}
-      />
-     
-        </ScrollView> */}
         
         {/* Reminders List */}
         {reminders.length > 0 && (
@@ -923,7 +815,7 @@ onPress={() => {
           <TodaysEvents listData={todaysEvents} type="events" showAll={hasMoreEvents} />
         </View>
       
-      <View style={styles.familyLocationCard}>
+      {/* <View style={styles.familyLocationCard}>
           <MapView
             provider={PROVIDER_GOOGLE}
             style={styles.mapView}
@@ -1125,127 +1017,9 @@ onPress={() => {
               </View>
             </View>
           </View>
-        </View>
+        </View> */}
         <TirthsList listData={tirthsList} />
       </View>
-     
-        {/* <View style={styles.balanceCard}>
-          <BodyText color={COLORS.background.primary} size='md' weight='medium'>
-            Total Balance
-          </BodyText>
-          <H1
-            color={COLORS.background.primary}
-            weight='bold'
-            size='4xl'
-            style={styles.balanceAmount}
-          >
-            $12,456.78
-          </H1>
-          <View style={styles.balanceDetails}>
-            <BodyText color={COLORS.background.primary} size='sm'>
-              Checking: $8,456.78
-            </BodyText>
-            <BodyText color={COLORS.background.primary} size='sm'>
-              Savings: $4,000.00
-            </BodyText>
-          </View>
-        </View> */}
-
-        {/* Quick Actions */}
-        {/* <View style={styles.section}>
-          <H2
-            color={COLORS.primary}
-            weight='bold'
-            size='xl'
-            style={styles.sectionTitle}
-          >
-            Quick Actions
-          </H2>
-          <View style={styles.quickActionsGrid}>
-            {quickActions.map(action => (
-              <TouchableOpacity key={action.id} style={styles.quickActionItem}>
-                <View
-                  style={[
-                    styles.quickActionIcon,
-                    { backgroundColor: action.color + '20' },
-                  ]}
-                >
-                  <BodyText size='2xl'>{action.icon}</BodyText>
-                </View>
-                <BodyText
-                  color={COLORS.primary}
-                  size='sm'
-                  weight='medium'
-                  style={styles.quickActionText}
-                >
-                  {action.title}
-                </BodyText>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View> */}
-
-        {/* Recent Transactions */}
-        {/* <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <H2 color={COLORS.primary} weight='bold' size='xl'>
-              Recent Transactions
-            </H2>
-            <TouchableOpacity>
-              <BodyText color={COLORS.primary} size='md' weight='medium'>
-                View All
-              </BodyText>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.transactionsList}>
-            {recentTransactions.map(transaction => (
-              <TouchableOpacity
-                key={transaction.id}
-                style={styles.transactionItem}
-              >
-                <View style={styles.transactionLeft}>
-                  <View
-                    style={[
-                      styles.transactionIcon,
-                      {
-                        backgroundColor:
-                          transaction.type === 'credit'
-                            ? COLORS.success + '20'
-                            : COLORS.error + '20',
-                      },
-                    ]}
-                  >
-                    <BodyText size='lg'>
-                      {transaction.type === 'credit' ? '📈' : '📉'}
-                    </BodyText>
-                  </View>
-                  <View style={styles.transactionDetails}>
-                    <BodyText color={COLORS.primary} size='md' weight='medium'>
-                      {transaction.description}
-                    </BodyText>
-                    <BodyText color={COLORS.tertiary} size='sm'>
-                      {transaction.date}
-                    </BodyText>
-                  </View>
-                </View>
-                <BodyText
-                  color={
-                    transaction.type === 'credit'
-                      ? COLORS.success
-                      : COLORS.error
-                  }
-                  size='md'
-                  weight='bold'
-                >
-                  {transaction.amount}
-                </BodyText>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View> */}
-
-
       </ScrollView>
 
       <TouchableOpacity
@@ -1414,7 +1188,7 @@ const styles = StyleSheet.create({
   },
   mahotsavTabContainer: {
     paddingHorizontal: 20,
-    marginTop: 10,
+    marginTop: 0,
     marginBottom: 12,
   },
   mahotsavTab: {

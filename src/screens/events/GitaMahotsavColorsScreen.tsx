@@ -138,9 +138,9 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   headerTitle: {
-    flex: 1,
+    // flex: 1,
     textAlign: "center",
-    fontSize: FONT_SIZES.xl,
+    fontSize: FONT_SIZES.lg,
     fontFamily: FONTS.gilroy.bold,
     color: COLORS.primary,
   },

@@ -23,8 +23,11 @@ import FacilityMapScreen from '../screens/facilities/FacilityMapScreen';
 import MuseumShowsScreen from '../screens/museum/MuseumShowsScreen';
 import IconicPlacesScreen from '../screens/main/IconicPlacesScreen';
 import ChatBotScreen from '../screens/chat/ChatBotScreen';
-import StallsScreen from '../screens/stalls/StallsMainScreen';
+import StallsLandingScreen from '../screens/stalls/StallsLandingScreen';
+import StallsScreen from '../screens/stalls/StallsScreen';
+import StallsMainScreen from '../screens/stalls/StallsMainScreen';
 import StallCategoriesScreen from '../screens/stalls/StallCategoriesScreen';
+import StallDetailScreen from '../screens/stalls/StallDetailScreen';
 import CheckApplicationStatusScreen from '../screens/stalls/CheckApplicationStatusScreen';
 import StallApplicationScreen from '../screens/stalls/StallApplicationScreen';
 import StallApplicationStatusScreen from '../screens/stalls/StallApplicationStatusScreen';
@@ -136,8 +139,15 @@ export type RootStackParamList = {
   MuseumShows: undefined;
   IconicPlaces: undefined;
   ChatBot: undefined;
-  Stalls: undefined;
+  Stalls: {
+    initialCategory?: string;
+  } | undefined;
+  StallsLanding: undefined;
+  StallsApplication: undefined;
   StallCategories: undefined;
+  StallDetail: {
+    stall: any;
+  };
   CheckApplicationStatus: undefined;
   Quiz: undefined;
   StallApplication: { category: any };
@@ -353,8 +363,11 @@ function AppNavigator() {
         <Stack.Screen name='MuseumShows' component={MuseumShowsScreen} />
         <Stack.Screen name='IconicPlaces' component={IconicPlacesScreen} />
         <Stack.Screen name='ChatBot' component={ChatBotScreen} />
+        <Stack.Screen name='StallsLanding' component={StallsLandingScreen} />
         <Stack.Screen name='Stalls' component={StallsScreen} />
+        <Stack.Screen name='StallsApplication' component={StallsMainScreen} />
         <Stack.Screen name='StallCategories' component={StallCategoriesScreen} />
+        <Stack.Screen name='StallDetail' component={StallDetailScreen} />
         <Stack.Screen name='CheckApplicationStatus' component={CheckApplicationStatusScreen} />
         <Stack.Screen name='StallApplication' component={StallApplicationScreen} />
         <Stack.Screen name='StallApplicationStatus' component={StallApplicationStatusScreen} />
