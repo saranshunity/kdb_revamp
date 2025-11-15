@@ -67,7 +67,6 @@ const styles = StyleSheet.create({
     elevation: 8,
     marginBottom: 16,
     overflow: "hidden",
-    marginRight: 16,
   },
   imageWrapper: {
     position: "relative",

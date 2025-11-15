@@ -13,8 +13,6 @@ import {
   Image,
   ImageBackground,
   Text,
-  FlatList,
-  Dimensions,
 } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -31,7 +29,6 @@ import QuickLinkItem from '../../components/QuickLinks';
 import MahotsavHulchal from './components/MahotsavHulchal';
 import TirthsList from './components/TirthsList';
 import TodaysEvents from '../events/components/TodaysEvents';
-import PermissionBottomSheet from '../../components/PermissionBottomSheet';
 import { usePermissionContext } from '../../contexts/PermissionContext';
 import Ionicons from "react-native-vector-icons/Ionicons";
 import MetadataService from '../../services/MetadataService';
@@ -43,6 +40,7 @@ import FamilyService from '../../services/FamilyService';
 import FirebaseService, { MahotsavHulchal as MahotsavHulchalItem, EventItem } from '../../services/FirebaseService';
 import { GITA_MAHOTSAV_COLORS } from '../events/constants/gitaMahotsavColors';
 import { BodyText as BodyTextComponent } from '../../components/Text';
+import { CULTURAL_EVENTS } from '../events/constants/culturalEvents';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
 
@@ -54,8 +52,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const stackNavigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user } = useAuth();
-  const [showPermissionSheet, setShowPermissionSheet] = useState(false);
-  const { allGranted, hasShownPermissionPrompt, setHasShownPermissionPrompt, permissions } = usePermissionContext();
+  const { permissions } = usePermissionContext();
 
   // Animation values for family illustration
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -78,28 +75,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const [todaysEvents, setTodaysEvents] = useState<EventItem[]>([]);
   const [hasMoreEvents, setHasMoreEvents] = useState(false);
 
-  // Cultural Events carousel state
-  const culturalEventsImagesOriginal = [
-    'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavStaticData%2FculturalImages%2FSureshWadkar.jpg?alt=media&token=5012cd84-42f0-4d96-9c10-305de0404fd4',
-    'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavStaticData%2FculturalImages%2Famyaana.jpg?alt=media&token=b10a6328-511b-4ccd-9b8b-a5e951e2b905',
-    'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavStaticData%2FculturalImages%2Fanup.jpg?alt=media&token=136b642f-4866-46c9-9b76-cbf547bf0c20',
-    'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavStaticData%2FculturalImages%2Fhariom.jpg?alt=media&token=bca25970-1b91-42a8-8427-1f8c6c1a9c84',
-    'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavStaticData%2FculturalImages%2Fkanwar.jpg?alt=media&token=b132656e-af12-485f-b091-1d67fcb61cae',
-    'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavStaticData%2FculturalImages%2Fpuneet.jpg?alt=media&token=345aff32-413c-426e-89ca-00e6f21a8f0c',
-    'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavStaticData%2FculturalImages%2Fsadhvi.jpg?alt=media&token=afd9f3c4-9551-4979-bb55-ae7897ee631b',
-  ];
-  // Create extended array for infinite scroll: [last, ...original, first]
-  const culturalEventsImages = [
-    ...culturalEventsImagesOriginal.slice(-1), // Last item at the beginning
-    ...culturalEventsImagesOriginal,
-    ...culturalEventsImagesOriginal.slice(0, 1), // First item at the end
-  ];
-  const [currentCulturalEventIndex, setCurrentCulturalEventIndex] = useState(1); // Start at first real item
-  const [isCulturalCarouselPaused, setIsCulturalCarouselPaused] = useState(false);
-  const culturalCarouselRef = useRef<FlatList>(null);
-  const culturalCarouselTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const culturalCarouselScrollRef = useRef<{ isScrolling: boolean }>({ isScrolling: false });
-  const screenWidth = Dimensions.get('window').width;
+  const culturalEventsPreview = CULTURAL_EVENTS.slice(0, 3);
 
   // Reverse geocoding function to convert coordinates to address
   const reverseGeocode = async (latitude: number, longitude: number): Promise<string> => {
@@ -187,24 +163,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     //   console.log('Apply for Stalls section will be hidden');
     // }
   }, []);
-
-  // Check permissions on screen focus - only show if not all granted
-  useEffect(() => {
-    if (!allGranted && !hasShownPermissionPrompt) {
-      // Show permission sheet after a short delay to let the screen load
-      const timer = setTimeout(() => {
-        setShowPermissionSheet(true);
-        setHasShownPermissionPrompt(true);
-      }, 1000);
-      
-      return () => clearTimeout(timer);
-    }
-    
-    // If all permissions are granted, don't show permission sheet
-    if (allGranted) {
-      setShowPermissionSheet(false);
-    }
-  }, [allGranted, hasShownPermissionPrompt, setHasShownPermissionPrompt]);
 
   // Get user's current location and address
   useEffect(() => {
@@ -422,45 +380,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     };
   }, []);
 
-  // Auto-scroll Cultural Events carousel with infinite loop
-  useEffect(() => {
-    if (isCulturalCarouselPaused || culturalEventsImagesOriginal.length === 0 || culturalCarouselScrollRef.current.isScrolling) {
-      return;
-    }
-
-    const scrollInterval = setInterval(() => {
-      setCurrentCulturalEventIndex((prevIndex) => {
-        const nextIndex = prevIndex + 1;
-        
-        // If we're at the last duplicate (end of extended array), jump to first real item
-        if (nextIndex >= culturalEventsImages.length - 1) {
-          // Scroll to the first real item (index 1) without animation for seamless loop
-          setTimeout(() => {
-            culturalCarouselRef.current?.scrollToIndex({
-              index: 1,
-              animated: false,
-            });
-          }, 100);
-          return 1;
-        }
-        
-        culturalCarouselRef.current?.scrollToIndex({
-          index: nextIndex,
-          animated: true,
-        });
-        return nextIndex;
-      });
-    }, 3000); // Auto-scroll every 3 seconds
-
-    culturalCarouselTimerRef.current = scrollInterval;
-
-    return () => {
-      if (culturalCarouselTimerRef.current) {
-        clearInterval(culturalCarouselTimerRef.current);
-      }
-    };
-  }, [isCulturalCarouselPaused, culturalEventsImagesOriginal.length]);
-
   // Animation effects for family illustration
   useEffect(() => {
     // Pulse animation for location pin
@@ -528,14 +447,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       lineAnimation.stop();
     };
   }, []);
-
-  const handlePermissionGranted = () => {
-    setShowPermissionSheet(false);
-  };
-
-  const handlePermissionSkip = () => {
-    setShowPermissionSheet(false);
-  };
 
   const quickActions = [
     { id: 1, title: 'Transfer Money', icon: '💸', color: COLORS.primary },
@@ -698,34 +609,44 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           style={styles.quickLinkContainer}
           contentContainerStyle={styles.quickLinkContent}
         >
-        <QuickLinkItem 
-          key="events-1" 
-          icon="calendar-outline" 
-          label="Events" 
-          onPress={() => stackNavigation.navigate('Events')}
-        />
-         <QuickLinkItem 
-          key="quiz"
-          icon="school-outline"
-          label="Quiz"
-          onPress={() => {
-          stackNavigation.navigate('Quiz' as any);
-          }}
-      />
-       <QuickLinkItem 
-  key="facilities"
-  icon="medkit-outline"
-  label="Facilities"
-  onPress={() => {
-    stackNavigation.navigate('Facilities');
-  }}
-/>
-<QuickLinkItem 
-  key="museumshows-secondary"
-  icon="color-palette-outline"
-  label="Museums & Shows"
-  onPress={() => stackNavigation.navigate('MuseumShows')}
-/>  
+          <QuickLinkItem 
+            key="events-1" 
+            icon="calendar-outline" 
+            label="Events" 
+            onPress={() => stackNavigation.navigate('Events')}
+          />
+          <QuickLinkItem 
+            key="cultural-events" 
+            icon="musical-notes-outline" 
+            label="Cultural Events" 
+            onPress={() => stackNavigation.navigate('CulturalEvents')}
+          />
+          <QuickLinkItem 
+            key="facilities"
+            icon="medkit-outline"
+            label="Facilities"
+            onPress={() => {
+              stackNavigation.navigate('Facilities');
+            }}
+          />
+          <QuickLinkItem 
+            key="museumshows-secondary"
+            icon="color-palette-outline"
+            label="Museums & Shows"
+            onPress={() => stackNavigation.navigate('MuseumShows')}
+          />  
+          <QuickLinkItem 
+            key="Exhibitions-1" 
+            icon="calendar-outline" 
+            label="Exhibitions" 
+            onPress={() => {
+              Alert.alert(
+                'Coming Soon',
+                'Exhibitions will be available soon. Stay tuned!',
+                [{ text: 'OK' }]
+              );
+            }}
+          />
         </ScrollView>
         {/* <H5 style={styles.quickLinkTitle} color={COLORS.primary} weight='semiBold' size='md'>Public Facilities Links</H5> */}
 
@@ -735,18 +656,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   style={styles.quickLinkContainer}
   contentContainerStyle={styles.quickLinkContent}
 >
-<QuickLinkItem 
-  key="events-1" 
-  icon="calendar-outline" 
-  label="Exhibitions" 
-  onPress={() => {
-    Alert.alert(
-      'Coming Soon',
-      'Exhibitions will be available soon. Stay tuned!',
-      [{ text: 'OK' }]
-    );
-  }}
-/>
+
 <QuickLinkItem 
         key="stalls" 
         icon="cart-outline" 
@@ -792,6 +702,10 @@ onPress={() => {
 /> */}
 
 </ScrollView>
+
+        <View style={{ marginTop: 16 }}>
+          <MahotsavHulchal listData={mahotsavHulchal} type="mahotsav" />
+        </View>
       
         {/* <ScrollView 
           horizontal 
@@ -927,85 +841,40 @@ onPress={() => {
             <H5 color={COLORS.text.primary} weight='semiBold' size='lg'>
               Cultural Events
             </H5>
+            <TouchableOpacity onPress={() => stackNavigation.navigate('CulturalEvents')}>
+              <BodyText color={COLORS.background.appColor} size='xs' weight='semiBold'>
+                View all →
+              </BodyText>
+            </TouchableOpacity>
           </View>
-          <View style={styles.culturalCarouselContainer}>
-            <FlatList
-              ref={culturalCarouselRef}
-              data={culturalEventsImages}
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              keyExtractor={(item, index) => `cultural-${index}`}
-              renderItem={({ item, index }) => (
-                <TouchableOpacity
-                  activeOpacity={1}
-                  onPressIn={() => setIsCulturalCarouselPaused(true)}
-                  onPressOut={() => setIsCulturalCarouselPaused(false)}
-                  style={styles.culturalImageContainer}
-                >
-                  <Image
-                    source={{ uri: item }}
-                    style={styles.culturalImage}
-                    resizeMode="contain"
-                  />
-                </TouchableOpacity>
-              )}
-              onScrollBeginDrag={() => {
-                culturalCarouselScrollRef.current.isScrolling = true;
-              }}
-              onMomentumScrollEnd={(event) => {
-                culturalCarouselScrollRef.current.isScrolling = false;
-                const itemWidth = 200 + 10; // width + marginRight
-                const paddingLeft = 20; // contentContainerStyle paddingHorizontal
-                const offset = event.nativeEvent.contentOffset.x;
-                const index = Math.round((offset - paddingLeft) / itemWidth);
-                const clampedIndex = Math.max(0, Math.min(index, culturalEventsImages.length - 1));
-                
-                // Handle infinite loop: if at the last duplicate (end), jump to first real item
-                if (clampedIndex >= culturalEventsImages.length - 1) {
-                  setTimeout(() => {
-                    culturalCarouselRef.current?.scrollToIndex({
-                      index: 1,
-                      animated: false,
-                    });
-                  }, 50);
-                  setCurrentCulturalEventIndex(1);
-                }
-                // Handle infinite loop: if at the first duplicate (beginning), jump to last real item
-                else if (clampedIndex === 0) {
-                  const lastRealIndex = culturalEventsImagesOriginal.length;
-                  setTimeout(() => {
-                    culturalCarouselRef.current?.scrollToIndex({
-                      index: lastRealIndex,
-                      animated: false,
-                    });
-                  }, 50);
-                  setCurrentCulturalEventIndex(lastRealIndex);
-                } else {
-                  setCurrentCulturalEventIndex(clampedIndex);
-                }
-              }}
-              onScrollToIndexFailed={(info) => {
-                const wait = new Promise<void>((resolve) => setTimeout(() => resolve(), 500));
-                wait.then(() => {
-                  culturalCarouselRef.current?.scrollToIndex({
-                    index: info.index,
-                    animated: true,
-                  });
-                });
-              }}
-              getItemLayout={(data, index) => {
-                const itemWidth = 200 + 10; // width + marginRight
-                const paddingLeft = 20; // contentContainerStyle paddingHorizontal
-                return {
-                  length: itemWidth,
-                  offset: paddingLeft + itemWidth * index,
-                  index,
-                };
-              }}
-              initialScrollIndex={1}
-              contentContainerStyle={styles.culturalCarouselContent}
-            />
+          <View style={styles.culturalEventsList}>
+            {culturalEventsPreview.map((event, index) => (
+              <TouchableOpacity
+                key={event.id}
+                activeOpacity={0.8}
+                style={[
+                  styles.culturalEventCard,
+                  index !== culturalEventsPreview.length - 1 && styles.culturalEventCardSpacing,
+                ]}
+                onPress={() => stackNavigation.navigate('CulturalEvents')}
+              >
+                <Image source={{ uri: event.image }} style={styles.culturalEventImage} resizeMode='cover' />
+                <View style={styles.culturalEventContent}>
+                  <BodyText color={COLORS.text.primary} size='md' weight='semiBold'>
+                    {event.title}
+                  </BodyText>
+                  <BodyText color={COLORS.background.appColor} size='xs' weight='semiBold' style={{ marginTop: 2 }}>
+                    {event.artist}
+                  </BodyText>
+                  <BodyText color={COLORS.text.secondary} size='xs' style={{ marginTop: 8 }}>
+                    {event.date} • {event.time}
+                  </BodyText>
+                  <BodyText color={COLORS.text.secondary} size='xs'>
+                    {event.venue}
+                  </BodyText>
+                </View>
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
 
@@ -1050,9 +919,9 @@ onPress={() => {
      
 
         
-        <View style={{marginTop: 26}}/>
-       <MahotsavHulchal listData={mahotsavHulchal} type="mahotsav" /> 
-        <TodaysEvents listData={todaysEvents} type="events" showAll={hasMoreEvents} />
+        <View style={{ marginTop: 20 }}>
+          <TodaysEvents listData={todaysEvents} type="events" showAll={hasMoreEvents} />
+        </View>
       
       <View style={styles.familyLocationCard}>
           <MapView
@@ -1387,14 +1256,6 @@ onPress={() => {
         <Ionicons name="chatbubbles-outline" size={24} color={COLORS.white} />
         <Text style={styles.fabLabel}>Ask me</Text>
       </TouchableOpacity>
-
-      {/* Permission Bottom Sheet for existing users */}
-      <PermissionBottomSheet
-        visible={showPermissionSheet}
-        onClose={handlePermissionSkip}
-        onPermissionsGranted={handlePermissionGranted}
-        isOnboarding={false}
-      />
 
       {/* Update Bottom Sheet */}
       {updateData && (
@@ -1958,26 +1819,36 @@ const styles = StyleSheet.create({
   culturalEventsSection: {
     marginTop: 20,
     marginBottom: 20,
+    paddingHorizontal: 20,
   },
   culturalEventsHeader: {
-    paddingHorizontal: 20,
-    marginBottom: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
   },
-  culturalCarouselContainer: {
-    height: 230,
+  culturalEventsList: {
+    marginTop: 4,
   },
-  culturalCarouselContent: {
-    paddingHorizontal: 20,
-  },
-  culturalImageContainer: {
-    width: 200,
-    height: 230,
-    marginRight: 10,
+  culturalEventCard: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.background.primary,
     borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: COLORS.border.light,
   },
-  culturalImage: {
-    width: '100%',
-    height: '100%',
+  culturalEventImage: {
+    width: 90,
+    height: 110,
+  },
+  culturalEventContent: {
+    flex: 1,
+    padding: 12,
+    justifyContent: 'center',
+  },
+  culturalEventCardSpacing: {
+    marginBottom: 12,
   },
 });
 

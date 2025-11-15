@@ -17,6 +17,7 @@ import SettingsScreen from '../screens/main/SettingsScreen';
 import EventsScreen from '../screens/events/EventScreen';
 import EventDetailScreen from '../screens/events/EventDetailScreen';
 import GitaMahotsavColorsScreen from '../screens/events/GitaMahotsavColorsScreen';
+import CulturalEventsScreen from '../screens/events/CulturalEventsScreen';
 import FacilitiesScreen from '../screens/facilities/FacilitiesScreen';
 import FacilityMapScreen from '../screens/facilities/FacilityMapScreen';
 import MuseumShowsScreen from '../screens/museum/MuseumShowsScreen';
@@ -56,10 +57,14 @@ import ListScreen from '../screens/main/ListScreen';
 import ItemDetailScreen from '../screens/main/ItemDetailScreen';
 import RemindersScreen from '../screens/main/RemindersScreen';
 import ShlokaMantraScreen from '../screens/main/ShlokaMantraScreen';
+import UpdateDetailScreen from '../screens/main/UpdateDetailScreen';
+import UpdatesListScreen from '../screens/main/UpdatesListScreen';
 import { COLORS } from '../constants/colors';
 import { FONTS, FONT_SIZES } from '../constants/fonts';
 import { PermissionProvider } from '../contexts/PermissionContext';
 import AuthNavigationListener from '../components/AuthNavigationListener';
+import { navigationRef, flushNavigationQueue } from './navigationRef';
+import { MahotsavHulchal as MahotsavHulchalItem } from '../services/FirebaseService';
 
 // Tirth type for navigation
 interface Tirth {
@@ -116,6 +121,7 @@ export type RootStackParamList = {
   Events: undefined;
   EventDetail: { eventId?: string };
   GitaMahotsavColors: undefined;
+  CulturalEvents: undefined;
   Facilities: undefined;
   FacilityMap: {
     title: string;
@@ -198,6 +204,10 @@ export type RootStackParamList = {
   };
   Reminders: undefined;
   ShlokaMantra: undefined;
+  UpdateDetail: {
+    item: MahotsavHulchalItem;
+  };
+  UpdatesList: undefined;
 };
 
 export type AuthStackParamList = {
@@ -321,7 +331,7 @@ function MainTabNavigator() {
 function AppNavigator() {
   return (
     <PermissionProvider>
-      <NavigationContainer>
+      <NavigationContainer ref={navigationRef} onReady={flushNavigationQueue}>
         <AuthNavigationListener />
         <Stack.Navigator
           initialRouteName='Splash'
@@ -337,6 +347,7 @@ function AppNavigator() {
         <Stack.Screen name='Events' component={EventsScreen} />
         <Stack.Screen name='EventDetail' component={EventDetailScreen} />
         <Stack.Screen name='GitaMahotsavColors' component={GitaMahotsavColorsScreen} />
+        <Stack.Screen name='CulturalEvents' component={CulturalEventsScreen} />
         <Stack.Screen name='Facilities' component={FacilitiesScreen} />
         <Stack.Screen name='FacilityMap' component={FacilityMapScreen} />
         <Stack.Screen name='MuseumShows' component={MuseumShowsScreen} />
@@ -377,6 +388,8 @@ function AppNavigator() {
         <Stack.Screen name='ItemDetailScreen' component={ItemDetailScreen} />
         <Stack.Screen name='Reminders' component={RemindersScreen} />
         <Stack.Screen name='ShlokaMantra' component={ShlokaMantraScreen} />
+        <Stack.Screen name='UpdateDetail' component={UpdateDetailScreen} />
+        <Stack.Screen name='UpdatesList' component={UpdatesListScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </PermissionProvider>

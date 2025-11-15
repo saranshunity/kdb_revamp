@@ -30,7 +30,15 @@ type Message = {
   text: string;
   actions?: Array<{
     label: string;
-    type: "navigate-events" | "navigate-facilities" | "navigate-iconic" | "navigate-museum";
+    type:
+      | "navigate-events"
+      | "navigate-facilities"
+      | "navigate-iconic"
+      | "navigate-museum"
+      | "navigate-tirths"
+      | "navigate-tirth-mitra"
+      | "navigate-shloka-mantra"
+      | "navigate-family-locator";
   }>;
 };
 
@@ -82,10 +90,22 @@ const knowledgeBase: KnowledgeEntry[] = [
     answer:
       "Need extra help? Visit the Lost & Found desk at Brahma Sarovar’s main gate or call the helpline listed in Facilities. You can also explore the Menu for hierarchy, permissions, and reminders.",
   },
+  {
+    keywords: ["shloka", "mantra", "chant", "vaishvik", "path"],
+    answer:
+      "Open **Shloka Mantra Prep** to read the brief, learn the chant cues, and get hyped for the Vaishvik Path with 18,000 students on 1 December.",
+    actions: [{ label: "Shloka Mantra", type: "navigate-shloka-mantra" }],
+  },
+  {
+    keywords: ["locate", "family", "members", "tracker", "location"],
+    answer:
+      "Use **Locate Your Family Members** to set up your family group, share live pins, and jump into the dashboard map. You can invite relatives and see everyone on the Mahotsav grounds in seconds.",
+    actions: [{ label: "Locate Family", type: "navigate-family-locator" }],
+  },
 ];
 
 const fallbackMessage =
-  "I can help with Mahotsav events, facilities, iconic places, and museums. Try asking “Where are the toilets?” or “Tell me about Jyotisar.”";
+  "I can help with Mahotsav events, facilities, iconic places, museums, Shloka Mantra prep, and locating your family. Try asking “Where are the toilets?” or “How do I join the Vaishvik Path?”";
 
 const ChatBotScreen = () => {
   const insets = useSafeAreaInsets();
@@ -245,6 +265,10 @@ const ChatBotScreen = () => {
                     } else {
                       navigation.navigate("TirthMitraIntro");
                     }
+                  } else if (action.type === "navigate-shloka-mantra") {
+                    navigation.navigate("ShlokaMantra");
+                  } else if (action.type === "navigate-family-locator") {
+                    navigation.navigate("FamilyLaunch");
                   }
                 }}
               >
