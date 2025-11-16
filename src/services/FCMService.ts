@@ -1,8 +1,11 @@
 import messaging from '@react-native-firebase/messaging';
 import firestore from '@react-native-firebase/firestore';
+import DeviceInfo from 'react-native-device-info';
+import { Platform } from 'react-native';
 
 class FCMService {
   private tokenRegistered = false;
+  private refreshUnsubscribe: (() => void) | null = null;
 
   async requestPermission(): Promise<boolean> {
     try {
@@ -17,7 +20,19 @@ class FCMService {
     }
   }
 
-  async registerToken(userId: string): Promise<string | null> {
+  private getDeviceTokenRef(userId: string, deviceId: string) {
+    return firestore()
+      .collection('users')
+      .doc(userId)
+      .collection('deviceTokens')
+      .doc(deviceId);
+  }
+
+  private getGlobalTokenRef(deviceId: string) {
+    return firestore().collection('deviceTokens').doc(deviceId);
+  }
+
+  async registerToken(userId?: string | null): Promise<string | null> {
     try {
       if (!this.tokenRegistered) {
         await this.requestPermission();
@@ -26,20 +41,65 @@ class FCMService {
 
       const token = await messaging().getToken();
       console.log('FCM Token obtained:', token ? `${token.substring(0, 20)}...` : 'null');
-      
-      // Store token in Firestore user document
-      await firestore().collection('users').doc(userId).update({
-        fcmToken: token,
-        fcmTokenUpdatedAt: firestore.FieldValue.serverTimestamp(),
-      });
-      console.log('FCM Token stored in Firestore for user:', userId);
+      const deviceId = DeviceInfo.getUniqueId();
+      const timestamp = firestore.FieldValue.serverTimestamp();
+      const tokenData = {
+        token,
+        platform: Platform.OS,
+        updatedAt: timestamp,
+        deviceId,
+        userId: userId || null,
+      };
+
+      let tokenDoc = this.getGlobalTokenRef(deviceId);
+
+      if (userId) {
+        tokenDoc = this.getDeviceTokenRef(userId, deviceId);
+
+        await firestore().collection('users').doc(userId).set(
+          {
+            fcmToken: token,
+            fcmTokenUpdatedAt: timestamp,
+          },
+          { merge: true }
+        );
+      }
+
+      await tokenDoc.set(tokenData, { merge: true });
+      console.log(
+        'FCM token stored for device',
+        deviceId,
+        userId ? `user: ${userId}` : '(unauthenticated)'
+      );
 
       // Listen for token refresh
-      messaging().onTokenRefresh(async (newToken) => {
-        await firestore().collection('users').doc(userId).update({
-          fcmToken: newToken,
-          fcmTokenUpdatedAt: firestore.FieldValue.serverTimestamp(),
-        });
+      this.refreshUnsubscribe?.();
+      this.refreshUnsubscribe = messaging().onTokenRefresh(async (newToken) => {
+        try {
+          const refreshTimestamp = firestore.FieldValue.serverTimestamp();
+          if (userId) {
+            await firestore().collection('users').doc(userId).set(
+              {
+                fcmToken: newToken,
+                fcmTokenUpdatedAt: refreshTimestamp,
+              },
+              { merge: true }
+            );
+          }
+
+          await tokenDoc.set(
+            {
+              token: newToken,
+              platform: Platform.OS,
+              updatedAt: refreshTimestamp,
+              deviceId,
+              userId: userId || null,
+            },
+            { merge: true }
+          );
+        } catch (refreshErr) {
+          console.error('FCM token refresh update failed:', refreshErr);
+        }
       });
 
       return token;

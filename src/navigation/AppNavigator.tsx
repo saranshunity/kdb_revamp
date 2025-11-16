@@ -163,7 +163,12 @@ export type RootStackParamList = {
     formData: any;
   };
   PaymentWebView: undefined;
-  TirthWebView: { url: string; title?: string };
+  TirthWebView: {
+    url: string;
+    title?: string;
+    fullScreenVideo?: boolean;
+    isYouTube?: boolean;
+  };
   FamilyMembers: undefined;
   FamilyLaunch: undefined;
   FamilyDashboard: { familyId: string };

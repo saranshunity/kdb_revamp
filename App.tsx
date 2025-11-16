@@ -149,6 +149,12 @@ function App(): React.JSX.Element {
       unsubscribeNotificationOpened();
     };
   }, []);
+
+  useEffect(() => {
+    FCMService.registerToken().catch((error) => {
+      console.error('Anonymous FCM registration failed:', error);
+    });
+  }, []);
   return (
     <SafeAreaProvider>
       <AuthProvider>
