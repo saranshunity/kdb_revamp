@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -21,13 +21,13 @@ import { COLORS } from '../../constants/colors';
 import { FONTS, FONT_SIZES } from '../../constants/fonts';
 import { H2, H3, BodyText } from '../../components/Text';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
+import { launchImageLibrary } from 'react-native-image-picker';
 import tirthData from '../../../tirth.json';
 import { useAuth } from '../../contexts/AuthContext';
 import FileUpload from '../../components/FileUpload';
 import { FileData, uploadDocumentToFirebase } from '../../utils/documentUploader';
 import firestore from '@react-native-firebase/firestore';
-import auth from '@react-native-firebase/auth';
+import OTPService from '../../services/OTPService';
 
 type TirthMitraGeneratorScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -87,14 +87,12 @@ const TirthMitraGeneratorScreen = () => {
   const [filteredTirthas, setFilteredTirthas] = useState<Tirth[]>([]);
   const [showDistrictPicker, setShowDistrictPicker] = useState(false);
   const [showTirthPicker, setShowTirthPicker] = useState(false);
+  const [tirthSearchQuery, setTirthSearchQuery] = useState('');
   const [useLoggedInPhone, setUseLoggedInPhone] = useState(true);
-  const [showOTPVerification, setShowOTPVerification] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [otpCode, setOtpCode] = useState('');
-  const [confirmation, setConfirmation] = useState<any>(null);
-  const [isVerifyingOTP, setIsVerifyingOTP] = useState(false);
   const [isSendingOTP, setIsSendingOTP] = useState(false);
+  const [phoneVerified, setPhoneVerified] = useState(false);
 
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<TirthMitraGeneratorScreenNavigationProp>();
@@ -104,6 +102,8 @@ const TirthMitraGeneratorScreen = () => {
     if (user?.phoneNumber) {
       const phoneWithoutCountryCode = user.phoneNumber.replace(/^\+91/, '');
       setFormData(prev => ({ ...prev, phone: phoneWithoutCountryCode }));
+      // Auto-verify if using logged-in phone
+      setPhoneVerified(true);
     }
   }, [user]);
 
@@ -115,15 +115,25 @@ const TirthMitraGeneratorScreen = () => {
   }, []);
 
   React.useEffect(() => {
-    // Filter tirthas when district changes
+    // Filter tirthas when district changes or search query changes
     if (formData.selectedDistrict) {
       const allTirthas: Tirth[] = tirthData.tirthas;
-      const filtered = allTirthas.filter(t => t.district === formData.selectedDistrict);
+      let filtered = allTirthas.filter(t => t.district === formData.selectedDistrict);
+      
+      // Apply search filter if search query exists
+      if (tirthSearchQuery.trim()) {
+        const query = tirthSearchQuery.toLowerCase().trim();
+        filtered = filtered.filter(t => 
+          t.name.toLowerCase().includes(query) ||
+          t.location.address.toLowerCase().includes(query)
+        );
+      }
+      
       setFilteredTirthas(filtered);
     } else {
       setFilteredTirthas([]);
     }
-  }, [formData.selectedDistrict]);
+  }, [formData.selectedDistrict, tirthSearchQuery]);
 
   const updateField = (field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -165,65 +175,28 @@ const TirthMitraGeneratorScreen = () => {
       selectedTirth: tirth.id,
       selectedTirthName: tirth.name,
     }));
+    setTirthSearchQuery(''); // Clear search when selecting
     setShowTirthPicker(false);
   };
 
   const handleSelectPhoto = () => {
-    Alert.alert(
-      'Upload Photo',
-      'Choose an option',
-      [
-        {
-          text: 'Camera',
-          onPress: () => {
-            launchCamera(
-              {
-                mediaType: 'photo',
-                quality: 0.8,
-                maxWidth: 800,
-                maxHeight: 1000,
-                includeBase64: false,
-              },
-              response => {
-                if (response.didCancel) {
-                  console.log('User cancelled camera');
-                } else if (response.errorCode) {
-                  Alert.alert('Error', response.errorMessage || 'Failed to capture photo');
-                } else if (response.assets && response.assets[0]) {
-                  updateField('photoUri', response.assets[0].uri || '');
-                }
-              }
-            );
-          },
-        },
-        {
-          text: 'Gallery',
-          onPress: () => {
-            launchImageLibrary(
-              {
-                mediaType: 'photo',
-                quality: 0.8,
-                maxWidth: 800,
-                maxHeight: 1000,
-                includeBase64: false,
-              },
-              response => {
-                if (response.didCancel) {
-                  console.log('User cancelled image picker');
-                } else if (response.errorCode) {
-                  Alert.alert('Error', response.errorMessage || 'Failed to select photo');
-                } else if (response.assets && response.assets[0]) {
-                  updateField('photoUri', response.assets[0].uri || '');
-                }
-              }
-            );
-          },
-        },
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-      ]
+    launchImageLibrary(
+      {
+        mediaType: 'photo',
+        quality: 0.8,
+        maxWidth: 800,
+        maxHeight: 1000,
+        includeBase64: false,
+      },
+      response => {
+        if (response.didCancel) {
+          console.log('User cancelled image picker');
+        } else if (response.errorCode) {
+          Alert.alert('Error', response.errorMessage || 'Failed to select photo');
+        } else if (response.assets && response.assets[0]) {
+          updateField('photoUri', response.assets[0].uri || '');
+        }
+      }
     );
   };
 
@@ -275,58 +248,72 @@ const TirthMitraGeneratorScreen = () => {
     try {
       setIsSendingOTP(true);
       const phoneWithCountryCode = `+91${formData.phone}`;
-      const confirmation = await auth().signInWithPhoneNumber(phoneWithCountryCode);
-      setConfirmation(confirmation);
-      setShowOTPVerification(true);
-      Alert.alert('OTP Sent', 'Please check your phone for the verification code.');
+      
+      // Generate 4-digit OTP
+      const otp = OTPService.generateOTP();
+      console.log('Generated OTP:', otp);
+      
+      // Send OTP via SMS API
+      const sent = await OTPService.sendOTP(phoneWithCountryCode, otp);
+      
+      if (sent) {
+        // Navigate to OTP verification screen
+        navigation.navigate('TirthMitraOTPVerification', {
+          phoneNumber: phoneWithCountryCode,
+          onVerified: () => {
+            setPhoneVerified(true);
+          },
+        });
+      } else {
+        throw new Error('Failed to send OTP');
+      }
     } catch (error: any) {
       console.error('Error sending OTP:', error);
-      Alert.alert('Error', 'Failed to send OTP. Please try again.');
+      let errorMessage = 'Failed to send OTP. Please try again.';
+      if (error.message?.includes('Invalid phone number')) {
+        errorMessage = 'Invalid phone number format.';
+      } else if (error.message?.includes('network') || error.message?.includes('Network')) {
+        errorMessage = 'Network error. Please check your connection.';
+      }
+      Alert.alert('Error', errorMessage);
     } finally {
       setIsSendingOTP(false);
     }
   };
 
-  const verifyOTP = async () => {
-    if (!otpCode || otpCode.length !== 6) {
-      Alert.alert('Invalid OTP', 'Please enter a valid 6-digit OTP code.');
-      return;
-    }
 
-    try {
-      setIsVerifyingOTP(true);
-      await confirmation.confirm(otpCode);
-      setShowOTPVerification(false);
-      Alert.alert('Success', 'Phone number verified successfully!', [
-        {
-          text: 'OK',
-          onPress: () => handleUploadAndSubmit(),
-        },
-      ]);
-    } catch (error: any) {
-      console.error('Error verifying OTP:', error);
-      Alert.alert('Invalid OTP', 'The OTP code entered is incorrect. Please try again.');
-    } finally {
-      setIsVerifyingOTP(false);
+  // Check if phone needs verification
+  const needsPhoneVerification = useMemo(() => {
+    // If phone is already verified, skip
+    if (phoneVerified) {
+      return false;
     }
-  };
+    // If using logged-in phone, no verification needed
+    if (user?.phoneNumber) {
+      const userPhone = user.phoneNumber.replace(/^\+91/, '');
+      if (formData.phone === userPhone) {
+        return false;
+      }
+    }
+    // Different phone number needs verification (only if 10 digits entered)
+    return formData.phone.length === 10;
+  }, [phoneVerified, user?.phoneNumber, formData.phone]);
 
   const handleGenerateCard = async () => {
     if (!validateForm()) {
       return;
     }
 
-    // Check if using different phone number - need OTP verification
-    if (!useLoggedInPhone && user?.phoneNumber) {
-      const userPhone = user.phoneNumber.replace(/^\+91/, '');
-      if (formData.phone !== userPhone) {
-        // Send OTP for verification
-        await sendOTPVerification();
-        return;
-      }
+    if (needsPhoneVerification) {
+      Alert.alert(
+        'Phone Verification Required',
+        'Please verify your phone number before generating the card.',
+        [{ text: 'OK' }]
+      );
+      return;
     }
 
-    // If using logged-in phone or OTP verified, proceed with upload
+    // Proceed with upload
     await handleUploadAndSubmit();
   };
 
@@ -513,7 +500,10 @@ const TirthMitraGeneratorScreen = () => {
               </BodyText>
               <TouchableOpacity
                 style={styles.pickerButton}
-                onPress={() => setShowTirthPicker(true)}
+                onPress={() => {
+                  setTirthSearchQuery('');
+                  setShowTirthPicker(true);
+                }}
               >
                 <BodyText
                   style={styles.pickerButtonText}
@@ -628,12 +618,14 @@ const TirthMitraGeneratorScreen = () => {
                 <TouchableOpacity
                   onPress={() => {
                     if (useLoggedInPhone) {
-                      // Switch to different number - clear the field
+                      // Switch to different number - clear the field and reset verification
                       setFormData(prev => ({ ...prev, phone: '' }));
+                      setPhoneVerified(false);
                     } else {
-                      // Switch back to logged-in number
+                      // Switch back to logged-in number - auto-verify
                       const phoneWithoutCountryCode = user?.phoneNumber?.replace(/^\+91/, '') || '';
                       setFormData(prev => ({ ...prev, phone: phoneWithoutCountryCode }));
+                      setPhoneVerified(true);
                     }
                     setUseLoggedInPhone(!useLoggedInPhone);
                   }}
@@ -646,20 +638,54 @@ const TirthMitraGeneratorScreen = () => {
               )}
             </View>
             <TextInput
-              style={[styles.input, !useLoggedInPhone && user?.phoneNumber && styles.disabledInput]}
-              placeholder={useLoggedInPhone ? "10-digit mobile number" : "Enter new phone number"}
+              style={styles.input}
+              placeholder="10-digit mobile number"
               placeholderTextColor={COLORS.text.tertiary}
               value={formData.phone}
               onChangeText={text => {
-                if (!useLoggedInPhone) {
-                  updateField('phone', text);
+                updateField('phone', text);
+                // Reset verified status when phone changes
+                if (phoneVerified) {
+                  setPhoneVerified(false);
                 }
               }}
               keyboardType="phone-pad"
               maxLength={10}
-              editable={!useLoggedInPhone}
+              editable={true}
             />
-            {!useLoggedInPhone && user?.phoneNumber && (
+            {formData.phone.length === 10 && !phoneVerified && (
+              <TouchableOpacity
+                style={[styles.verifyOtpButton, isSendingOTP && styles.verifyOtpButtonDisabled]}
+                onPress={sendOTPVerification}
+                disabled={isSendingOTP}
+                activeOpacity={0.8}
+              >
+                {isSendingOTP ? (
+                  <>
+                    <ActivityIndicator size="small" color={COLORS.white} />
+                    <BodyText style={styles.verifyOtpButtonText} color={COLORS.white} size="sm" weight="semiBold">
+                      Sending OTP...
+                    </BodyText>
+                  </>
+                ) : (
+                  <>
+                    <Ionicons name="checkmark-circle-outline" size={18} color={COLORS.white} />
+                    <BodyText style={styles.verifyOtpButtonText} color={COLORS.white} size="sm" weight="semiBold">
+                      Verify OTP
+                    </BodyText>
+                  </>
+                )}
+              </TouchableOpacity>
+            )}
+            {phoneVerified && (
+              <View style={styles.verifiedContainer}>
+                <Ionicons name="checkmark-circle" size={16} color={COLORS.success} />
+                <BodyText style={styles.verifiedText} color={COLORS.success} size="xs" weight="semiBold">
+                  Phone number verified
+                </BodyText>
+              </View>
+            )}
+            {user?.phoneNumber && formData.phone && formData.phone !== user.phoneNumber.replace(/^\+91/, '') && !phoneVerified && (
               <BodyText style={styles.hintText} color={COLORS.text.secondary} size="xs">
                 OTP verification will be required for this number
               </BodyText>
@@ -761,9 +787,12 @@ const TirthMitraGeneratorScreen = () => {
 
         {/* Generate Button */}
         <TouchableOpacity
-          style={[styles.generateButton, (isUploading || isSendingOTP) && styles.generateButtonDisabled]}
+          style={[
+            styles.generateButton,
+            (isUploading || isSendingOTP || needsPhoneVerification) && styles.generateButtonDisabled
+          ]}
           onPress={handleGenerateCard}
-          disabled={isUploading || isSendingOTP}
+          disabled={isUploading || isSendingOTP || needsPhoneVerification}
           activeOpacity={0.8}
         >
           {isUploading ? (
@@ -789,6 +818,11 @@ const TirthMitraGeneratorScreen = () => {
             </>
           )}
         </TouchableOpacity>
+        {needsPhoneVerification && (
+          <BodyText style={styles.generateButtonHint} color={COLORS.text.secondary} size="xs">
+            Please verify your phone number to continue
+          </BodyText>
+        )}
 
         <View style={styles.bottomSpacing} />
       </ScrollView>
@@ -856,12 +890,35 @@ const TirthMitraGeneratorScreen = () => {
               <H3 style={styles.modalTitle} color={COLORS.text.primary} weight="bold" size="md">
                 Select Tirth - {formData.selectedDistrict}
               </H3>
-              <TouchableOpacity onPress={() => setShowTirthPicker(false)}>
+              <TouchableOpacity onPress={() => {
+                setTirthSearchQuery('');
+                setShowTirthPicker(false);
+              }}>
                 <Ionicons name="close" size={24} color={COLORS.text.primary} />
               </TouchableOpacity>
             </View>
+            <View style={styles.searchContainer}>
+              <Ionicons name="search-outline" size={20} color={COLORS.text.tertiary} style={styles.searchIcon} />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search tirth by name or location..."
+                placeholderTextColor={COLORS.text.tertiary}
+                value={tirthSearchQuery}
+                onChangeText={setTirthSearchQuery}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              {tirthSearchQuery.length > 0 && (
+                <TouchableOpacity
+                  onPress={() => setTirthSearchQuery('')}
+                  style={styles.clearSearchButton}
+                >
+                  <Ionicons name="close-circle" size={20} color={COLORS.text.tertiary} />
+                </TouchableOpacity>
+              )}
+            </View>
             <BodyText style={styles.modalSubtitle} color={COLORS.text.secondary} size="xs">
-              {filteredTirthas.length} tirthas in {formData.selectedDistrict}
+              {filteredTirthas.length} {filteredTirthas.length === 1 ? 'tirth' : 'tirthas'} found
             </BodyText>
             <FlatList
               data={filteredTirthas}
@@ -905,76 +962,6 @@ const TirthMitraGeneratorScreen = () => {
         </View>
       </Modal>
 
-      {/* OTP Verification Modal */}
-      <Modal
-        visible={showOTPVerification}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setShowOTPVerification(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.otpModalContent}>
-            <View style={styles.modalHeader}>
-              <H3 style={styles.modalTitle} color={COLORS.text.primary} weight="bold" size="md">
-                Verify Phone Number
-              </H3>
-              <TouchableOpacity onPress={() => setShowOTPVerification(false)}>
-                <Ionicons name="close" size={24} color={COLORS.text.primary} />
-              </TouchableOpacity>
-            </View>
-            
-            <BodyText style={styles.otpDescription} color={COLORS.text.secondary} size="sm">
-              We've sent a 6-digit verification code to{'\n'}
-              <Text style={styles.otpPhoneNumber}>+91 {formData.phone}</Text>
-            </BodyText>
-
-            <View style={styles.otpInputContainer}>
-              <BodyText style={styles.label} color={COLORS.text.secondary} size="sm">
-                Enter OTP Code
-              </BodyText>
-              <TextInput
-                style={styles.otpInput}
-                placeholder="Enter 6-digit code"
-                placeholderTextColor={COLORS.text.tertiary}
-                value={otpCode}
-                onChangeText={setOtpCode}
-                keyboardType="number-pad"
-                maxLength={6}
-                autoFocus
-              />
-            </View>
-
-            <TouchableOpacity
-              style={[styles.verifyButton, isVerifyingOTP && styles.verifyButtonDisabled]}
-              onPress={verifyOTP}
-              disabled={isVerifyingOTP}
-            >
-              {isVerifyingOTP ? (
-                <>
-                  <ActivityIndicator size="small" color={COLORS.white} />
-                  <BodyText style={styles.verifyButtonText} color={COLORS.white} size="md" weight="semiBold">
-                    Verifying...
-                  </BodyText>
-                </>
-              ) : (
-                <BodyText style={styles.verifyButtonText} color={COLORS.white} size="md" weight="semiBold">
-                  Verify & Continue
-                </BodyText>
-              )}
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.resendButton}
-              onPress={sendOTPVerification}
-              disabled={isSendingOTP}
-            >
-              <BodyText style={styles.resendButtonText} color={COLORS.primary} size="sm" weight="medium">
-                {isSendingOTP ? 'Sending...' : 'Resend OTP'}
-              </BodyText>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 };
@@ -1140,6 +1127,13 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.gilroy.bold,
     fontSize: FONT_SIZES.md,
   },
+  generateButtonHint: {
+    fontFamily: FONTS.gilroy.regular,
+    fontSize: FONT_SIZES.xs,
+    textAlign: 'center',
+    marginTop: 8,
+    marginHorizontal: 20,
+  },
   uploadProgressContainer: {
     marginHorizontal: 20,
     marginTop: 24,
@@ -1213,6 +1207,33 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.gilroy.bold,
     fontSize: FONT_SIZES.md,
     flex: 1,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 20,
+    marginTop: 12,
+    marginBottom: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: COLORS.background.secondary,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.border.light,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: FONT_SIZES.sm,
+    fontFamily: FONTS.gilroy.regular,
+    color: COLORS.text.primary,
+    padding: 0,
+  },
+  clearSearchButton: {
+    padding: 4,
+    marginLeft: 8,
   },
   modalSubtitle: {
     fontFamily: FONTS.gilroy.regular,
@@ -1325,6 +1346,34 @@ const styles = StyleSheet.create({
   resendButtonText: {
     fontFamily: FONTS.gilroy.semiBold,
     fontSize: FONT_SIZES.sm,
+  },
+  verifyOtpButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.background.appColor,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginTop: 8,
+    gap: 8,
+  },
+  verifyOtpButtonDisabled: {
+    opacity: 0.6,
+  },
+  verifyOtpButtonText: {
+    fontFamily: FONTS.gilroy.semiBold,
+    fontSize: FONT_SIZES.sm,
+  },
+  verifiedContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    gap: 6,
+  },
+  verifiedText: {
+    fontFamily: FONTS.gilroy.semiBold,
+    fontSize: FONT_SIZES.xs,
   },
 });
 

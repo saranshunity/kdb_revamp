@@ -47,6 +47,7 @@ import TirthMitraCardScreen from '../screens/tirthMitra/TirthMitraCardScreen';
 import TirthMitraApplicationScreen from '../screens/tirthMitra/TirthMitraApplicationScreen';
 import TirthMitraReviewScreen from '../screens/tirthMitra/TirthMitraReviewScreen';
 import TirthMitraStatusScreen from '../screens/tirthMitra/TirthMitraStatusScreen';
+import TirthMitraOTPVerificationScreen from '../screens/tirthMitra/TirthMitraOTPVerificationScreen';
 import MenuScreen from '../screens/main/MenuScreen';
 import AboutKDBScreen from '../screens/main/AboutKDBScreen';
 import AdministrationScreen from '../screens/main/AdministrationScreen';
@@ -187,6 +188,10 @@ export type RootStackParamList = {
     applicationId?: string;
     applicationData?: any;
     status?: 'pending' | 'approved' | 'rejected';
+  };
+  TirthMitraOTPVerification: {
+    phoneNumber: string;
+    onVerified?: () => void;
   };
   Menu: undefined;
   AboutKDB: undefined;
@@ -389,6 +394,7 @@ function AppNavigator() {
         <Stack.Screen name='TirthDetail' component={TirthDetailScreen} />
         <Stack.Screen name='TirthMitraIntro' component={TirthMitraIntroScreen} />
         <Stack.Screen name='TirthMitraGenerator' component={TirthMitraGeneratorScreen} />
+        <Stack.Screen name='TirthMitraOTPVerification' component={TirthMitraOTPVerificationScreen} />
         <Stack.Screen name='TirthMitraCard' component={TirthMitraCardScreen} />
         <Stack.Screen name='TirthMitraApplication' component={TirthMitraApplicationScreen} />
         <Stack.Screen name='TirthMitraReview' component={TirthMitraReviewScreen} />
