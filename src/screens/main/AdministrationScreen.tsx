@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -6,6 +6,7 @@ import {
   StatusBar,
   Image,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -22,48 +23,55 @@ interface AdministrationScreenProps {
   navigation: AdministrationScreenNavigationProp;
 }
 
+interface Member {
+  id: number;
+  name: string;
+  position: string;
+  organization: string;
+  image: string;
+}
+
+const MEMBERS_ENDPOINT = 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/members.json?alt=media&token=3f008ed3-c9ec-4500-9791-d358d0d626ad';
+
 const AdministrationScreen: React.FC<AdministrationScreenProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
+  const [members, setMembers] = useState<Member[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const members = [
-    {
-      id: 1,
-      name: 'Prof. Ashim Kumar Ghosh',
-      position: 'Hon\'ble Governor of Haryana & Chairman',
-      organization: 'Kurukshetra Development Board',
-      image: 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/heirarchy%2Fgoverner.jpeg?alt=media&token=2ef1b78f-fdbb-48f1-9677-4f994785e96b',
-    },
-    {
-      id: 2,
-      name: 'Nayab Singh Saini',
-      position: 'Hon\'ble Chief Minister, Haryana & Vice-Chairman',
-      organization: 'Kurukshetra Development Board',
-      image: 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/heirarchy%2Fcm.jpg?alt=media&token=a4bad021-ea48-4e6c-bc55-f0605098f146',
-    },
-    {
-      id: 3,
-      name: 'Vikas Gupta, IAS',
-      position: 'Member Secretary',
-      organization: 'Kurukshetra Development Board',
-      image: 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/heirarchy%2Fms.png?alt=media&token=fc14c83c-f6f6-43e9-8708-e462ee637a26',
-    },
-    {
-      id: 4,
-      name: 'Upender Singhal',
-      position: 'Honorary Secretary',
-      organization: 'Kurukshetra Development Board',
-      image: 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/heirarchy%2Fs.png?alt=media&token=923cbf5a-f77e-46ca-9d14-7adbd1831404',
-    },
-    {
-      id: 5,
-      name: 'Pankaj Kumar, HCS',
-      position: 'Chief Executive Officer',
-      organization: 'Kurukshetra Development Board',
-      image: 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/heirarchy%2Fceo.jpg?alt=media&token=10b608a9-fec9-4851-804e-fd7b9ce71094',
-    },
-  ];
+  useEffect(() => {
+    let isMounted = true;
+    const fetchMembers = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(MEMBERS_ENDPOINT);
+        if (!response.ok) {
+          throw new Error('Failed to load members');
+        }
+        const data = await response.json();
+        if (isMounted) {
+          setMembers(Array.isArray(data) ? data : []);
+          setError(null);
+        }
+      } catch (err: any) {
+        if (isMounted) {
+          setError('Unable to load members right now. Please try again.');
+          setMembers([]);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
 
-  const renderMember = (member: any) => (
+    fetchMembers();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const renderMember = (member: Member) => (
     <View key={member.id} style={styles.memberCard}>
       <Image source={{ uri: member.image }} style={styles.memberImage} />
       <View style={styles.memberInfo}>
@@ -113,7 +121,29 @@ const AdministrationScreen: React.FC<AdministrationScreenProps> = ({ navigation 
 
         {/* Members List */}
         <View style={styles.membersContainer}>
-          {members.map(renderMember)}
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={COLORS.primary} />
+              <BodyText style={styles.loadingText} color={COLORS.text.secondary} size='md'>
+                Loading members...
+              </BodyText>
+            </View>
+          ) : error ? (
+            <View style={styles.errorContainer}>
+              <Ionicons name="alert-circle-outline" size={48} color={COLORS.error || COLORS.text.secondary} />
+              <BodyText style={styles.errorText} color={COLORS.text.secondary} size='md'>
+                {error}
+              </BodyText>
+            </View>
+          ) : members.length > 0 ? (
+            members.map(renderMember)
+          ) : (
+            <View style={styles.emptyContainer}>
+              <BodyText style={styles.emptyText} color={COLORS.text.secondary} size='md'>
+                No members found.
+              </BodyText>
+            </View>
+          )}
         </View>
       </ScrollView>
     </View>
@@ -216,6 +246,37 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZES.sm,
     textAlign: 'center',
     marginTop: 4,
+  },
+  loadingContainer: {
+    paddingVertical: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontFamily: FONTS.gilroy.regular,
+    fontSize: FONT_SIZES.md,
+  },
+  errorContainer: {
+    paddingVertical: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  errorText: {
+    marginTop: 16,
+    fontFamily: FONTS.gilroy.regular,
+    fontSize: FONT_SIZES.md,
+    textAlign: 'center',
+  },
+  emptyContainer: {
+    paddingVertical: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyText: {
+    fontFamily: FONTS.gilroy.regular,
+    fontSize: FONT_SIZES.md,
+    textAlign: 'center',
   },
 });
 

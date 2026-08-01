@@ -267,7 +267,7 @@ const TirthMitraStatusScreen = () => {
        min-height: 100vh;
      }
      .idcard-container {
-       width: 340px;
+       width: 440px;
        height: 540px;
        background: #fff;
        border-radius: 18px;

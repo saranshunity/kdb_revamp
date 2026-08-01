@@ -304,14 +304,15 @@ const TirthMitraGeneratorScreen = () => {
       return;
     }
 
-    if (needsPhoneVerification) {
-      Alert.alert(
-        'Phone Verification Required',
-        'Please verify your phone number before generating the card.',
-        [{ text: 'OK' }]
-      );
-      return;
-    }
+    // Removed phone verification requirement - allow submission without verification
+    // if (needsPhoneVerification) {
+    //   Alert.alert(
+    //     'Phone Verification Required',
+    //     'Please verify your phone number before generating the card.',
+    //     [{ text: 'OK' }]
+    //   );
+    //   return;
+    // }
 
     // Proceed with upload
     await handleUploadAndSubmit();
@@ -321,6 +322,24 @@ const TirthMitraGeneratorScreen = () => {
     try {
       setIsUploading(true);
       setUploadProgress(0);
+
+      // Check if phone number already exists in the collection
+      const phoneWithCountryCode = `+91${formData.phone}`;
+      const existingApplications = await firestore()
+        .collection('tirthMitraApplications')
+        .where('mobileNumber', '==', phoneWithCountryCode)
+        .get();
+
+      if (!existingApplications.empty) {
+        Alert.alert(
+          'Duplicate Phone Number',
+          'You have already requested with the same number. Please try with a different number.',
+          [{ text: 'OK' }]
+        );
+        setIsUploading(false);
+        setUploadProgress(0);
+        return;
+      }
 
       // Upload photo to Firebase
       let photoUrl = formData.photoUri;
@@ -362,8 +381,8 @@ const TirthMitraGeneratorScreen = () => {
       // Save application data to Firestore
       const initialData = {
         ...updatedFormData,
-        userId: user?.id || '',
-        mobileNumber: `+91${formData.phone}`,
+        userId: user?.id || null, // Allow null userId for unauthenticated submissions
+        mobileNumber: phoneWithCountryCode,
         status: 'pending',
         submittedAt: firestore.FieldValue.serverTimestamp(),
         createdAt: firestore.FieldValue.serverTimestamp(),
@@ -789,10 +808,10 @@ const TirthMitraGeneratorScreen = () => {
         <TouchableOpacity
           style={[
             styles.generateButton,
-            (isUploading || isSendingOTP || needsPhoneVerification) && styles.generateButtonDisabled
+            (isUploading || isSendingOTP) && styles.generateButtonDisabled
           ]}
           onPress={handleGenerateCard}
-          disabled={isUploading || isSendingOTP || needsPhoneVerification}
+          disabled={isUploading || isSendingOTP}
           activeOpacity={0.8}
         >
           {isUploading ? (
@@ -812,17 +831,12 @@ const TirthMitraGeneratorScreen = () => {
           ) : (
             <>
               <BodyText style={styles.generateButtonText} color={COLORS.white} size="md" weight="semiBold">
-                Generate Card
+                Submit Request
               </BodyText>
               <Ionicons name="arrow-forward" size={20} color={COLORS.white} />
             </>
           )}
         </TouchableOpacity>
-        {needsPhoneVerification && (
-          <BodyText style={styles.generateButtonHint} color={COLORS.text.secondary} size="xs">
-            Please verify your phone number to continue
-          </BodyText>
-        )}
 
         <View style={styles.bottomSpacing} />
       </ScrollView>

@@ -604,30 +604,12 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
         {/* Balance Card */}
       <View style={styles.contentContainer}>
+      <TirthsList listData={tirthsList} />
         <View style={styles.quickLinksHeader}>
           <H5 style={styles.quickLinkTitle} color={COLORS.primary} weight='semiBold' size='md'>Quick Links</H5>
-          <Animated.View
-            style={[
-              styles.liveStreamWrapper,
-              {
-                opacity: liveStreamPulse.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0.6, 1],
-                }),
-              },
-            ]}
-          >
-            <TouchableOpacity
-              style={styles.liveStreamButton}
-              activeOpacity={0.85}
-              onPress={handleLiveStreamPress}
-            >
-              <Ionicons name="radio-outline" size={16} color={COLORS.white} style={{ marginRight: 6 }} />
-              <Text style={styles.liveStreamText}>Live Streaming</Text>
-            </TouchableOpacity>
-          </Animated.View>
+     
         </View>
-        <ScrollView 
+        {/* <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false}
           style={styles.quickLinkContainer}
@@ -639,12 +621,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
             label="Events" 
             onPress={() => stackNavigation.navigate('Events')}
           />
-          {/* <QuickLinkItem 
-            key="cultural-events" 
-            icon="musical-notes-outline" 
-            label="Cultural Events" 
-            onPress={() => stackNavigation.navigate('CulturalEvents')}
-          /> */}
           <QuickLinkItem 
             key="facilities"
             icon="medkit-outline"
@@ -668,7 +644,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         }}
       />
          
-        </ScrollView>
+        </ScrollView> */}
         {/* <H5 style={styles.quickLinkTitle} color={COLORS.primary} weight='semiBold' size='md'>Public Facilities Links</H5> */}
 
 {/* <ScrollView 
@@ -705,12 +681,12 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           />
 </ScrollView> */}
 
-        <View style={{ marginTop: 16 }}>
+        {/* <View style={{ marginTop: 16 }}>
           <MahotsavHulchal listData={mahotsavHulchal} type="mahotsav" />
-        </View>
+        </View> */}
         
         {/* Reminders List */}
-        {reminders.length > 0 && (
+        {/* {reminders.length > 0 && (
           <View style={{ paddingHorizontal: 20, marginTop: 10 }}>
             <H5 color={COLORS.primary} weight='semiBold' size='lg'>Your Reminders</H5>
             {(reminders.slice(0, 2)).map((r) => (
@@ -769,7 +745,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               </TouchableOpacity>
             )}
           </View>
-        )}
+        )} */}
 
         {/* Gita Mahotsav Colors CTA */}
         <View style={styles.mahotsavTabContainer}>
@@ -791,7 +767,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         </View>
 
         {/* Cultural Events Section */}
-        <View style={styles.culturalEventsSection}>
+        {/* <View style={styles.culturalEventsSection}>
           <View style={styles.culturalEventsHeader}>
             <H5 color={COLORS.text.primary} weight='semiBold' size='lg'>
               Cultural Events
@@ -831,7 +807,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               </TouchableOpacity>
             ))}
           </View>
-        </View>
+        </View> */}
 
         {/* Prepare for Shloka Mantra Section */}
         <TouchableOpacity 
@@ -854,15 +830,12 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                   <View style={styles.shlokaBadge}>
                     <Ionicons name="musical-notes-outline" size={18} color={COLORS.white} />
                     <BodyText color='rgba(255,255,255,0.9)' size='xs' weight='semiBold' style={styles.shlokaBadgeText}>
-                      Vaishvik Path on 1st December
+                      Vaishvik Path
                     </BodyText>
                   </View>
                   <H5 color={COLORS.white} weight='semiBold' size='lg' style={styles.shlokaHeadline}>
                     Prepare Your Spirit for Shloka Mantra.
                   </H5>
-                  <BodyText color='rgba(255,255,255,0.95)' size='sm' weight='semiBold'>
-                  Shloka Mantra chanting will be performed by 18,000 students.
-                  </BodyText>
                 </View>
                 <View style={styles.shlokaAction}>
                   <Ionicons name="arrow-forward" size={22} color={COLORS.primary} />
@@ -874,9 +847,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
      
 
         
-        <View style={{ marginTop: 20 }}>
+        {/* <View style={{ marginTop: 20 }}>
           <TodaysEvents listData={todaysEvents} type="events" showAll={hasMoreEvents} />
-        </View>
+        </View> */}
       
       {/* <View style={styles.familyLocationCard}>
           <MapView
@@ -1081,7 +1054,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
             </View>
           </View>
         </View> */}
-        <TirthsList listData={tirthsList} />
+      
       </View>
       </ScrollView>
 
@@ -1551,7 +1524,7 @@ const styles = StyleSheet.create({
   },
   shlokaBackgroundImage: {
     width: '100%',
-    minHeight: 180,
+    minHeight: 120,
     justifyContent: 'flex-end',
   },
   shlokaBackgroundImageRadius: {

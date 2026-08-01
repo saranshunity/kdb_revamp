@@ -57,6 +57,24 @@ service cloud.firestore {
       }
     }
     
+    // Tirth Mitra Applications - allow create and read without auth (for duplicate check), update/delete with auth
+    match /tirthMitraApplications/{applicationId} {
+      allow create, read: if true; // Allow anyone to create and read applications (read needed for duplicate check)
+      allow update, delete: if request.auth != null;
+    }
+    
+    // Stall Applications - allow create without auth, read/write with auth
+    match /stallApplications/{applicationId} {
+      allow create: if true; // Allow anyone to create applications
+      allow read, update, delete: if request.auth != null;
+    }
+    
+    // Device Tokens - allow create/update without auth (for FCM)
+    match /deviceTokens/{deviceId} {
+      allow create, update: if true; // Allow device token registration without auth
+      allow read, delete: if request.auth != null;
+    }
+    
     // Allow read/write access to all other documents (for development)
     // TODO: Add proper security rules for other collections in production
     match /{document=**} {

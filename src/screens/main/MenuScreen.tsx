@@ -43,12 +43,12 @@ const MenuScreen: React.FC<MenuScreenProps> = ({ navigation }) => {
         icon: 'people-outline',
         onPress: () => stackNavigation.navigate('Administration'),
       },
-      {
-        id: 'chatbot',
-        title: 'Mahotsav Assistant',
-        icon: 'chatbubbles-outline',
-        onPress: () => stackNavigation.navigate('ChatBot'),
-      },
+      // {
+      //   id: 'chatbot',
+      //   title: 'Mahotsav Assistant',
+      //   icon: 'chatbubbles-outline',
+      //   onPress: () => stackNavigation.navigate('ChatBot'),
+      // },
       {
         id: 'iconic-places',
         title: 'Iconic Places',
@@ -69,30 +69,30 @@ const MenuScreen: React.FC<MenuScreenProps> = ({ navigation }) => {
       //   onPress: () => stackNavigation.navigate('Stalls'),
       //   featureFlag: 'applyStallsShops',
       // },
-      // {
-      //   id: 'museum',
-      //   title: 'Sri Krishna Museum',
-      //   icon: 'library-outline',
-      //   onPress: () => stackNavigation.navigate('SriKrishnaMuseum'),
-      // },
-      // {
-      //   id: 'jyotisar',
-      //   title: 'Jyotisar',
-      //   icon: 'location-outline',
-      //   onPress: () => stackNavigation.navigate('Jyotisar'),
-      // },
+      {
+        id: 'museum',
+        title: 'Sri Krishna Museum',
+        icon: 'library-outline',
+        onPress: () => stackNavigation.navigate('SriKrishnaMuseum'),
+      },
+      {
+        id: 'jyotisar',
+        title: 'Jyotisar',
+        icon: 'location-outline',
+        onPress: () => stackNavigation.navigate('Jyotisar'),
+      },
       {
         id: 'permissions',
         title: 'Permissions',
         icon: 'shield-outline',
         onPress: () => stackNavigation.navigate('Permissions'),
       },
-      {
-        id: 'reminders',
-        title: 'Reminders',
-        icon: 'notifications-outline',
-        onPress: () => stackNavigation.navigate('Reminders' as any),
-      },
+      // {
+      //   id: 'reminders',
+      //   title: 'Reminders',
+      //   icon: 'notifications-outline',
+      //   onPress: () => stackNavigation.navigate('Reminders' as any),
+      // },
       // {
       //   id: 'settings',
       //   title: 'Settings',
@@ -102,20 +102,20 @@ const MenuScreen: React.FC<MenuScreenProps> = ({ navigation }) => {
       //     console.log('Settings pressed');
       //   },
       // },
-      {
-        id: 'logout',
-        title: 'Logout',
-        icon: 'log-out-outline',
-        onPress: async () => {
-          try {
-            await logout();
-            // Navigation will be handled by the auth state change
-          } catch (error) {
-            console.error('Logout error:', error);
-          }
-        },
-        textColor: COLORS.error,
-      },
+      // {
+      //   id: 'logout',
+      //   title: 'Logout',
+      //   icon: 'log-out-outline',
+      //   onPress: async () => {
+      //     try {
+      //       await logout();
+      //       // Navigation will be handled by the auth state change
+      //     } catch (error) {
+      //       console.error('Logout error:', error);
+      //     }
+      //   },
+      //   textColor: COLORS.error,
+      // },
     ];
 
     // Filter items based on feature flags
