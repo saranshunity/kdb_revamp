@@ -1,4 +1,4 @@
-import { Platform } from 'react-native';
+import { Alert, Platform } from 'react-native';
 import PushNotification, { Importance } from 'react-native-push-notification';
 import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 
@@ -17,10 +17,24 @@ class NotificationService {
       popInitialNotification: true,
     });
 
-    // Ensure a default reminders channel on Android
+    // Ensure notification channels on Android (required for FCM)
     if (Platform.OS === 'android') {
       // Android 13+ notifications runtime permission
       this.ensureAndroidPermission().catch(() => {});
+      
+      // Create default channel (used if FCM doesn't specify channel)
+      PushNotification.createChannel(
+        {
+          channelId: 'default',
+          channelName: 'Default Notifications',
+          channelDescription: 'Default notification channel',
+          importance: Importance.HIGH,
+          vibrate: true,
+        },
+        (created: boolean) => console.log('Default channel created:', created)
+      );
+      
+      // Create reminders channel
       PushNotification.createChannel(
         {
           channelId: 'reminders',
@@ -29,7 +43,7 @@ class NotificationService {
           importance: Importance.HIGH,
           vibrate: true,
         },
-        () => {}
+        (created: boolean) => console.log('Reminders channel created:', created)
       );
     }
 
@@ -41,9 +55,13 @@ class NotificationService {
       // Only Android 13+ requires runtime POST_NOTIFICATIONS
       const sdk = (Platform as any).Version as number;
       if (sdk >= 33) {
-        const status = await check(PERMISSIONS.ANDROID.POST_NOTIFICATIONS);
-        if (status !== RESULTS.GRANTED) {
-          await request(PERMISSIONS.ANDROID.POST_NOTIFICATIONS);
+        // POST_NOTIFICATIONS may not be in older versions of react-native-permissions
+        const postNotifications = (PERMISSIONS.ANDROID as any).POST_NOTIFICATIONS;
+        if (postNotifications) {
+          const status = await check(postNotifications);
+          if (status !== RESULTS.GRANTED) {
+            await request(postNotifications);
+          }
         }
       }
     } catch {}
@@ -56,13 +74,20 @@ class NotificationService {
     androidChannelId?: string;
   }): Promise<string> {
     this.init();
-    const id = `${params.notifyAt.getTime()}-${Math.floor(Math.random() * 100000)}`;
+    // Clamp schedule time to at least 15 seconds in the future
+    const minDate = new Date(Date.now() + 15000);
+    const fireDate = new Date(Date.now() + 5 * 60 * 1000);
+    Alert.alert('Scheduling notification', JSON.stringify({
+      fireDate: fireDate.toISOString(),
+      now: new Date().toISOString(),
+    }));
+    const id = `${fireDate.getTime()}-${Math.floor(Math.random() * 100000)}`;
     PushNotification.localNotificationSchedule({
       channelId: params.androidChannelId || 'reminders',
       id,
       title: params.title,
       message: params.body,
-      date: params.notifyAt,
+      date: fireDate,
       allowWhileIdle: true,
       // Android specifics (omit smallIcon to fall back to app icon)
       priority: 'high',

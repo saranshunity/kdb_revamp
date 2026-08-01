@@ -1,20 +1,26 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Remove AD_ID permissions added by Firebase/Google Play Services -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove" />
+    <uses-permission android:name="android.permission.ACCESS_ADSERVICES_AD_ID" tools:node="remove" />
+    
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" /> -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     
     <!-- Permissions for Tirth Mitra Card -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"/>
 
 
@@ -45,18 +51,26 @@
         </intent-filter>
       </activity>
       
-      <!-- Firebase Messaging Service -->
-      <service
-          android:name="io.invertase.firebase.messaging.RNFirebaseMessagingService"
+      <!-- react-native-push-notification required components for scheduled notifications -->
+      <receiver
+          android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationPublisher"
+          android:exported="false" />
+
+      <receiver
+          android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationBootEventReceiver"
           android:exported="false">
           <intent-filter>
-              <action android:name="com.google.firebase.MESSAGING_EVENT" />
+              <action android:name="android.intent.action.BOOT_COMPLETED" />
+              <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+              <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
           </intent-filter>
-      </service>
-      
-      <!-- Firebase Background Messaging Service -->
+      </receiver>
+
       <service
-          android:name="io.invertase.firebase.messaging.RNFirebaseBackgroundMessagingService"
+          android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationRegistrationService"
           android:exported="false" />
+
+      <!-- Firebase Messaging - @react-native-firebase/messaging auto-registers services -->
+      <!-- No manual service declaration needed for v20+ -->
     </application>
 </manifest>

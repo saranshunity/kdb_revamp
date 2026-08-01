@@ -1,0 +1,85 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    function isFamilyMember(familyId, userId) {
+      return exists(/databases/$(database)/documents/families/$(familyId)/members/$(userId));
+    }
+
+    match /families/{familyId} {
+      allow read, write: if request.auth != null && isFamilyMember(familyId, request.auth.uid);
+
+      match /members/{memberId} {
+        allow read, write: if request.auth != null && 
+          (memberId == request.auth.uid || isFamilyMember(familyId, request.auth.uid));
+      }
+
+      match /liveLocations/{userId} {
+        allow read: if isFamilyMember(familyId, request.auth.uid);
+        allow write: if request.auth.uid == userId;
+      }
+
+      match /invitations/{invitationId} {
+        allow create: if request.auth != null && isFamilyMember(familyId, request.auth.uid);
+        allow read: if request.auth != null && isFamilyMember(familyId, request.auth.uid);
+      }
+    }
+    
+    // Users can read/write their own data (for development - restrict in production)
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+      
+      // User's location - can read own, family members can read if sharing
+      match /location/{locationId} {
+        allow read: if request.auth != null && (
+          request.auth.uid == userId ||
+          // Family members can read if user is sharing with their family
+          exists(/databases/$(database)/documents/families/{familyId}/members/$(request.auth.uid)) &&
+          exists(/databases/$(database)/documents/families/{familyId}/members/$(userId))
+        );
+        allow write: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      // Location history - same rules as location
+      match /locationHistory/{historyId} {
+        allow read: if request.auth != null && (
+          request.auth.uid == userId ||
+          exists(/databases/$(database)/documents/families/{familyId}/members/$(request.auth.uid)) &&
+          exists(/databases/$(database)/documents/families/{familyId}/members/$(userId))
+        );
+        allow write: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      // Sharing preferences - user can read/write own
+      match /sharingPreferences/{prefId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+    
+    // Tirth Mitra Applications - allow create and read without auth (for duplicate check), update/delete with auth
+    match /tirthMitraApplications/{applicationId} {
+      allow create, read: if true; // Allow anyone to create and read applications (read needed for duplicate check)
+      allow update, delete: if request.auth != null;
+    }
+    
+    // Stall Applications - allow create without auth, read/write with auth
+    match /stallApplications/{applicationId} {
+      allow create: if true; // Allow anyone to create applications
+      allow read, update, delete: if request.auth != null;
+    }
+    
+    // Device Tokens - allow create/update without auth (for FCM)
+    match /deviceTokens/{deviceId} {
+      allow create, update: if true; // Allow device token registration without auth
+      allow read, delete: if request.auth != null;
+    }
+    
+    // Allow read/write access to all other documents (for development)
+    // TODO: Add proper security rules for other collections in production
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
+

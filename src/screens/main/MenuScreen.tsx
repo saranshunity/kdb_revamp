@@ -39,24 +39,36 @@ const MenuScreen: React.FC<MenuScreenProps> = ({ navigation }) => {
       },
       {
         id: 'administration',
-        title: 'Administration',
+        title: 'Hierarchy',
         icon: 'people-outline',
         onPress: () => stackNavigation.navigate('Administration'),
       },
+      // {
+      //   id: 'chatbot',
+      //   title: 'Mahotsav Assistant',
+      //   icon: 'chatbubbles-outline',
+      //   onPress: () => stackNavigation.navigate('ChatBot'),
+      // },
       {
-        id: 'admin',
-        title: 'Admin Panel',
-        icon: 'shield-checkmark-outline',
-        onPress: () => stackNavigation.navigate('AdminPanel'),
-        featureFlag: 'adminPanel',
+        id: 'iconic-places',
+        title: 'Iconic Places',
+        icon: 'compass-outline',
+        onPress: () => stackNavigation.navigate('IconicPlaces'),
       },
-      {
-        id: 'apply-stalls',
-        title: 'Apply for Stalls/Shops',
-        icon: 'storefront-outline',
-        onPress: () => stackNavigation.navigate('Stalls'),
-        featureFlag: 'applyStallsShops',
-      },
+      // {
+      //   id: 'admin',
+      //   title: 'Admin Panel',
+      //   icon: 'shield-checkmark-outline',
+      //   onPress: () => stackNavigation.navigate('AdminPanel'),
+      //   featureFlag: 'adminPanel',
+      // },
+      // {
+      //   id: 'apply-stalls',
+      //   title: 'Apply for Stalls/Shops',
+      //   icon: 'storefront-outline',
+      //   onPress: () => stackNavigation.navigate('Stalls'),
+      //   featureFlag: 'applyStallsShops',
+      // },
       {
         id: 'museum',
         title: 'Sri Krishna Museum',
@@ -75,29 +87,35 @@ const MenuScreen: React.FC<MenuScreenProps> = ({ navigation }) => {
         icon: 'shield-outline',
         onPress: () => stackNavigation.navigate('Permissions'),
       },
-      {
-        id: 'settings',
-        title: 'Settings',
-        icon: 'settings-outline',
-        onPress: () => {
-          // Navigate to settings - you can implement this later
-          console.log('Settings pressed');
-        },
-      },
-      {
-        id: 'logout',
-        title: 'Logout',
-        icon: 'log-out-outline',
-        onPress: async () => {
-          try {
-            await logout();
-            // Navigation will be handled by the auth state change
-          } catch (error) {
-            console.error('Logout error:', error);
-          }
-        },
-        textColor: COLORS.error,
-      },
+      // {
+      //   id: 'reminders',
+      //   title: 'Reminders',
+      //   icon: 'notifications-outline',
+      //   onPress: () => stackNavigation.navigate('Reminders' as any),
+      // },
+      // {
+      //   id: 'settings',
+      //   title: 'Settings',
+      //   icon: 'settings-outline',
+      //   onPress: () => {
+      //     // Navigate to settings - you can implement this later
+      //     console.log('Settings pressed');
+      //   },
+      // },
+      // {
+      //   id: 'logout',
+      //   title: 'Logout',
+      //   icon: 'log-out-outline',
+      //   onPress: async () => {
+      //     try {
+      //       await logout();
+      //       // Navigation will be handled by the auth state change
+      //     } catch (error) {
+      //       console.error('Logout error:', error);
+      //     }
+      //   },
+      //   textColor: COLORS.error,
+      // },
     ];
 
     // Filter items based on feature flags

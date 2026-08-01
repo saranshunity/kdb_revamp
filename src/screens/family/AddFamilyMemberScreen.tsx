@@ -8,15 +8,17 @@ import {
   StatusBar,
   TextInput,
   Alert,
-  Image,
+  ActivityIndicator,
 } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { COLORS } from '../../constants/colors';
 import { FONTS, FONT_SIZES } from '../../constants/fonts';
 import Ionicons from "react-native-vector-icons/Ionicons";
+import FamilyService from '../../services/FamilyService';
+import { useAuth } from '../../contexts/AuthContext';
 
 type AddFamilyMemberScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'AddFamilyMember'>;
 
@@ -35,8 +37,14 @@ const AddFamilyMemberScreen = () => {
   });
   const [showRelationPicker, setShowRelationPicker] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<AddFamilyMemberScreenNavigationProp>();
+  const route = useRoute();
+  const { user } = useAuth();
+  
+  // Get familyId from route params or use default (for now, you might want to pass it)
+  const familyId = (route.params as any)?.familyId || null;
 
   const validateForm = () => {
     const newErrors: {[key: string]: string} = {};
@@ -63,19 +71,66 @@ const AddFamilyMemberScreen = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSave = () => {
-    if (validateForm()) {
-      // In real app, save to Firebase
-      Alert.alert(
-        "Success",
-        "Family member added successfully!",
-        [
-          {
-            text: "OK",
-            onPress: () => navigation.goBack()
-          }
-        ]
+  const handleSave = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
+    if (!user?.id) {
+      Alert.alert('Error', 'Please log in to add family members');
+      return;
+    }
+
+    if (!familyId) {
+      Alert.alert('Error', 'Family ID is missing. Please try again.');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const relation = formData.relation === 'Other' ? formData.customRelation : formData.relation;
+      
+      const result = await FamilyService.addMember(
+        familyId,
+        formData.phone,
+        relation,
+        user.id,
+        formData.name
       );
+
+      if (result.success) {
+        let message = '';
+        if (result.status === 'added') {
+          message = `${formData.name} has been added to your family!`;
+        } else if (result.status === 'invited') {
+          message = `Invitation sent to ${formData.phone}. They will be added when they register.`;
+        }
+
+        Alert.alert(
+          'Success',
+          message,
+          [
+            {
+              text: 'OK',
+              onPress: () => navigation.goBack()
+            }
+          ]
+        );
+      } else {
+        Alert.alert(
+          'Error',
+          result.message || 'Failed to add family member. Please try again.'
+        );
+      }
+    } catch (error: any) {
+      console.error('Error adding family member:', error);
+      Alert.alert(
+        'Error',
+        error.message || 'Failed to add family member. Please try again.'
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -107,8 +162,12 @@ const AddFamilyMemberScreen = () => {
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
         <Text style={styles.header}>Add Family Member</Text>
-        <TouchableOpacity onPress={handleSave}>
-          <Text style={styles.saveButton}>Save</Text>
+        <TouchableOpacity onPress={handleSave} disabled={isSubmitting}>
+          {isSubmitting ? (
+            <ActivityIndicator size="small" color={COLORS.primary} />
+          ) : (
+            <Text style={styles.saveButton}>Save</Text>
+          )}
         </TouchableOpacity>
       </View>
 

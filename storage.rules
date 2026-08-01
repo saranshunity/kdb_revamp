@@ -1,0 +1,22 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Allow unauthenticated uploads to tirthMitra folder
+    match /tirthMitra/{allPaths=**} {
+      allow read, write: if true; // Allow anyone to read and write
+    }
+    
+    // Allow unauthenticated uploads to stallApplications folder
+    match /stallApplications/{allPaths=**} {
+      allow read, write: if true; // Allow anyone to read and write
+    }
+    
+    // Default: require authentication for other paths
+    match /{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
+
+
+

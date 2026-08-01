@@ -9,7 +9,7 @@ import {
   TextInput,
   FlatList,
   RefreshControl,
-  ImageBackground,
+  Image,
   Dimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -142,72 +142,40 @@ const TirthsScreen = () => {
         onPress={() => handleTirthPress(item)}
         activeOpacity={0.9}
       >
-        {imageUrl ? (
-          <ImageBackground
+        {imageUrl && (
+          <Image
             source={{ uri: imageUrl }}
-            style={styles.tirthImageBackground}
-            imageStyle={styles.tirthImageStyle}
-          >
-            <View style={styles.imageOverlay} />
-            <View style={styles.tirthContent}>
-              <H3 style={styles.tirthName} color={COLORS.white} weight='semiBold' size='lg'>
-                {item.name}
-              </H3>
-              <BodyText style={styles.tirthLocation} color={COLORS.white} size='sm'>
-                <Ionicons name="location-outline" size={14} color={COLORS.white} />
-                {' '}{item.location.address}, {item.district}
-              </BodyText>
-              {item.shortDescription && (
-                <BodyText style={styles.tirthDescription} color={COLORS.white} size='sm' numberOfLines={3}>
-                  {item.shortDescription}
-                </BodyText>
-              )}
-              <View style={styles.tirthTags}>
-                <View style={styles.tag}>
-                  <BodyText style={styles.tagText} color={COLORS.white} size='xs' weight='semiBold'>
-                    {item.district}
-                  </BodyText>
-                </View>
-                {item.category && (
-                  <View style={styles.tag}>
-                    <BodyText style={styles.tagText} color={COLORS.white} size='xs' weight='semiBold'>
-                      {item.category}
-                    </BodyText>
-                  </View>
-                )}
-              </View>
-            </View>
-          </ImageBackground>
-        ) : (
-          <View style={styles.tirthContentNoImage}>
-            <H3 style={styles.tirthNameNoImage} color={COLORS.text.primary} weight='semiBold' size='md'>
-              {item.name}
-            </H3>
-            <BodyText style={styles.tirthLocationNoImage} color={COLORS.text.secondary} size='sm'>
-              <Ionicons name="location-outline" size={14} color={COLORS.text.secondary} />
-              {' '}{item.location.address}, {item.district}
-            </BodyText>
-            {item.shortDescription && (
-              <BodyText style={styles.tirthDescriptionNoImage} color={COLORS.text.tertiary} size='xs' numberOfLines={2}>
-                {item.shortDescription}
-              </BodyText>
-            )}
-            <View style={styles.tirthTags}>
-              <View style={styles.tagNoImage}>
-                <BodyText style={styles.tagTextNoImage} color={COLORS.primary} size='xs'>
-                  {item.district}
-                </BodyText>
-              </View>
-              {item.category && (
-                <View style={styles.tagNoImage}>
-                  <BodyText style={styles.tagTextNoImage} color={COLORS.primary} size='xs'>
-                    {item.category}
-                  </BodyText>
-                </View>
-              )}
-            </View>
-          </View>
+            style={styles.tirthImage}
+          />
         )}
+        <View style={styles.tirthContent}>
+          <H3 style={styles.tirthName} color={COLORS.text.primary} weight='semiBold' size='md'>
+            {item.name}
+          </H3>
+          <BodyText style={styles.tirthLocation} color={COLORS.text.secondary} size='sm'>
+            <Ionicons name="location-outline" size={14} color={COLORS.text.secondary} />
+            {' '}{item.location.address}, {item.district}
+          </BodyText>
+          {item.shortDescription && (
+            <BodyText style={styles.tirthDescription} color={COLORS.text.tertiary} size='xs' numberOfLines={2}>
+              {item.shortDescription}
+            </BodyText>
+          )}
+          <View style={styles.tirthTags}>
+            <View style={styles.tag}>
+              <BodyText style={styles.tagText} color={COLORS.primary} size='xs'>
+                {item.district}
+              </BodyText>
+            </View>
+            {item.category && (
+              <View style={styles.tag}>
+                <BodyText style={styles.tagText} color={COLORS.primary} size='xs'>
+                  {item.category}
+                </BodyText>
+              </View>
+            )}
+          </View>
+        </View>
       </TouchableOpacity>
     );
   };
@@ -444,77 +412,35 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   tirthCard: {
-    borderRadius: 20,
+    borderRadius: 16,
     marginBottom: 20,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
-    backgroundColor: COLORS.background.secondary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+    backgroundColor: COLORS.background.primary,
   },
-  tirthImageBackground: {
-    height: 160,
-    justifyContent: 'flex-end',
-  },
-  tirthImageStyle: {
-    borderRadius: 20,
-  },
-  imageOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    borderRadius: 20,
+  tirthImage: {
+    width: '100%',
+    height: 180,
+    resizeMode: 'cover',
   },
   tirthContent: {
     padding: 16,
-    paddingBottom: 20,
-    zIndex: 1,
-  },
-  tirthContentNoImage: {
-    padding: 20,
-    backgroundColor: COLORS.background.secondary,
   },
   tirthName: {
-    fontFamily: FONTS.gilroy.bold,
-    fontSize: FONT_SIZES.md,
-    marginBottom: 4,
-    textShadowColor: 'rgba(0, 0, 0, 0.8)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
-  },
-  tirthNameNoImage: {
     fontFamily: FONTS.gilroy.semiBold,
     fontSize: FONT_SIZES.md,
     marginBottom: 4,
   },
   tirthLocation: {
-    fontFamily: FONTS.gilroy.medium,
-    fontSize: FONT_SIZES.sm,
-    marginBottom: 10,
-    textShadowColor: 'rgba(0, 0, 0, 0.8)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
-  },
-  tirthLocationNoImage: {
     fontFamily: FONTS.gilroy.regular,
     fontSize: FONT_SIZES.sm,
     marginBottom: 8,
   },
   tirthDescription: {
-    fontFamily: FONTS.gilroy.regular,
-    fontSize: FONT_SIZES.xs,
-    lineHeight: 16,
-    marginBottom: 12,
-    textShadowColor: 'rgba(0, 0, 0, 0.8)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
-  },
-  tirthDescriptionNoImage: {
     fontFamily: FONTS.gilroy.regular,
     fontSize: FONT_SIZES.xs,
     lineHeight: 16,
@@ -526,29 +452,15 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   tag: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-  },
-  tagNoImage: {
     backgroundColor: COLORS.primary + '20',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
   },
   tagText: {
-    fontFamily: FONTS.gilroy.semiBold,
-    fontSize: FONT_SIZES.xs,
-    textShadowColor: 'rgba(0, 0, 0, 0.8)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
-  },
-  tagTextNoImage: {
     fontFamily: FONTS.gilroy.medium,
     fontSize: FONT_SIZES.xs,
+    color: COLORS.primary,
   },
   emptyContainer: {
     alignItems: 'center',

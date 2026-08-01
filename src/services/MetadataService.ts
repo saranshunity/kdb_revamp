@@ -224,6 +224,7 @@ class MetadataService {
       },
       announcements: [],
       lastUpdated: new Date().toISOString(),
+      liveStreamingLink: 'https://internationalgitamahotsav.in/igm-2025/#live-streaming',
     };
   }
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,107 +8,309 @@ import {
   Alert,
   Dimensions,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { COLORS } from '../../constants/colors';
 import { FONTS, FONT_SIZES } from '../../constants/fonts';
 import Ionicons from "react-native-vector-icons/Ionicons";
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
+import FamilyService, { FamilyMember, LocationData } from '../../services/FamilyService';
+import { useAuth } from '../../contexts/AuthContext';
+import SharingPreferencesService from '../../services/SharingPreferencesService';
+import LocationService from '../../services/LocationService';
 
 type LocationMapScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'LocationMap'>;
 
-interface FamilyMember {
-  id: string;
-  name: string;
-  relation: string;
-  photo?: string;
-  isLocationShared: boolean;
+interface MemberWithLocation extends FamilyMember {
+  location?: LocationData;
   lastSeen?: string;
-  currentLocation?: {
-    latitude: number;
-    longitude: number;
-  };
+  isLocationShared: boolean;
 }
 
 const { width, height } = Dimensions.get('window');
 
 const LocationMapScreen = () => {
-  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
-  const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
+  const [familyMembers, setFamilyMembers] = useState<MemberWithLocation[]>([]);
+  const [selectedMember, setSelectedMember] = useState<MemberWithLocation | null>(null);
   const [mapType, setMapType] = useState<'standard' | 'satellite'>('standard');
+  const [isLoading, setIsLoading] = useState(true);
+  const [familyId, setFamilyId] = useState<string | null>(null);
+  const [isCurrentUserSharing, setIsCurrentUserSharing] = useState(false);
+  const mapRef = useRef<MapView>(null);
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<LocationMapScreenNavigationProp>();
+  const route = useRoute();
+  const { user } = useAuth();
 
-  // Sample data - in real app, this would come from Firebase
-  const sampleMembers: FamilyMember[] = [
-    {
-      id: "1",
-      name: "Aarav Sharma",
-      relation: "Son",
-      photo: "https://picsum.photos/100/100",
-      isLocationShared: true,
-      lastSeen: "2 minutes ago",
-      currentLocation: {
-        latitude: 21.0285,
-        longitude: 105.8542
-      }
-    },
-    {
-      id: "2",
-      name: "Priya Sharma",
-      relation: "Wife",
-      photo: "https://picsum.photos/101/100",
-      isLocationShared: true,
-      lastSeen: "5 minutes ago",
-      currentLocation: {
-        latitude: 21.0290,
-        longitude: 105.8545
-      }
-    },
-    {
-      id: "3",
-      name: "Rajesh Kumar",
-      relation: "Brother",
-      photo: "https://picsum.photos/102/100",
-      isLocationShared: false,
-      lastSeen: "1 hour ago"
-    }
-  ];
-
+  // Get familyId from route params or get user's first family
   useEffect(() => {
-    setFamilyMembers(sampleMembers);
-  }, []);
+    const loadFamily = async () => {
+      try {
+        const routeFamilyId = (route.params as any)?.familyId;
+        const selectedMemberId = (route.params as any)?.selectedMemberId;
+        
+        if (routeFamilyId) {
+          setFamilyId(routeFamilyId);
+        } else if (user?.id) {
+          const family = await FamilyService.getUserFamily(user.id);
+          if (family) {
+            setFamilyId(family.id);
+          } else {
+            setIsLoading(false);
+            Alert.alert('No Family', 'Please create or join a family first.');
+            navigation.goBack();
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('Error loading family:', error);
+        setIsLoading(false);
+      }
+    };
 
-  const handleMemberSelect = (member: FamilyMember) => {
-    if (!member.isLocationShared) {
+    loadFamily();
+  }, [route.params, user?.id, navigation]);
+
+  // Load family members
+  const loadMembers = useCallback(async () => {
+    if (!familyId) return;
+
+    try {
+      setIsLoading(true);
+      const members = await FamilyService.getFamilyMembers(familyId);
+      
+      const membersWithDefaults: MemberWithLocation[] = members.map(member => ({
+        ...member,
+        isLocationShared: false,
+        lastSeen: undefined,
+        location: undefined,
+      }));
+
+      setFamilyMembers(membersWithDefaults);
+    } catch (error) {
+      console.error('Error loading family members:', error);
+      Alert.alert('Error', 'Failed to load family members');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [familyId]);
+
+  // Check if current user is sharing location
+  const checkCurrentUserSharing = useCallback(async () => {
+    if (!user?.id || !familyId) return;
+    try {
+      const isSharing = await SharingPreferencesService.isSharingWithFamily(user.id, familyId);
+      const isTracking = LocationService.isTrackingActive();
+      setIsCurrentUserSharing(isSharing && isTracking);
+    } catch (error) {
+      console.error('Error checking sharing status:', error);
+    }
+  }, [user?.id, familyId]);
+
+  // Subscribe to real-time location updates using optimized liveLocations feed
+  useEffect(() => {
+    if (!familyId || !user?.id) return;
+
+    // Check current user's sharing status
+    checkCurrentUserSharing();
+
+    const unsubscribe = FamilyService.subscribeToMemberLocations(
+      familyId,
+      async (locations: Map<string, LocationData>) => {
+        // Re-check sharing status for current user
+        await checkCurrentUserSharing();
+
+        setFamilyMembers(prevMembers => {
+          const updated = prevMembers.map(member => {
+            const location = locations.get(member.userId);
+            const isCurrentUser = member.userId === user.id;
+            
+            if (location) {
+              const now = new Date();
+              const updatedAt = location.updatedAt;
+              const diffMs = now.getTime() - updatedAt.getTime();
+              const diffMins = Math.floor(diffMs / 60000);
+              
+              let lastSeen = '';
+              if (diffMins < 1) {
+                lastSeen = 'Just now';
+              } else if (diffMins < 60) {
+                lastSeen = `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+              } else {
+                const diffHours = Math.floor(diffMins / 60);
+                lastSeen = `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+              }
+
+              // If location exists in liveLocations, member IS sharing (by definition)
+              // For current user, also check sharing preferences state
+              const memberIsSharing = isCurrentUser 
+                ? (isCurrentUserSharing || location.isActive)
+                : true; // If location exists in liveLocations, they're sharing
+
+              return {
+                ...member,
+                location,
+                isLocationShared: memberIsSharing,
+                lastSeen,
+              };
+            } else {
+              // No location data yet
+              if (isCurrentUser) {
+                // For current user, use sharing state - location might not be synced yet
+                return {
+                  ...member,
+                  isLocationShared: isCurrentUserSharing,
+                  lastSeen: isCurrentUserSharing ? 'Sharing...' : 'Not sharing',
+                };
+              } else {
+                // For other members, no location means not sharing
+                return {
+                  ...member,
+                  isLocationShared: false,
+                  lastSeen: member.lastSeen || 'Not sharing',
+                };
+              }
+            }
+          });
+
+          // Auto-fit map to show all members with locations
+          const membersWithLocations = updated.filter(m => m.location);
+          if (membersWithLocations.length > 0 && mapRef.current) {
+            const coordinates = membersWithLocations.map(m => ({
+              latitude: m.location!.latitude,
+              longitude: m.location!.longitude,
+            }));
+
+            mapRef.current.fitToCoordinates(coordinates, {
+              edgePadding: { top: 100, right: 50, bottom: 300, left: 50 },
+              animated: true,
+            });
+          }
+
+          return updated;
+        });
+      }
+    );
+
+    return () => {
+      unsubscribe();
+    };
+  }, [familyId, user?.id, isCurrentUserSharing, checkCurrentUserSharing]);
+
+  // Load members when familyId changes
+  useEffect(() => {
+    loadMembers();
+  }, [loadMembers]);
+
+  // Handle selected member from route params - only focus map, don't show dialog
+  useEffect(() => {
+    const selectedMemberId = (route.params as any)?.selectedMemberId;
+    if (selectedMemberId && familyMembers.length > 0) {
+      const member = familyMembers.find(m => m.userId === selectedMemberId);
+      if (member && member.location && mapRef.current) {
+        // Only focus map, don't set selectedMember (no dialog)
+        mapRef.current.animateToRegion({
+          latitude: member.location.latitude,
+          longitude: member.location.longitude,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        }, 500);
+      }
+    }
+  }, [route.params, familyMembers]);
+
+  const handleMemberSelect = (member: MemberWithLocation) => {
+    if (!member.isLocationShared || !member.location) {
       Alert.alert(
         "Location Not Available",
-        `${member.name} has not shared their location.`,
+        `${member.name || 'Member'} has not shared their location.`,
         [{ text: "OK" }]
       );
       return;
     }
     setSelectedMember(member);
+    
+    // Focus map on selected member
+    if (mapRef.current && member.location) {
+      mapRef.current.animateToRegion({
+        latitude: member.location.latitude,
+        longitude: member.location.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      }, 500);
+    }
   };
 
   const handleRefresh = () => {
-    // In real app, refresh locations from Firebase
-    Alert.alert("Refreshing", "Updating family member locations...");
+    loadMembers();
   };
 
-  const getStatusColor = (member: FamilyMember) => {
+  const getStatusColor = (member: MemberWithLocation) => {
     if (!member.isLocationShared) return COLORS.text.tertiary;
-    if (member.lastSeen === "2 minutes ago" || member.lastSeen === "5 minutes ago") return COLORS.success;
+    
+    if (!member.lastSeen) return COLORS.text.tertiary;
+    
+    if (member.lastSeen.includes('Just now') || member.lastSeen.includes('minute')) {
+      const minsMatch = member.lastSeen.match(/(\d+)\s+minute/);
+      if (minsMatch && parseInt(minsMatch[1]) <= 5) {
+        return COLORS.success;
+      }
+    }
+    
     return COLORS.warning;
   };
 
-  const getStatusText = (member: FamilyMember) => {
+  const getStatusText = (member: MemberWithLocation) => {
     if (!member.isLocationShared) return "Location sharing off";
+    if (!member.lastSeen) return "Location not available";
     return `Last seen ${member.lastSeen}`;
   };
+
+  // Calculate initial region from members with locations
+  const getInitialRegion = (): Region => {
+    const membersWithLocations = familyMembers.filter(m => m.location);
+    
+    if (membersWithLocations.length > 0) {
+      const latitudes = membersWithLocations.map(m => m.location!.latitude);
+      const longitudes = membersWithLocations.map(m => m.location!.longitude);
+      
+      const minLat = Math.min(...latitudes);
+      const maxLat = Math.max(...latitudes);
+      const minLng = Math.min(...longitudes);
+      const maxLng = Math.max(...longitudes);
+      
+      return {
+        latitude: (minLat + maxLat) / 2,
+        longitude: (minLng + maxLng) / 2,
+        latitudeDelta: Math.max(maxLat - minLat, 0.01) * 1.5,
+        longitudeDelta: Math.max(maxLng - minLng, 0.01) * 1.5,
+      };
+    }
+    
+    // Default to India center if no locations
+    return {
+      latitude: 20.5937,
+      longitude: 78.9629,
+      latitudeDelta: 10,
+      longitudeDelta: 10,
+    };
+  };
+
+  if (isLoading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+        <Text style={styles.loadingText}>Loading map...</Text>
+      </View>
+    );
+  }
+
+  // Show markers for all members who have location data (if location exists, they're sharing)
+  const membersWithLocations = familyMembers.filter(m => m.location);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -116,31 +318,60 @@ const LocationMapScreen = () => {
       
       {/* Full Screen Map */}
       <MapView
+        ref={mapRef}
         provider={PROVIDER_GOOGLE}
         style={styles.map}
         mapType={mapType}
-        initialRegion={{
-          latitude: 21.0285,
-          longitude: 105.8542,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
-        }}
-        showsUserLocation={true}
-        showsMyLocationButton={true}
+        initialRegion={getInitialRegion()}
+        showsUserLocation={false}
+        showsMyLocationButton={false}
         showsCompass={true}
         showsScale={true}
+        onMapReady={() => {
+          // Fit to all members when map is ready
+          if (membersWithLocations.length > 0) {
+            const coordinates = membersWithLocations.map(m => ({
+              latitude: m.location!.latitude,
+              longitude: m.location!.longitude,
+            }));
+
+            setTimeout(() => {
+              mapRef.current?.fitToCoordinates(coordinates, {
+                edgePadding: { top: 100, right: 50, bottom: 300, left: 50 },
+                animated: true,
+              });
+            }, 500);
+          }
+        }}
       >
-        {familyMembers
-          .filter(member => member.isLocationShared && member.currentLocation)
-          .map((member) => (
-            <Marker
-              key={member.id}
-              coordinate={member.currentLocation!}
-              title={member.name}
-              description={`${member.relation} • ${getStatusText(member)}`}
-              pinColor={selectedMember?.id === member.id ? COLORS.primary : COLORS.background.appColor}
-            />
-          ))}
+        {membersWithLocations.map((member) => (
+          <Marker
+            key={member.userId}
+            coordinate={{
+              latitude: member.location!.latitude,
+              longitude: member.location!.longitude,
+            }}
+            // title={member.name || member.phoneNumber || 'Family Member'}
+            // description={`${member.relation || 'Member'} • ${getStatusText(member)}`}
+            onPress={() => handleMemberSelect(member)}
+          >
+            <View style={[
+              styles.markerContainer,
+              // selectedMember?.userId === member.userId && styles.selectedMarkerContainer
+            ]}>
+              <View style={styles.markerCircle}>
+                <Text style={styles.markerText}>
+                  {(member.name || 'F')
+                    .split(' ')
+                    .map((n: string) => n[0])
+                    .join('')
+                    .substring(0, 2)
+                    .toUpperCase()}
+                </Text>
+              </View>
+            </View>
+          </Marker>
+        ))}
       </MapView>
 
       {/* Header Overlay */}
@@ -193,10 +424,10 @@ const LocationMapScreen = () => {
         >
           {familyMembers.map((member) => (
             <TouchableOpacity
-              key={member.id}
+              key={member.userId}
               style={[
                 styles.memberCard,
-                selectedMember?.id === member.id && styles.selectedMemberCard
+                // selectedMember?.userId === member.userId && styles.selectedMemberCard
               ]}
               onPress={() => handleMemberSelect(member)}
             >
@@ -204,7 +435,12 @@ const LocationMapScreen = () => {
                 <View style={styles.photoContainer}>
                   <View style={styles.photoPlaceholder}>
                     <Text style={styles.photoText}>
-                      {member.name.split(' ').map(n => n[0]).join('')}
+                      {(member.name || 'F')
+                        .split(' ')
+                        .map((n: string) => n[0])
+                        .join('')
+                        .substring(0, 2)
+                        .toUpperCase()}
                     </Text>
                   </View>
                   <View style={[
@@ -213,13 +449,20 @@ const LocationMapScreen = () => {
                   ]} />
                 </View>
                 <View style={styles.memberDetails}>
-                  <Text style={styles.memberName}>{member.name}</Text>
-                  <Text style={styles.memberRelation}>{member.relation}</Text>
+                  <Text style={styles.memberName}>
+                    {member.name || member.phoneNumber || 'Family Member'}
+                  </Text>
+                  {member.relation && (
+                    <Text style={styles.memberRelation}>
+                      {member.relation}
+                      {member.userId === user?.id && ' (You)'}
+                    </Text>
+                  )}
                   <Text style={[styles.memberStatus, { color: getStatusColor(member) }]}>
                     {getStatusText(member)}
                   </Text>
                 </View>
-                {member.isLocationShared && member.currentLocation && (
+                {member.isLocationShared && member.location && (
                   <View style={styles.locationIndicator}>
                     <Ionicons name="location" size={16} color={COLORS.primary} />
                   </View>
@@ -231,18 +474,26 @@ const LocationMapScreen = () => {
       </View>
 
       {/* Selected Member Info Overlay */}
-      {selectedMember && selectedMember.isLocationShared && (
+      {selectedMember && selectedMember.isLocationShared && selectedMember.location && (
         <View style={styles.selectedMemberOverlay}>
-          <View style={styles.selectedMemberCard}>
+          <View style={styles.selectedMemberInfoCard}>
             <View style={styles.selectedMemberHeader}>
               <View style={styles.selectedMemberInfo}>
-                <Text style={styles.selectedMemberTitle}>{selectedMember.name}</Text>
-                <Text style={styles.selectedMemberDetails}>
-                  {selectedMember.relation} • {getStatusText(selectedMember)}
+                <Text style={styles.selectedMemberTitle}>
+                  {selectedMember.name || selectedMember.phoneNumber || 'Family Member'}
                 </Text>
-                {selectedMember.currentLocation && (
-                  <Text style={styles.coordinatesText}>
-                    {selectedMember.currentLocation.latitude.toFixed(6)}, {selectedMember.currentLocation.longitude.toFixed(6)}
+                <Text style={styles.selectedMemberDetails}>
+                  {selectedMember.relation || 'Member'}
+                  {selectedMember.userId === user?.id && ' (You)'}
+                  {' • '}
+                  {getStatusText(selectedMember)}
+                </Text>
+                <Text style={styles.coordinatesText}>
+                  {selectedMember.location.latitude.toFixed(6)}, {selectedMember.location.longitude.toFixed(6)}
+                </Text>
+                {selectedMember.location.accuracy && (
+                  <Text style={styles.accuracyText}>
+                    Accuracy: {Math.round(selectedMember.location.accuracy)}m
                   </Text>
                 )}
               </View>
@@ -266,6 +517,43 @@ const styles = StyleSheet.create({
   },
   map: {
     ...StyleSheet.absoluteFillObject,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: FONT_SIZES.md,
+    fontFamily: FONTS.gilroy.regular,
+    color: COLORS.text.secondary,
+  },
+  markerContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  selectedMarkerContainer: {
+    transform: [{ scale: 1.2 }],
+  },
+  markerCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.background.appColor,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: COLORS.white,
+  },
+  markerText: {
+    fontSize: FONT_SIZES.xs,
+    fontFamily: FONTS.gilroy.bold,
+    color: COLORS.white,
+  },
+  markerDot: {
+    position: 'absolute',
+    bottom: -4,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: COLORS.white,
   },
   headerOverlay: {
     position: 'absolute',
@@ -457,7 +745,7 @@ const styles = StyleSheet.create({
     right: 20,
     zIndex: 1001,
   },
-  selectedMemberCard: {
+  selectedMemberInfoCard: {
     backgroundColor: COLORS.background.primary,
     borderRadius: 16,
     padding: 16,
@@ -491,6 +779,12 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   coordinatesText: {
+    fontSize: FONT_SIZES.xs,
+    fontFamily: FONTS.gilroy.regular,
+    color: COLORS.text.tertiary,
+    marginBottom: 2,
+  },
+  accuracyText: {
     fontSize: FONT_SIZES.xs,
     fontFamily: FONTS.gilroy.regular,
     color: COLORS.text.tertiary,

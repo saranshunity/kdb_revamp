@@ -14,7 +14,7 @@ import { COLORS } from '../../constants/colors';
 import { FONTS, FONT_SIZES } from '../../constants/fonts';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-type StallsMainScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Stalls'>;
+type StallsMainScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'StallsApplication'>;
 
 const StallsMainScreen = () => {
   const navigation = useNavigation<StallsMainScreenNavigationProp>();

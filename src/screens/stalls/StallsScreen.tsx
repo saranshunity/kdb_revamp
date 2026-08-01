@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -9,14 +9,16 @@ import {
   TextInput,
 } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { COLORS } from '../../constants/colors';
 import { FONTS, FONT_SIZES } from '../../constants/fonts';
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 type StallsScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Stalls'>;
+type StallsScreenRouteProp = RouteProp<RootStackParamList, 'Stalls'>;
 
 interface Stall {
   stallId: string;
@@ -36,114 +38,80 @@ interface Stall {
   images: string[];
 }
 
+const STALLS_ENDPOINT = 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/stalls.json?alt=media&token=c1780ec1-aff0-4fe6-a027-05193e237e33';
+const CATEGORY_OPTIONS = ["All", "Craft Fair", "Book Fair", "Shopping", "Food & Refreshment"];
+
 const StallsScreen = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [stallsData, setStallsData] = useState<Stall[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<StallsScreenNavigationProp>();
+  const route = useRoute<StallsScreenRouteProp>();
+  const initialCategory = route.params?.initialCategory;
 
-  const stallsData: Stall[] = [
-    {
-      stallId: "1",
-      stallName: "Artisan Crafts Corner",
-      ownerName: "Priya Sharma",
-      category: "Handicrafts",
-      tags: ["handmade", "traditional", "artisan"],
-      state: "Rajasthan",
-      country: "India",
-      stallNumber: "1",
-      description: "Traditional Rajasthani handicrafts and handmade jewelry",
-      phone: "+91 98765 43210",
-      email: "priya@artisancrafts.com",
-      website: "www.artisancrafts.com",
-      instagram: "@artisancrafts",
-      facebook: "Artisan Crafts Corner",
-      images: ["https://picsum.photos/300/200", "https://picsum.photos/301/200"]
-    },
-    {
-      stallId: "2",
-      stallName: "Spice Paradise",
-      ownerName: "Rajesh Kumar",
-      category: "Food & Spices",
-      tags: ["spices", "organic", "traditional"],
-      state: "Kerala",
-      country: "India",
-      stallNumber: "2",
-      description: "Authentic Kerala spices and organic food products",
-      phone: "+91 87654 32109",
-      email: "rajesh@spiceparadise.com",
-      website: "www.spiceparadise.com",
-      instagram: "@spiceparadise",
-      facebook: "Spice Paradise",
-      images: ["https://picsum.photos/302/200", "https://picsum.photos/303/200"]
-    },
-    {
-      stallId: "3",
-      stallName: "Textile Treasures",
-      ownerName: "Meera Patel",
-      category: "Textiles",
-      tags: ["silk", "cotton", "traditional"],
-      state: "Gujarat",
-      country: "India",
-      stallNumber: "3",
-      description: "Premium silk and cotton textiles with traditional designs",
-      phone: "+91 76543 21098",
-      email: "meera@textiletreasures.com",
-      website: "www.textiletreasures.com",
-      instagram: "@textiletreasures",
-      facebook: "Textile Treasures",
-      images: ["https://picsum.photos/304/200", "https://picsum.photos/305/200"]
-    },
-    {
-      stallId: "4",
-      stallName: "Jewelry Junction",
-      ownerName: "Amit Jain",
-      category: "Jewelry",
-      tags: ["gold", "silver", "precious stones"],
-      state: "Delhi",
-      country: "India",
-      stallNumber: "4",
-      description: "Exquisite gold and silver jewelry with precious stones",
-      phone: "+91 65432 10987",
-      email: "amit@jewelryjunction.com",
-      website: "www.jewelryjunction.com",
-      instagram: "@jewelryjunction",
-      facebook: "Jewelry Junction",
-      images: ["https://picsum.photos/306/200", "https://picsum.photos/307/200"]
-    },
-    {
-      stallId: "5",
-      stallName: "Pottery Palace",
-      ownerName: "Sunita Reddy",
-      category: "Pottery",
-      tags: ["clay", "handmade", "decorative"],
-      state: "Tamil Nadu",
-      country: "India",
-      stallNumber: "5",
-      description: "Beautiful handmade pottery and ceramic items",
-      phone: "+91 54321 09876",
-      email: "sunita@potterypalace.com",
-      website: "www.potterypalace.com",
-      instagram: "@potterypalace",
-      facebook: "Pottery Palace",
-      images: ["https://picsum.photos/308/200", "https://picsum.photos/309/200"]
+  useEffect(() => {
+    if (initialCategory && CATEGORY_OPTIONS.includes(initialCategory)) {
+      setSelectedCategory(initialCategory);
     }
-  ];
+  }, [initialCategory]);
 
-  const categories = ["All", "Handicrafts", "Food & Spices", "Textiles", "Jewelry", "Pottery"];
+  useEffect(() => {
+    let isMounted = true;
+    const fetchStalls = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(STALLS_ENDPOINT);
+        if (!response.ok) {
+          throw new Error('Failed to load stalls');
+        }
+        const data = await response.json();
+        if (isMounted) {
+          setStallsData(Array.isArray(data) ? data : []);
+          setError(null);
+        }
+      } catch (err: any) {
+        if (isMounted) {
+          setError('Unable to load stalls right now. Please try again.');
+          setStallsData([]);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
 
-  const filteredStalls = stallsData.filter(stall => {
-    const matchesSearch = stall.stallName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         stall.ownerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         stall.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         stall.stallNumber.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "All" || stall.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+    fetchStalls();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const filteredStalls = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    const normalizedCategory = selectedCategory.toLowerCase();
+    return stallsData.filter((stall) => {
+      const matchesSearch =
+        !normalizedQuery ||
+        stall.stallName?.toLowerCase().includes(normalizedQuery) ||
+        stall.ownerName?.toLowerCase().includes(normalizedQuery) ||
+        stall.description?.toLowerCase().includes(normalizedQuery) ||
+        stall.stallNumber?.toLowerCase().includes(normalizedQuery);
+
+      const matchesCategory =
+        selectedCategory === 'All' ||
+        stall.category?.toLowerCase() === normalizedCategory ||
+        stall.tags?.some((tag) => tag.toLowerCase() === normalizedCategory);
+
+      return matchesSearch && matchesCategory;
+    });
+  }, [stallsData, searchQuery, selectedCategory]);
 
   const handleStallPress = (stall: Stall) => {
-    // Navigate to stall detail screen
-    console.log("Stall pressed:", stall.stallName);
+    navigation.navigate('StallDetail', { stall });
   };
 
   return (
@@ -183,7 +151,7 @@ const StallsScreen = () => {
         style={styles.categoryContainer}
         contentContainerStyle={styles.categoryContent}
       >
-        {categories.map((category) => (
+        {CATEGORY_OPTIONS.map((category) => (
           <TouchableOpacity
             key={category}
             style={[
@@ -206,32 +174,44 @@ const StallsScreen = () => {
 
       {/* Stalls List */}
       <ScrollView style={styles.stallsListContainer} contentContainerStyle={styles.stallsList} showsVerticalScrollIndicator={false}>
-        {filteredStalls.map((stall) => (
-          <TouchableOpacity
-            key={stall.stallId}
-            style={styles.stallItem}
-            onPress={() => handleStallPress(stall)}
-          >
-            <View style={styles.stallLeft}>
-              <View style={styles.stallNumberBadge}>
-                <Text style={styles.stallNumberText}>{stall.stallNumber}</Text>
+        {loading ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateText}>Loading stalls...</Text>
+          </View>
+        ) : error ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateText}>{error}</Text>
+          </View>
+        ) : filteredStalls.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateText}>No stalls found for this selection.</Text>
+          </View>
+        ) : (
+          filteredStalls.map((stall) => (
+            <TouchableOpacity
+              key={stall.stallId}
+              style={styles.stallItem}
+              onPress={() => handleStallPress(stall)}
+            >
+              <View style={styles.stallLeft}>
+                <View style={styles.stallNumberBadge}>
+                  <Text style={styles.stallNumberText}>{stall.stallNumber}</Text>
+                </View>
+                <View style={styles.stallDetails}>
+                  <Text style={styles.stallName}>{stall.stallName}</Text>
+                  <Text style={styles.ownerName}>by {stall.ownerName}</Text>
+                  <Text style={styles.stallInfo}>{stall.category}</Text>
+                  <Text style={styles.location}>
+                    {stall.state}, {stall.country}
+                  </Text>
+                </View>
               </View>
-              <View style={styles.stallDetails}>
-                <Text style={styles.stallName}>{stall.stallName}</Text>
-                <Text style={styles.ownerName}>by {stall.ownerName}</Text>
-                <Text style={styles.stallInfo}>
-                  {stall.category}
-                </Text>
-                <Text style={styles.location}>
-                  {stall.state}, {stall.country}
-                </Text>
+              <View style={styles.stallRight}>
+                <Ionicons name="chevron-forward" size={20} color={COLORS.text.tertiary} />
               </View>
-            </View>
-            <View style={styles.stallRight}>
-              <Ionicons name="chevron-forward" size={20} color={COLORS.text.tertiary} />
-            </View>
-          </TouchableOpacity>
-        ))}
+            </TouchableOpacity>
+          ))
+        )}
       </ScrollView>
     </View>
   );
@@ -290,7 +270,7 @@ const styles = StyleSheet.create({
   },
   categoryContainer: {
     backgroundColor: COLORS.background.primary,
-    maxHeight:60
+    maxHeight: 60,
     // paddingBottom: 4,
   },
   categoryContent: {
@@ -324,6 +304,17 @@ const styles = StyleSheet.create({
   stallsList: {
     paddingHorizontal: 20,
     paddingTop: 0,
+  },
+  emptyState: {
+    paddingVertical: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyStateText: {
+    fontSize: FONT_SIZES.sm,
+    fontFamily: FONTS.gilroy.medium,
+    color: COLORS.text.secondary,
+    textAlign: 'center',
   },
   stallItem: {
     flexDirection: 'row',

@@ -16,14 +16,27 @@ import ProfileScreen from '../screens/main/ProfileScreen';
 import SettingsScreen from '../screens/main/SettingsScreen';
 import EventsScreen from '../screens/events/EventScreen';
 import EventDetailScreen from '../screens/events/EventDetailScreen';
-import StallsScreen from '../screens/stalls/StallsMainScreen';
+import GitaMahotsavColorsScreen from '../screens/events/GitaMahotsavColorsScreen';
+import CulturalEventsScreen from '../screens/events/CulturalEventsScreen';
+import FacilitiesScreen from '../screens/facilities/FacilitiesScreen';
+import FacilityMapScreen from '../screens/facilities/FacilityMapScreen';
+import MuseumShowsScreen from '../screens/museum/MuseumShowsScreen';
+import IconicPlacesScreen from '../screens/main/IconicPlacesScreen';
+import ChatBotScreen from '../screens/chat/ChatBotScreen';
+import StallsLandingScreen from '../screens/stalls/StallsLandingScreen';
+import StallsScreen from '../screens/stalls/StallsScreen';
+import StallsMainScreen from '../screens/stalls/StallsMainScreen';
 import StallCategoriesScreen from '../screens/stalls/StallCategoriesScreen';
+import StallDetailScreen from '../screens/stalls/StallDetailScreen';
 import CheckApplicationStatusScreen from '../screens/stalls/CheckApplicationStatusScreen';
 import StallApplicationScreen from '../screens/stalls/StallApplicationScreen';
 import StallApplicationStatusScreen from '../screens/stalls/StallApplicationStatusScreen';
 import PaymentScreen from '../screens/stalls/PaymentScreen';
 import PaymentWebViewScreen from '../screens/stalls/PaymentWebViewScreen';
+import TirthWebViewScreen from '../screens/main/TirthWebViewScreen';
+import QuizWebViewScreen from '../screens/main/QuizWebViewScreen';
 import FamilyMembersScreen from '../screens/family/FamilyMembersScreen';
+import FamilyLaunchScreen from '../screens/family/FamilyLaunchScreen';
 import AddFamilyMemberScreen from '../screens/family/AddFamilyMemberScreen';
 import LocationMapScreen from '../screens/family/LocationMapScreen';
 import TirthsScreen from '../screens/tirths/TirthsScreen';
@@ -34,6 +47,7 @@ import TirthMitraCardScreen from '../screens/tirthMitra/TirthMitraCardScreen';
 import TirthMitraApplicationScreen from '../screens/tirthMitra/TirthMitraApplicationScreen';
 import TirthMitraReviewScreen from '../screens/tirthMitra/TirthMitraReviewScreen';
 import TirthMitraStatusScreen from '../screens/tirthMitra/TirthMitraStatusScreen';
+import TirthMitraOTPVerificationScreen from '../screens/tirthMitra/TirthMitraOTPVerificationScreen';
 import MenuScreen from '../screens/main/MenuScreen';
 import AboutKDBScreen from '../screens/main/AboutKDBScreen';
 import AdministrationScreen from '../screens/main/AdministrationScreen';
@@ -46,10 +60,15 @@ import PermissionsScreen from '../screens/main/PermissionsScreen';
 import ListScreen from '../screens/main/ListScreen';
 import ItemDetailScreen from '../screens/main/ItemDetailScreen';
 import RemindersScreen from '../screens/main/RemindersScreen';
+import ShlokaMantraScreen from '../screens/main/ShlokaMantraScreen';
+import UpdateDetailScreen from '../screens/main/UpdateDetailScreen';
+import UpdatesListScreen from '../screens/main/UpdatesListScreen';
 import { COLORS } from '../constants/colors';
 import { FONTS, FONT_SIZES } from '../constants/fonts';
 import { PermissionProvider } from '../contexts/PermissionContext';
 import AuthNavigationListener from '../components/AuthNavigationListener';
+import { navigationRef, flushNavigationQueue } from './navigationRef';
+import { MahotsavHulchal as MahotsavHulchalItem } from '../services/FirebaseService';
 
 // Tirth type for navigation
 interface Tirth {
@@ -104,9 +123,32 @@ export type RootStackParamList = {
   Auth: undefined;
   Main: undefined;
   Events: undefined;
-  EventDetail: undefined;
-  Stalls: undefined;
+  EventDetail: { eventId?: string };
+  GitaMahotsavColors: undefined;
+  CulturalEvents: undefined;
+  Facilities: undefined;
+  FacilityMap: {
+    title: string;
+    pdfUrl: string;
+    markers?: {
+      name: string;
+      supervisor?: string;
+      latitude: number;
+      longitude: number;
+    }[];
+  };
+  MuseumShows: undefined;
+  IconicPlaces: undefined;
+  ChatBot: undefined;
+  Stalls: {
+    initialCategory?: string;
+  } | undefined;
+  StallsLanding: undefined;
+  StallsApplication: undefined;
   StallCategories: undefined;
+  StallDetail: {
+    stall: any;
+  };
   CheckApplicationStatus: undefined;
   Quiz: undefined;
   StallApplication: { category: any };
@@ -122,7 +164,15 @@ export type RootStackParamList = {
     formData: any;
   };
   PaymentWebView: undefined;
+  TirthWebView: {
+    url: string;
+    title?: string;
+    fullScreenVideo?: boolean;
+    isYouTube?: boolean;
+  };
   FamilyMembers: undefined;
+  FamilyLaunch: undefined;
+  FamilyDashboard: { familyId: string };
   AddFamilyMember: undefined;
   LocationMap: undefined;
   Tirths: undefined;
@@ -138,6 +188,10 @@ export type RootStackParamList = {
     applicationId?: string;
     applicationData?: any;
     status?: 'pending' | 'approved' | 'rejected';
+  };
+  TirthMitraOTPVerification: {
+    phoneNumber: string;
+    onVerified?: () => void;
   };
   Menu: undefined;
   AboutKDB: undefined;
@@ -169,6 +223,11 @@ export type RootStackParamList = {
     additionalInfo?: string;
   };
   Reminders: undefined;
+  ShlokaMantra: undefined;
+  UpdateDetail: {
+    item: MahotsavHulchalItem;
+  };
+  UpdatesList: undefined;
 };
 
 export type AuthStackParamList = {
@@ -292,7 +351,7 @@ function MainTabNavigator() {
 function AppNavigator() {
   return (
     <PermissionProvider>
-      <NavigationContainer>
+      <NavigationContainer ref={navigationRef} onReady={flushNavigationQueue}>
         <AuthNavigationListener />
         <Stack.Navigator
           initialRouteName='Splash'
@@ -307,20 +366,35 @@ function AppNavigator() {
         <Stack.Screen name='Main' component={MainTabNavigator} />
         <Stack.Screen name='Events' component={EventsScreen} />
         <Stack.Screen name='EventDetail' component={EventDetailScreen} />
+        <Stack.Screen name='GitaMahotsavColors' component={GitaMahotsavColorsScreen} />
+        <Stack.Screen name='CulturalEvents' component={CulturalEventsScreen} />
+        <Stack.Screen name='Facilities' component={FacilitiesScreen} />
+        <Stack.Screen name='FacilityMap' component={FacilityMapScreen} />
+        <Stack.Screen name='MuseumShows' component={MuseumShowsScreen} />
+        <Stack.Screen name='IconicPlaces' component={IconicPlacesScreen} />
+        <Stack.Screen name='ChatBot' component={ChatBotScreen} />
+        <Stack.Screen name='StallsLanding' component={StallsLandingScreen} />
         <Stack.Screen name='Stalls' component={StallsScreen} />
+        <Stack.Screen name='StallsApplication' component={StallsMainScreen} />
         <Stack.Screen name='StallCategories' component={StallCategoriesScreen} />
+        <Stack.Screen name='StallDetail' component={StallDetailScreen} />
         <Stack.Screen name='CheckApplicationStatus' component={CheckApplicationStatusScreen} />
         <Stack.Screen name='StallApplication' component={StallApplicationScreen} />
         <Stack.Screen name='StallApplicationStatus' component={StallApplicationStatusScreen} />
         <Stack.Screen name='Payment' component={PaymentScreen} />
         <Stack.Screen name='PaymentWebView' component={PaymentWebViewScreen} />
+        <Stack.Screen name='TirthWebView' component={TirthWebViewScreen} />
+        <Stack.Screen name='Quiz' component={QuizWebViewScreen} />
         <Stack.Screen name='FamilyMembers' component={FamilyMembersScreen} />
+        <Stack.Screen name='FamilyLaunch' component={FamilyLaunchScreen} />
+        <Stack.Screen name='FamilyDashboard' component={FamilyMembersScreen} />
         <Stack.Screen name='AddFamilyMember' component={AddFamilyMemberScreen} />
         <Stack.Screen name='LocationMap' component={LocationMapScreen} />
         <Stack.Screen name='Tirths' component={TirthsScreen} />
         <Stack.Screen name='TirthDetail' component={TirthDetailScreen} />
         <Stack.Screen name='TirthMitraIntro' component={TirthMitraIntroScreen} />
         <Stack.Screen name='TirthMitraGenerator' component={TirthMitraGeneratorScreen} />
+        <Stack.Screen name='TirthMitraOTPVerification' component={TirthMitraOTPVerificationScreen} />
         <Stack.Screen name='TirthMitraCard' component={TirthMitraCardScreen} />
         <Stack.Screen name='TirthMitraApplication' component={TirthMitraApplicationScreen} />
         <Stack.Screen name='TirthMitraReview' component={TirthMitraReviewScreen} />
@@ -337,6 +411,9 @@ function AppNavigator() {
         <Stack.Screen name='ListScreen' component={ListScreen} />
         <Stack.Screen name='ItemDetailScreen' component={ItemDetailScreen} />
         <Stack.Screen name='Reminders' component={RemindersScreen} />
+        <Stack.Screen name='ShlokaMantra' component={ShlokaMantraScreen} />
+        <Stack.Screen name='UpdateDetail' component={UpdateDetailScreen} />
+        <Stack.Screen name='UpdatesList' component={UpdatesListScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </PermissionProvider>

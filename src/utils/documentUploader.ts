@@ -1,6 +1,7 @@
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import storage from '@react-native-firebase/storage';
 import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
 import { NativeModules} from 'react-native';
 import {launchImageLibrary} from 'react-native-image-picker';
 import '../types/nativeModules';
@@ -90,6 +91,32 @@ export const pickDocumentFromFileSystem = async (): Promise<FileData | null> => 
 };
 
 /**
+ * Ensure user is authenticated (using anonymous auth if needed) for Firebase Storage
+ * This is optional - if Storage rules allow unauthenticated access, this won't be needed
+ */
+const ensureAuthenticated = async (): Promise<void> => {
+  try {
+    const currentUser = auth().currentUser;
+    if (!currentUser) {
+      // Try to sign in anonymously to allow Storage uploads
+      // This is a fallback if Storage rules require authentication
+      console.log('No user authenticated, attempting anonymous sign-in for Storage access...');
+      try {
+        await auth().signInAnonymously();
+        console.log('Anonymous authentication successful');
+      } catch (anonError: any) {
+        console.log('Anonymous auth not available or not needed:', anonError.message);
+        // Continue without auth - Storage rules should allow unauthenticated access
+      }
+    }
+  } catch (error: any) {
+    console.log('Auth check skipped - proceeding with upload:', error.message);
+    // Don't throw - allow upload to proceed
+    // The Storage rules should allow unauthenticated access for tirthMitra folder
+  }
+};
+
+/**
  * Upload document to Firebase Storage with progress tracking
  */
 export const uploadDocumentToFirebase = async (
@@ -98,6 +125,9 @@ export const uploadDocumentToFirebase = async (
   onProgress?: (progress: number) => void,
 ): Promise<DocumentUploadResult> => {
   try {
+    // Ensure authentication for Storage (use anonymous if needed)
+    await ensureAuthenticated();
+
     // Validate file size (10MB limit)
     const maxSize = 10 * 1024 * 1024;
     if (document.size > maxSize) {

@@ -45,7 +45,7 @@ const SpotlightCard: React.FC<SpotlightCardProps> = ({
         <Text style={styles.categories}>
           {categories?.join(" • ")}
         </Text>
-        <Text style={styles.title} numberOfLines={2}>
+        <Text style={styles.title} numberOfLines={3}>
           {title}
         </Text>
       </View>
@@ -67,7 +67,6 @@ const styles = StyleSheet.create({
     elevation: 8,
     marginBottom: 16,
     overflow: "hidden",
-    marginRight: 16,
   },
   imageWrapper: {
     position: "relative",
@@ -103,7 +102,7 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
   },
   title: {
-    fontSize: FONT_SIZES.md,
+    fontSize: FONT_SIZES.sm,
     fontFamily: FONTS.gilroy.semiBold,
     color: "#111",
     flexWrap: "wrap",

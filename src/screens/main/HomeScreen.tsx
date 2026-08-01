@@ -10,6 +10,9 @@ import {
   Linking,
   Platform,
   Alert,
+  Image,
+  ImageBackground,
+  Text,
 } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -26,7 +29,6 @@ import QuickLinkItem from '../../components/QuickLinks';
 import MahotsavHulchal from './components/MahotsavHulchal';
 import TirthsList from './components/TirthsList';
 import TodaysEvents from '../events/components/TodaysEvents';
-import PermissionBottomSheet from '../../components/PermissionBottomSheet';
 import { usePermissionContext } from '../../contexts/PermissionContext';
 import Ionicons from "react-native-vector-icons/Ionicons";
 import MetadataService from '../../services/MetadataService';
@@ -34,6 +36,11 @@ import UpdateBottomSheet from '../../components/UpdateBottomSheet';
 import { useAuth } from '../../contexts/AuthContext';
 import firestore from '@react-native-firebase/firestore';
 import ReminderService, { UserReminder } from '../../services/ReminderService';
+import FamilyService from '../../services/FamilyService';
+import FirebaseService, { MahotsavHulchal as MahotsavHulchalItem, EventItem } from '../../services/FirebaseService';
+import { GITA_MAHOTSAV_COLORS } from '../events/constants/gitaMahotsavColors';
+import { BodyText as BodyTextComponent } from '../../components/Text';
+import { CULTURAL_EVENTS } from '../events/constants/culturalEvents';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
 
@@ -45,8 +52,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const stackNavigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user } = useAuth();
-  const [showPermissionSheet, setShowPermissionSheet] = useState(false);
-  const { allGranted, hasShownPermissionPrompt, setHasShownPermissionPrompt, permissions } = usePermissionContext();
+  const { permissions } = usePermissionContext();
+  const [liveStreamLink, setLiveStreamLink] = useState<string | null>(null);
 
   // Animation values for family illustration
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -55,12 +62,72 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const member3Anim = useRef(new Animated.Value(0)).current;
   const member4Anim = useRef(new Animated.Value(0)).current;
   const lineAnim = useRef(new Animated.Value(0)).current;
+  const liveStreamPulse = useRef(new Animated.Value(0)).current;
 
   // Date-based visibility for Apply for Stalls section
   const [showApplyStalls, setShowApplyStalls] = useState(false);
   
   // User address state
   const [userAddress, setUserAddress] = useState('Kurukshetra, Haryana, India');
+
+  // Mahotsav Hulchal state
+  const [mahotsavHulchal, setMahotsavHulchal] = useState<MahotsavHulchalItem[]>([]);
+  
+  // Today's events state
+  const [todaysEvents, setTodaysEvents] = useState<EventItem[]>([]);
+  const [hasMoreEvents, setHasMoreEvents] = useState(false);
+
+  const culturalEventsPreview = CULTURAL_EVENTS.slice(0, 3);
+
+  // Reverse geocoding function to convert coordinates to address
+  const reverseGeocode = async (latitude: number, longitude: number): Promise<string> => {
+    try {
+      // Using OpenStreetMap Nominatim API (free, no API key required)
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`,
+        {
+          headers: {
+            'User-Agent': 'KDBRevampApp/1.0', // Required by Nominatim
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Geocoding failed');
+      }
+
+      const data = await response.json();
+      const address = data.address;
+
+      if (!address) {
+        return 'Location not found';
+      }
+
+      // Build address string: City, State, Country Code
+      const parts: string[] = [];
+      
+      if (address.city) {
+        parts.push(address.city);
+      } else if (address.town) {
+        parts.push(address.town);
+      } else if (address.village) {
+        parts.push(address.village);
+      }
+
+      if (address.state) {
+        parts.push(address.state);
+      }
+
+      if (address.country_code) {
+        parts.push(address.country_code.toUpperCase());
+      }
+
+      return parts.length > 0 ? parts.join(', ') : 'Location not found';
+    } catch (error) {
+      console.error('Reverse geocoding error:', error);
+      return 'Location not found';
+    }
+  };
   
   // Update check state
   const [showUpdateSheet, setShowUpdateSheet] = useState(false);
@@ -99,24 +166,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     // }
   }, []);
 
-  // Check permissions on screen focus - only show if not all granted
-  useEffect(() => {
-    if (!allGranted && !hasShownPermissionPrompt) {
-      // Show permission sheet after a short delay to let the screen load
-      const timer = setTimeout(() => {
-        setShowPermissionSheet(true);
-        setHasShownPermissionPrompt(true);
-      }, 1000);
-      
-      return () => clearTimeout(timer);
-    }
-    
-    // If all permissions are granted, don't show permission sheet
-    if (allGranted) {
-      setShowPermissionSheet(false);
-    }
-  }, [allGranted, hasShownPermissionPrompt, setHasShownPermissionPrompt]);
-
   // Get user's current location and address
   useEffect(() => {
     const getCurrentAddress = async () => {
@@ -126,23 +175,23 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           Geolocation.getCurrentPosition(
             async (position) => {
               const { latitude, longitude } = position.coords;
-              Alert.alert('Location:', `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`);
-              // For now, just use a simplified address format
-              // You can enhance this to use reverse geocoding if needed
-              setUserAddress(`Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`);
+              // Use reverse geocoding to get address
+              const address = await reverseGeocode(latitude, longitude);
+              setUserAddress(address || 'Kurukshetra, Haryana, India');
             },
             (error) => {
               console.error('Error getting location:', error);
-              // Handle different error types
-              if (error.code === 1) {
-                Alert.alert('Permission Denied', 'Location permission was denied. Please enable location access in settings.');
-              } else if (error.code === 2) {
-                Alert.alert('Location Unavailable', 'Unable to get your current location. Please check your GPS settings.');
-              } else if (error.code === 3) {
-                Alert.alert('Timeout', 'Location request timed out. Please try again.');
-              } else {
-                Alert.alert('Location Error', 'Unable to get your location. Using default address.');
-              }
+              // PHASE 1: Hide location error alerts
+              // Handle different error types silently
+              // if (error.code === 1) {
+              //   Alert.alert('Permission Denied', 'Location permission was denied. Please enable location access in settings.');
+              // } else if (error.code === 2) {
+              //   Alert.alert('Location Unavailable', 'Unable to get your current location. Please check your GPS settings.');
+              // } else if (error.code === 3) {
+              //   Alert.alert('Timeout', 'Location request timed out. Please try again.');
+              // } else {
+              //   Alert.alert('Location Error', 'Unable to get your location. Using default address.');
+              // }
               // Keep default address on error
               setUserAddress('Kurukshetra, Haryana, India');
             },
@@ -193,6 +242,18 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     checkForUpdates();
   }, []);
 
+  useEffect(() => {
+    const resolveLiveLink = (metadata: any) =>
+      metadata?.liveStreamingLink || metadata?.liveStreamLink || metadata?.live_link || null;
+
+    const load = async () => {
+      const data = await MetadataService.fetchMetadata();
+      setLiveStreamLink(resolveLiveLink(data));
+    };
+
+    load();
+  }, []);
+
   // Fetch current user's name from Firestore
   useEffect(() => {
     const fetchUserName = async () => {
@@ -216,14 +277,33 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     fetchUserName();
   }, [user?.id]);
 
-  // Subscribe to user's reminders for list on Home
+  // Subscribe to user's reminders for list on Home - only show active reminders
   useEffect(() => {
     if (!user?.id) {
       setReminders([]);
       return;
     }
     const unsubscribe = ReminderService.subscribeToReminders(user.id, (list) => {
-      setReminders(list.filter(r => r.status === 'scheduled'));
+      const now = new Date();
+      const activeReminders = list.filter(r => {
+        // Only show scheduled reminders where the event hasn't passed
+        if (r.status !== 'scheduled') return false;
+        
+        // Check if event start time is in the future
+        if (r.eventStartAtUTC) {
+          const eventStart = new Date(r.eventStartAtUTC);
+          return eventStart > now;
+        }
+        
+        // Fallback: check notification time if eventStartAtUTC is not available
+        if (r.notifyAtUTC) {
+          const notifyAt = new Date(r.notifyAtUTC);
+          return notifyAt > now;
+        }
+        
+        return true; // If no time info, show it (shouldn't happen, but safe fallback)
+      });
+      setReminders(activeReminders);
     });
     return () => unsubscribe();
   }, [user?.id]);
@@ -237,6 +317,14 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     }
   };
 
+  const handleLiveStreamPress = () => {
+    const url = liveStreamLink || 'https://internationalgitamahotsav.in/igm-2025/#live-streaming';
+    stackNavigation.navigate('TirthWebView', {
+      url,
+      title: 'Live Streaming',
+    });
+  };
+
   const handleDismissUpdate = () => {
     // Only allow dismiss if NOT a force update
     if (!updateData?.forceUpdate) {
@@ -248,17 +336,20 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     }
   };
 
-  const refreshLocation = () => {
+  const refreshLocation = async () => {
     if (permissions.location === 'granted') {
       Geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
           const { latitude, longitude } = position.coords;
-          Alert.alert('Location Updated:', `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`);
-          setUserAddress(`Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`);
+          // Use reverse geocoding to get address
+          const address = await reverseGeocode(latitude, longitude);
+          setUserAddress(address || 'Kurukshetra, Haryana, India');
+          Alert.alert('Location Updated', `Address: ${address || 'Location not found'}`);
         },
         (error) => {
           console.error('Error refreshing location:', error);
-          Alert.alert('Location Error', 'Unable to refresh location. Please check your GPS settings.');
+          // PHASE 1: Hide location error alerts
+          // Alert.alert('Location Error', 'Unable to refresh location. Please check your GPS settings.');
         },
         { 
           enableHighAccuracy: true, 
@@ -270,6 +361,65 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       Alert.alert('Permission Required', 'Location permission is required to get your current address.');
     }
   };
+
+  // Fetch Mahotsav Hulchal from Firebase
+  useEffect(() => {
+    const unsubscribe = FirebaseService.subscribeToMahotsavHulchal((items) => {
+      setMahotsavHulchal(items);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  // Fetch and filter today's events from Firebase
+  useEffect(() => {
+    const unsubscribe = FirebaseService.subscribeToEvents((events) => {
+      // Format today's date as DD-MM-YYYY
+      const today = new Date();
+      const day = today.getDate().toString().padStart(2, '0');
+      const month = (today.getMonth() + 1).toString().padStart(2, '0');
+      const year = today.getFullYear();
+      const todayDateStr = `${day}-${month}-${year}`;
+      
+      // Filter events for today
+      const filteredEvents = events.filter(event => {
+        // Normalize date formats for comparison (handle both DD-MM-YYYY and DD/MM/YYYY)
+        const eventDate = event.date.replace(/\//g, '-');
+        return eventDate === todayDateStr;
+      });
+
+      // Set hasMoreEvents flag if there are more than 3
+      setHasMoreEvents(filteredEvents.length > 3);
+      
+      // Take only first 3 events for display
+      setTodaysEvents(filteredEvents.slice(0, 3));
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(liveStreamPulse, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(liveStreamPulse, {
+          toValue: 0,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    pulse.start();
+    return () => pulse.stop();
+  }, [liveStreamPulse]);
 
   // Animation effects for family illustration
   useEffect(() => {
@@ -339,281 +489,79 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     };
   }, []);
 
-  const handlePermissionGranted = () => {
-    setShowPermissionSheet(false);
-  };
-
-  const handlePermissionSkip = () => {
-    setShowPermissionSheet(false);
-  };
-
-  const quickActions = [
-    { id: 1, title: 'Transfer Money', icon: '💸', color: COLORS.primary },
-    { id: 2, title: 'Pay Bills', icon: '📄', color: COLORS.info },
-    { id: 3, title: 'Deposit Check', icon: '📷', color: COLORS.success },
-    { id: 4, title: 'View Statements', icon: '📊', color: COLORS.warning },
-  ];
-
-  const recentTransactions = [
-    {
-      id: 1,
-      description: 'Coffee Shop',
-      amount: '-$4.50',
-      date: 'Today',
-      type: 'debit',
-    },
-    {
-      id: 2,
-      description: 'Salary Deposit',
-      amount: '+$3,500.00',
-      date: 'Yesterday',
-      type: 'credit',
-    },
-    {
-      id: 3,
-      description: 'Grocery Store',
-      amount: '-$89.32',
-      date: '2 days ago',
-      type: 'debit',
-    },
-    {
-      id: 4,
-      description: 'ATM Withdrawal',
-      amount: '-$100.00',
-      date: '3 days ago',
-      type: 'debit',
-    },
-  ];
-
-  const mahotsavHulchal = [
-    {
-      id: 1,
-      title: 'Cultural Dance Performance',
-      image: 'https://picsum.photos/600/400',
-      categories: ['Dance', 'Cultural'],
-      description: 'Traditional Indian classical dance performance by renowned artists showcasing the rich cultural heritage of India.',
-      rating: 4.8,
-      time: '7:00 PM - 9:00 PM',
-      price: 150,
-      location: 'Main Stage, Kurukshetra',
-      organizer: 'KDB Cultural Society',
-      contactInfo: '+91 98765 43210',
-      additionalInfo: 'Free entry for children under 12. Photography allowed. Traditional attire recommended.',
-    },
-    {
-      id: 2,
-      title: 'Spiritual Discourse',
-      image: 'https://picsum.photos/600/400',
-      categories: ['Spiritual', 'Lecture'],
-      description: 'Enlightening discourse on Bhagavad Gita by spiritual leaders, providing deep insights into ancient wisdom.',
-      rating: 4.9,
-      time: '6:00 PM - 7:30 PM',
-      price: 0,
-      location: 'Temple Hall, Kurukshetra',
-      organizer: 'Spiritual Foundation',
-      contactInfo: '+91 98765 43211',
-      additionalInfo: 'Open to all. No registration required. Traditional seating on floor.',
-    },
-    {
-      id: 3,
-      title: 'Art Exhibition',
-      image: 'https://picsum.photos/600/400',
-      categories: ['Art', 'Exhibition'],
-      description: 'Contemporary and traditional art exhibition showcasing local talent and creative expressions.',
-      rating: 4.6,
-      time: '10:00 AM - 6:00 PM',
-      price: 50,
-      location: 'Art Gallery, Kurukshetra',
-      organizer: 'KDB Art Society',
-      contactInfo: '+91 98765 43212',
-      additionalInfo: 'Artworks available for purchase. Guided tours available every hour.',
-    },
-    {
-      id: 4,
-      title: 'Food Festival',
-      image: 'https://picsum.photos/600/400',
-      categories: ['Food', 'Festival'],
-      description: 'Delicious traditional and modern cuisine from across India, celebrating the diverse flavors of our nation.',
-      rating: 4.7,
-      time: '12:00 PM - 10:00 PM',
-      price: 200,
-      location: 'Food Court, Kurukshetra',
-      organizer: 'KDB Food Committee',
-      contactInfo: '+91 98765 43213',
-      additionalInfo: 'Vegetarian and non-vegetarian options available. Cash and card payments accepted.',
-    },
-    {
-      id: 5,
-      title: 'Music Concert',
-      image: 'https://picsum.photos/600/400',
-      categories: ['Music', 'Concert'],
-      description: 'Soulful devotional music concert featuring famous artists performing classical and contemporary pieces.',
-      rating: 4.9,
-      time: '8:00 PM - 10:30 PM',
-      price: 300,
-      location: 'Concert Hall, Kurukshetra',
-      organizer: 'KDB Music Society',
-      contactInfo: '+91 98765 43214',
-      additionalInfo: 'Limited seating. Advance booking recommended. Age restriction: 12+',
-    },
-    {
-      id: 6,
-      title: 'Workshop on Yoga',
-      image: 'https://picsum.photos/600/400',
-      categories: ['Yoga', 'Wellness'],
-      description: 'Learn ancient yoga techniques from certified instructors and experience the benefits of this ancient practice.',
-      rating: 4.5,
-      time: '5:00 AM - 7:00 AM',
-      price: 100,
-      location: 'Yoga Hall, Kurukshetra',
-      organizer: 'KDB Wellness Center',
-      contactInfo: '+91 98765 43215',
-      additionalInfo: 'Yoga mats provided. Bring comfortable clothing. All levels welcome.',
-    },
-  ];
 
   const tirthsList = [
 
     {
       id: 1,
-      title: 'Kuala Lumpur, Indonesia',
-      image: 'https://picsum.photos/600/400',
+      title: 'IGM Indonesia',
+      image: 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavStaticData%2FmahotsavAroundWorld%2Findonesai.jpg?alt=media&token=fadd6a6e-a035-42c8-90b6-d9a217c3a7c5',
       categories: ['Cultural Tour'],
       price: 28,
       isFavorite: true,
       rating:false,
       time:'2025',
+      link:'https://internationalgitamahotsav.in/igm-indonesia/'
     },
   
 
     {
       id: 2,
-      title: 'Toronto, Canada',
-      image: 'https://picsum.photos/600/400',
+      title: 'IGM Canada',
+      image: 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavStaticData%2FmahotsavAroundWorld%2Fcanada.jpg?alt=media&token=ca284451-f176-4163-bcd4-1782de68ef4d',
       categories: ['Cultural Tour'],
       price: 28,
       isFavorite: true,
       rating:false,
       time:'2024',
+      link:'https://internationalgitamahotsav.in/igm-canada/'
     },
     {
       id: 3,
-      title: 'Sydney, Australia',
-      image: 'https://picsum.photos/600/400',
+      title: 'IGM Australia',
+      image: 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavStaticData%2FmahotsavAroundWorld%2FfallbackImg.jpg?alt=media&token=dbadb981-b36b-4188-b530-00fd77a5b278',
       categories: ['Cultural Tour'],
       price: 28,
       isFavorite: true,
       rating:false,
       time:'2023',
+      link:'https://internationalgitamahotsav.in/igm-australia/'
     },
     {
       id: 4,
-      title: 'London, UK',
-      image: 'https://picsum.photos/600/400',
+      title: 'IGM UK',
+      image: 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavStaticData%2FmahotsavAroundWorld%2FfallbackImg.jpg?alt=media&token=dbadb981-b36b-4188-b530-00fd77a5b278',
       categories: ['Cultural Tour'],
       price: 28,
       isFavorite: true,
       rating:false,
       time:'2023',
+      link:'https://internationalgitamahotsav.in/igm-united-kingdom/'
     },
     {
       id: 5,
-      title: 'Mauritius',
-      image: 'https://picsum.photos/600/400',
+      title: 'IGM Mauritius',
+      image: 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavStaticData%2FmahotsavAroundWorld%2FfallbackImg.jpg?alt=media&token=dbadb981-b36b-4188-b530-00fd77a5b278',
       categories: ['Cultural Tour'],
       price: 28,
       isFavorite: true,
       rating:false,
       time:'2022',
-    },
-  ];
-
-  const todaysEventsDataArray = [
-    {
-      id: 1,
-      title: 'Bhagavad Gita Recitation',
-      image: 'https://picsum.photos/600/400',
-      categories: ['Spiritual', 'Recitation'],
-      description: 'Daily recitation of Bhagavad Gita verses with detailed explanations and spiritual insights.',
-      rating: 4.9,
-      time: '6:00 AM - 7:00 AM',
-      price: 0,
-      location: 'Temple Hall, Kurukshetra',
-      organizer: 'Spiritual Foundation',
-      contactInfo: '+91 98765 43220',
-      additionalInfo: 'Open to all devotees. Traditional Sanskrit recitation with Hindi translation.',
-    },
-    {
-      id: 2,
-      title: 'Temple Darshan',
-      image: 'https://picsum.photos/600/400',
-      categories: ['Spiritual', 'Darshan'],
-      description: 'Guided tour of ancient temples with historical significance and architectural marvels.',
-      rating: 4.8,
-      time: '8:00 AM - 10:00 AM',
-      price: 25,
-      location: 'Various Temples, Kurukshetra',
-      organizer: 'KDB Tourism Board',
-      contactInfo: '+91 98765 43221',
-      additionalInfo: 'Transportation provided. Professional guide included. Photography allowed.',
-    },
-    {
-      id: 3,
-      title: 'Cultural Workshop',
-      image: 'https://picsum.photos/600/400',
-      categories: ['Workshop', 'Cultural'],
-      description: 'Learn traditional Indian arts and crafts from master artisans and preserve our heritage.',
-      rating: 4.7,
-      time: '10:00 AM - 12:00 PM',
-      price: 150,
-      location: 'Cultural Center, Kurukshetra',
-      organizer: 'KDB Cultural Society',
-      contactInfo: '+91 98765 43222',
-      additionalInfo: 'Materials provided. All skill levels welcome. Take home your creations.',
-    },
-    {
-      id: 4,
-      title: 'Meditation Session',
-      image: 'https://picsum.photos/600/400',
-      categories: ['Meditation', 'Wellness'],
-      description: 'Guided meditation session for inner peace, spiritual growth, and mental well-being.',
-      rating: 4.9,
-      time: '5:00 PM - 6:00 PM',
-      price: 0,
-      location: 'Meditation Hall, Kurukshetra',
-      organizer: 'KDB Wellness Center',
-      contactInfo: '+91 98765 43223',
-      additionalInfo: 'Cushions provided. Silent environment. All experience levels welcome.',
-    },
-    {
-      id: 5,
-      title: 'Evening Aarti',
-      image: 'https://picsum.photos/600/400',
-      categories: ['Aarti', 'Spiritual'],
-      description: 'Traditional evening prayer ceremony with devotional songs and spiritual atmosphere.',
-      rating: 4.8,
-      time: '7:00 PM - 7:30 PM',
-      price: 0,
-      location: 'Main Temple, Kurukshetra',
-      organizer: 'Temple Committee',
-      contactInfo: '+91 98765 43224',
-      additionalInfo: 'Open to all. Traditional dress code. Photography restricted during ceremony.',
+      link:'https://internationalgitamahotsav.in/igm-mauritius/'
     },
     {
       id: 6,
-      title: 'Storytelling Session',
-      image: 'https://picsum.photos/600/400',
-      categories: ['Storytelling', 'Education'],
-      description: 'Fascinating stories from Indian mythology and history, bringing ancient wisdom to life.',
-      rating: 4.6,
-      time: '4:00 PM - 5:00 PM',
-      price: 50,
-      location: 'Story Hall, Kurukshetra',
-      organizer: 'KDB Education Society',
-      contactInfo: '+91 98765 43225',
-      additionalInfo: 'Interactive session. Q&A included. Suitable for all ages.',
-    },
+      title: 'IGM SriLanka',
+      image: 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavStaticData%2FmahotsavAroundWorld%2FfallbackImg.jpg?alt=media&token=dbadb981-b36b-4188-b530-00fd77a5b278',
+      categories: ['Cultural Tour'],
+      price: 28,
+      isFavorite: true,
+      rating:false,
+      time:'2022',
+      link:'https://internationalgitamahotsav.in/igm-sri-lanka/'
+    }
   ];
+
 
 
   return (
@@ -629,24 +577,19 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         <View style={styles.headerContainer}>
           <View style={styles.header}>
             <View style={styles.headerLeft}>
-              <View style={styles.greetingContainer}>
-                <BodyText style={styles.namasteIcon} size='xl'>🙏</BodyText>
-                <H5 style={styles.greetingText} weight="semiBold">{`Namastey${firstName ? ", " + firstName : ''}`}</H5>
+              <View style={styles.logoContainer}>
+                <Image 
+                  source={require('../../assets/images/igmLogo.png')} 
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
+                <H5 style={styles.headerTitle} weight="semiBold" size='xs'>
+                  International Gita Mahotsav 2025
+                </H5>
               </View>
-              <View style={styles.addressContainer}>
-                <BodyText style={styles.addressText} color={COLORS.text.primary} size='sm'>
-                  {userAddress}
-                </BodyText>
-                {permissions.location === 'granted' && (
-                  <TouchableOpacity 
-                    style={styles.refreshLocationButton}
-                    onPress={refreshLocation}
-                    activeOpacity={0.7}
-                  >
-                    <Ionicons name="refresh" size={16} color={COLORS.appColor} />
-                  </TouchableOpacity>
-                )}
-              </View>
+              {/* <View>
+                <BodyTextComponent color={COLORS.text.secondary} size='xs' style={{ marginTop: 5,fontSize: 10}}>Managed by Kurukshetra Development Board</BodyTextComponent>
+              </View> */}
             </View>
             <View style={styles.headerRight}>
               <TouchableOpacity 
@@ -661,56 +604,109 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
         {/* Balance Card */}
       <View style={styles.contentContainer}>
-        <H5 style={styles.quickLinkTitle} color={COLORS.primary} weight='semiBold' size='lg'>Mahotsav related Links</H5>
-        <ScrollView 
+      <TirthsList listData={tirthsList} />
+        <View style={styles.quickLinksHeader}>
+          <H5 style={styles.quickLinkTitle} color={COLORS.primary} weight='semiBold' size='md'>Quick Links</H5>
+     
+        </View>
+        {/* <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false}
           style={styles.quickLinkContainer}
           contentContainerStyle={styles.quickLinkContent}
         >
-        <QuickLinkItem 
-          key="events-1" 
-          icon="calendar-outline" 
-          label="Events" 
-          onPress={() => stackNavigation.navigate('Events')}
-        />
-      {/* <QuickLinkItem 
+          <QuickLinkItem 
+            key="events-1" 
+            icon="calendar-outline" 
+            label="Events" 
+            onPress={() => stackNavigation.navigate('Events')}
+          />
+          <QuickLinkItem 
+            key="facilities"
+            icon="medkit-outline"
+            label="Facilities"
+            onPress={() => {
+              stackNavigation.navigate('Facilities');
+            }}
+          />
+          <QuickLinkItem 
+            key="museumshows-secondary"
+            icon="color-palette-outline"
+            label="Museums & Shows"
+            onPress={() => stackNavigation.navigate('MuseumShows')}
+          />  
+          <QuickLinkItem 
         key="stalls" 
         icon="cart-outline" 
-        label="Stalls Directory" 
-        onPress={() => stackNavigation.navigate('Stalls')}
+        label="Stalls Info" 
+        onPress={() => {
+          stackNavigation.navigate('StallsLanding');
+        }}
       />
-      <QuickLinkItem 
+         
+        </ScrollView> */}
+        {/* <H5 style={styles.quickLinkTitle} color={COLORS.primary} weight='semiBold' size='md'>Public Facilities Links</H5> */}
+
+{/* <ScrollView 
+  horizontal 
+  showsHorizontalScrollIndicator={false}
+  style={styles.quickLinkContainer}
+  contentContainerStyle={styles.quickLinkContent}
+>
+
+
+<QuickLinkItem 
         key="hotels" 
         icon="bed-outline" 
         label="Live Shows" 
-        onPress={() => console.log('Hotels pressed')}
-      /> */}
-      <QuickLinkItem 
-        key="quiz" 
-        icon="school-outline" 
-        label="Quiz" 
-        onPress={() => stackNavigation.navigate('Quiz')}
+        onPress={() => {
+          Alert.alert(
+            'Coming Soon',
+            'Live Shows feature will be available soon. Stay tuned!',
+            [{ text: 'OK' }]
+          );
+        }}
       />
-        </ScrollView>
+       <QuickLinkItem 
+            key="Exhibitions-1" 
+            icon="calendar-outline" 
+            label="Exhibitions" 
+            onPress={() => {
+              Alert.alert(
+                'Coming Soon',
+                'Exhibitions will be available soon. Stay tuned!',
+                [{ text: 'OK' }]
+              );
+            }}
+          />
+</ScrollView> */}
+
+        {/* <View style={{ marginTop: 16 }}>
+          <MahotsavHulchal listData={mahotsavHulchal} type="mahotsav" />
+        </View> */}
         
         {/* Reminders List */}
-        {reminders.length > 0 && (
+        {/* {reminders.length > 0 && (
           <View style={{ paddingHorizontal: 20, marginTop: 10 }}>
             <H5 color={COLORS.primary} weight='semiBold' size='lg'>Your Reminders</H5>
             {(reminders.slice(0, 2)).map((r) => (
-              <View key={r.id} style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                backgroundColor: COLORS.background.primary,
-                borderRadius: 12,
-                paddingVertical: 10,
-                paddingHorizontal: 12,
-                marginTop: 8,
-                borderWidth: 1,
-                borderColor: COLORS.border.light
-              }}>
+              <TouchableOpacity
+                key={r.id}
+                onPress={() => stackNavigation.navigate('EventDetail', { eventId: r.eventId })}
+                activeOpacity={0.7}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  backgroundColor: COLORS.background.primary,
+                  borderRadius: 12,
+                  paddingVertical: 10,
+                  paddingHorizontal: 12,
+                  marginTop: 8,
+                  borderWidth: 1,
+                  borderColor: COLORS.border.light
+                }}
+              >
                 <View style={{ flex: 1, paddingRight: 10 }}>
                   <BodyText color={COLORS.text.primary} size='sm' weight='medium'>
                     {r.title}
@@ -719,19 +715,26 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                     {new Date(r.notifyAtUTC).toLocaleString()}
                   </BodyText>
                 </View>
-                <TouchableOpacity
-                  onPress={() => user?.id && ReminderService.cancelReminder(user.id, r.id).catch(() => {})}
-                  style={{
-                    paddingVertical: 6,
-                    paddingHorizontal: 10,
-                    borderRadius: 8,
-                    borderWidth: 1,
-                    borderColor: COLORS.error
-                  }}
-                >
-                  <BodyText color={COLORS.error} size='xs' weight='semiBold'>Cancel</BodyText>
-                </TouchableOpacity>
-              </View>
+                {r.status === 'scheduled' && !r.fcmSent && (
+                  <TouchableOpacity
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      if (user?.id) {
+                        ReminderService.cancelReminder(user.id, r.id).catch(() => {});
+                      }
+                    }}
+                    style={{
+                      paddingVertical: 6,
+                      paddingHorizontal: 10,
+                      borderRadius: 8,
+                      borderWidth: 1,
+                      borderColor: COLORS.error
+                    }}
+                  >
+                    <BodyText color={COLORS.error} size='xs' weight='semiBold'>Cancel</BodyText>
+                  </TouchableOpacity>
+                )}
+              </TouchableOpacity>
             ))}
             {reminders.length > 2 && (
               <TouchableOpacity
@@ -742,47 +745,112 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               </TouchableOpacity>
             )}
           </View>
-        )}
+        )} */}
 
-        {/* Apply for Stalls - Attention Grabbing Section (Visible until November 7th) */}
-        {showApplyStalls && (
-          <TouchableOpacity 
-            style={styles.applyStallsCard}
-            onPress={() => stackNavigation.navigate('Stalls')}
-            activeOpacity={0.8}
+        {/* Gita Mahotsav Colors CTA */}
+        <View style={styles.mahotsavTabContainer}>
+          <TouchableOpacity
+            style={styles.mahotsavTab}
+            activeOpacity={0.85}
+            onPress={() => stackNavigation.navigate('GitaMahotsavColors')}
           >
-            <View style={styles.applyStallsContent}>
-              <View style={styles.applyStallsLeft}>
-                {/* <View style={styles.applyStallsIconContainer}>
-                  <Ionicons name="storefront-outline" size={28} color={COLORS.white} />
-                </View> */}
-                <View style={styles.applyStallsTextContainer}>
-                  <H4 color={COLORS.white} weight='semiBold' size='lg'>
-                    Apply for Stalls/Shops
-                  </H4>
-                  <BodyText color={COLORS.white} size='sm' style={styles.applyStallsDescription}>
-                    Book your stall at International Gita Mahotsav 2025
+            <View style={styles.mahotsavTabTextWrapper}>
+              <H5 color={COLORS.primary} weight='semiBold' size='lg'>
+                18 Colors of Gita Mahotsav
+              </H5>
+              <BodyText color={COLORS.text.secondary} size='sm'>
+                Explore all {GITA_MAHOTSAV_COLORS.length} vibrant celebrations
+              </BodyText>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={COLORS.primary} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Cultural Events Section */}
+        {/* <View style={styles.culturalEventsSection}>
+          <View style={styles.culturalEventsHeader}>
+            <H5 color={COLORS.text.primary} weight='semiBold' size='lg'>
+              Cultural Events
+            </H5>
+            <TouchableOpacity onPress={() => stackNavigation.navigate('CulturalEvents')}>
+              <BodyText color={COLORS.background.appColor} size='xs' weight='semiBold'>
+                View all →
+              </BodyText>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.culturalEventsList}>
+            {culturalEventsPreview.map((event, index) => (
+              <TouchableOpacity
+                key={event.id}
+                activeOpacity={0.8}
+                style={[
+                  styles.culturalEventCard,
+                  index !== culturalEventsPreview.length - 1 && styles.culturalEventCardSpacing,
+                ]}
+                onPress={() => stackNavigation.navigate('CulturalEvents')}
+              >
+                <Image source={{ uri: event.image }} style={styles.culturalEventImage} resizeMode='cover' />
+                <View style={styles.culturalEventContent}>
+                  <BodyText color={COLORS.text.primary} size='md' weight='semiBold'>
+                    {event.title}
+                  </BodyText>
+                  <BodyText color={COLORS.background.appColor} size='xs' weight='semiBold' style={{ marginTop: 2 }}>
+                    {event.artist}
+                  </BodyText>
+                  <BodyText color={COLORS.text.secondary} size='xs' style={{ marginTop: 8 }}>
+                    {event.date} • {event.time}
+                  </BodyText>
+                  <BodyText color={COLORS.text.secondary} size='xs'>
+                    {event.venue}
                   </BodyText>
                 </View>
-              </View>
-              <View style={styles.applyStallsRight}>
-                {/* <View style={styles.applyStallsBadge}>
-                  <BodyText color={COLORS.white} size='xs' weight='bold'>
-                    LIMITED
-                  </BodyText>
-                </View> */}
-                <Ionicons name="chevron-forward" size={24} color={COLORS.white} />
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View> */}
+
+        {/* Prepare for Shloka Mantra Section */}
+        <TouchableOpacity 
+          style={styles.shlokaMantraCard}
+          onPress={() => {
+            stackNavigation.navigate('ShlokaMantra' as any);
+          }}
+          activeOpacity={0.9}
+        >
+          <ImageBackground
+            source={{
+              uri: 'https://firebasestorage.googleapis.com/v0/b/kdbrevampnew.firebasestorage.app/o/mahotsavStaticData%2Fvaishvika.jpeg?alt=media&token=a3e1e33c-c963-4d34-8a73-a176a5a00baf',
+            }}
+            style={styles.shlokaBackgroundImage}
+            imageStyle={styles.shlokaBackgroundImageRadius}
+          >
+            <View style={styles.shlokaOverlay}>
+              <View style={styles.shlokaMantraContent}>
+                <View style={styles.shlokaTextContainer}>
+                  <View style={styles.shlokaBadge}>
+                    <Ionicons name="musical-notes-outline" size={18} color={COLORS.white} />
+                    <BodyText color='rgba(255,255,255,0.9)' size='xs' weight='semiBold' style={styles.shlokaBadgeText}>
+                      Vaishvik Path
+                    </BodyText>
+                  </View>
+                  <H5 color={COLORS.white} weight='semiBold' size='lg' style={styles.shlokaHeadline}>
+                    Prepare Your Spirit for Shloka Mantra.
+                  </H5>
+                </View>
+                <View style={styles.shlokaAction}>
+                  <Ionicons name="arrow-forward" size={22} color={COLORS.primary} />
+                </View>
               </View>
             </View>
-            <View style={styles.applyStallsGradient} />
-          </TouchableOpacity>
-        )}
+          </ImageBackground>
+        </TouchableOpacity>
+     
 
         
-        <View style={{marginTop: 26}}/>
-        {/* <MahotsavHulchal listData={mahotsavHulchal} type="mahotsav" />
-        <TodaysEvents listData={todaysEventsDataArray} type="events" />
-       */}
+        {/* <View style={{ marginTop: 20 }}>
+          <TodaysEvents listData={todaysEvents} type="events" showAll={hasMoreEvents} />
+        </View> */}
+      
       {/* <View style={styles.familyLocationCard}>
           <MapView
             provider={PROVIDER_GOOGLE}
@@ -815,7 +883,24 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               </H5>
               <TouchableOpacity 
                 style={styles.overlayButton}
-                onPress={() => stackNavigation.navigate('FamilyMembers')}
+                onPress={async () => {
+                  // Check if user has a family, if yes go to dashboard, else launch screen
+                  if (user?.id) {
+                    try {
+                      const family = await FamilyService.getUserFamily(user.id);
+                      if (family) {
+                        stackNavigation.navigate('FamilyDashboard', { familyId: family.id });
+                      } else {
+                        stackNavigation.navigate('FamilyLaunch');
+                      }
+                    } catch (error) {
+                      console.error('Error checking family:', error);
+                      stackNavigation.navigate('FamilyLaunch');
+                    }
+                  } else {
+                    stackNavigation.navigate('FamilyLaunch');
+                  }
+                }}
               >
                 <BodyText 
                   color={COLORS.white} 
@@ -969,135 +1054,18 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
             </View>
           </View>
         </View> */}
-        <TirthsList listData={tirthsList} />
+      
       </View>
-     
-        {/* <View style={styles.balanceCard}>
-          <BodyText color={COLORS.background.primary} size='md' weight='medium'>
-            Total Balance
-          </BodyText>
-          <H1
-            color={COLORS.background.primary}
-            weight='bold'
-            size='4xl'
-            style={styles.balanceAmount}
-          >
-            $12,456.78
-          </H1>
-          <View style={styles.balanceDetails}>
-            <BodyText color={COLORS.background.primary} size='sm'>
-              Checking: $8,456.78
-            </BodyText>
-            <BodyText color={COLORS.background.primary} size='sm'>
-              Savings: $4,000.00
-            </BodyText>
-          </View>
-        </View> */}
-
-        {/* Quick Actions */}
-        {/* <View style={styles.section}>
-          <H2
-            color={COLORS.primary}
-            weight='bold'
-            size='xl'
-            style={styles.sectionTitle}
-          >
-            Quick Actions
-          </H2>
-          <View style={styles.quickActionsGrid}>
-            {quickActions.map(action => (
-              <TouchableOpacity key={action.id} style={styles.quickActionItem}>
-                <View
-                  style={[
-                    styles.quickActionIcon,
-                    { backgroundColor: action.color + '20' },
-                  ]}
-                >
-                  <BodyText size='2xl'>{action.icon}</BodyText>
-                </View>
-                <BodyText
-                  color={COLORS.primary}
-                  size='sm'
-                  weight='medium'
-                  style={styles.quickActionText}
-                >
-                  {action.title}
-                </BodyText>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View> */}
-
-        {/* Recent Transactions */}
-        {/* <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <H2 color={COLORS.primary} weight='bold' size='xl'>
-              Recent Transactions
-            </H2>
-            <TouchableOpacity>
-              <BodyText color={COLORS.primary} size='md' weight='medium'>
-                View All
-              </BodyText>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.transactionsList}>
-            {recentTransactions.map(transaction => (
-              <TouchableOpacity
-                key={transaction.id}
-                style={styles.transactionItem}
-              >
-                <View style={styles.transactionLeft}>
-                  <View
-                    style={[
-                      styles.transactionIcon,
-                      {
-                        backgroundColor:
-                          transaction.type === 'credit'
-                            ? COLORS.success + '20'
-                            : COLORS.error + '20',
-                      },
-                    ]}
-                  >
-                    <BodyText size='lg'>
-                      {transaction.type === 'credit' ? '📈' : '📉'}
-                    </BodyText>
-                  </View>
-                  <View style={styles.transactionDetails}>
-                    <BodyText color={COLORS.primary} size='md' weight='medium'>
-                      {transaction.description}
-                    </BodyText>
-                    <BodyText color={COLORS.tertiary} size='sm'>
-                      {transaction.date}
-                    </BodyText>
-                  </View>
-                </View>
-                <BodyText
-                  color={
-                    transaction.type === 'credit'
-                      ? COLORS.success
-                      : COLORS.error
-                  }
-                  size='md'
-                  weight='bold'
-                >
-                  {transaction.amount}
-                </BodyText>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View> */}
-
-
       </ScrollView>
 
-      {/* Permission Bottom Sheet for existing users */}
-      <PermissionBottomSheet
-        visible={showPermissionSheet}
-        onClose={handlePermissionSkip}
-        onPermissionsGranted={handlePermissionGranted}
-        isOnboarding={false}
-      />
+      <TouchableOpacity
+        style={[styles.fab, { bottom: insets.bottom + 24 }]}
+        activeOpacity={0.9}
+        onPress={() => stackNavigation.navigate('ChatBot')}
+      >
+        <Ionicons name="chatbubbles-outline" size={24} color={COLORS.white} />
+        <Text style={styles.fabLabel}>Ask me</Text>
+      </TouchableOpacity>
 
       {/* Update Bottom Sheet */}
       {updateData && (
@@ -1133,39 +1101,24 @@ const styles = StyleSheet.create({
   headerLeft: {
     flex: 1,
   },
-  greetingContainer: {
+  logoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
   },
-  namasteIcon: {
-    marginRight: 8,
+  logo: {
+    width: 50,
+    height: 50,
+    marginRight: 12,
+  },
+  headerTitle: {
+    flex: 1,
+    fontFamily: FONTS.gilroy.semiBold,
   },
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-  },
-  greetingText: {
-    fontFamily: FONTS.gilroy.bold,
-    fontSize: FONT_SIZES.lg,
-    // marginBottom: 2,
-  },
-  addressText: {
-    fontFamily: FONTS.gilroy.regular,
-    fontSize: FONT_SIZES.sm,
-    opacity: 0.9,
-    flex: 1,
-  },
-  addressContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  refreshLocationButton: {
-    marginLeft: 8,
-    padding: 4,
-    borderRadius: 12,
-    backgroundColor: COLORS.appColor + '20',
   },
   menuButton: {
     padding: 8,
@@ -1268,6 +1221,31 @@ const styles = StyleSheet.create({
   },
   transactionDetails: {
     flex: 1,
+  },
+  mahotsavTabContainer: {
+    paddingHorizontal: 20,
+    marginTop: 0,
+    marginBottom: 12,
+  },
+  mahotsavTab: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    backgroundColor: COLORS.background.primary,
+    borderWidth: 1,
+    borderColor: COLORS.border.light,
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  mahotsavTabTextWrapper: {
+    flex: 1,
+    marginRight: 12,
   },
   familyLocationCard: {
     // marginHorizontal: 20,
@@ -1487,9 +1465,33 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     flexDirection: 'row',
   },
-  quickLinkTitle: {
-    marginBottom: 10,
+  quickLinksHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
+    marginBottom: 8,
+  },
+  quickLinkTitle: {
+    marginBottom: 0,
+  },
+  liveStreamWrapper: {
+    borderRadius: 999,
+    overflow: 'hidden',
+  },
+  liveStreamButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.background.appColor,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  liveStreamText: {
+    color: COLORS.white,
+    fontSize: FONT_SIZES.xs,
+    fontFamily: FONTS.gilroy.semiBold,
+    textTransform: 'uppercase',
   },
   applyStallsCard: {
     marginHorizontal: 20,
@@ -1506,6 +1508,77 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
     position: 'relative',
+  },
+  shlokaMantraCard: {
+    marginHorizontal: 20,
+    marginTop: 10,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  shlokaBackgroundImage: {
+    width: '100%',
+    minHeight: 120,
+    justifyContent: 'flex-end',
+  },
+  shlokaBackgroundImageRadius: {
+    borderRadius: 16,
+  },
+  shlokaOverlay: {
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    borderRadius: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 22,
+  },
+  shlokaMantraContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  shlokaTextContainer: {
+    flex: 1,
+    marginRight: 12,
+    gap: 8,
+  },
+  shlokaBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    gap: 6,
+  },
+  shlokaBadgeText: {
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
+  shlokaHeadline: {
+    lineHeight: 24,
+  },
+  shlokaAction: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: COLORS.background.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 4,
   },
   applyStallsContent: {
     flexDirection: 'row',
@@ -1555,6 +1628,61 @@ const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: 'linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)',
     opacity: 0.1,
+  },
+  fab: {
+    position: 'absolute',
+    right: 6,
+    backgroundColor: COLORS.background.appColor,
+    borderRadius: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 6,
+    gap: 8,
+  },
+  fabLabel: {
+    fontSize: FONT_SIZES.sm,
+    fontFamily: FONTS.gilroy.semiBold,
+    color: COLORS.white,
+  },
+  culturalEventsSection: {
+    marginTop: 20,
+    marginBottom: 20,
+    paddingHorizontal: 20,
+  },
+  culturalEventsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  culturalEventsList: {
+    marginTop: 4,
+  },
+  culturalEventCard: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.background.primary,
+    borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: COLORS.border.light,
+  },
+  culturalEventImage: {
+    width: 90,
+    height: 110,
+  },
+  culturalEventContent: {
+    flex: 1,
+    padding: 12,
+    justifyContent: 'center',
+  },
+  culturalEventCardSpacing: {
+    marginBottom: 12,
   },
 });
 
